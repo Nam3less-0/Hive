@@ -103,6 +103,7 @@
   
   label {
     font-weight: bold;
+    color: rgb(156, 156, 156);
     margin-top: 10px;
   }
   
