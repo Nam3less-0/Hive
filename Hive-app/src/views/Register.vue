@@ -23,7 +23,7 @@
         </form>
   
         <div class="links">
-          <router-link to="/">Already have an account? Sign in</router-link>
+          <router-link to="/login">Already have an account? Sign in</router-link>
         </div>
       </div>
     </div>

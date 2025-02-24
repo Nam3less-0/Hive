@@ -24,14 +24,15 @@ const routes = [
       { path: 'messages', name: 'Messages', component: Messages },
       { path: 'mybuzzes', name: 'MyBuzzes', component: MyBuzzes },
       { path: 'myaccount', name: 'MyAccount', component: MyAccount },
-      { path: 'new-user1', name: 'NewUserPage1', component: NewUserPage1 },
-      { path: 'new-user2', name: 'NewUserPage2', component: NewUserPage2 },
-      { path: 'new-user3', name: 'NewUserPage3', component: NewUserPage3 },
+      
     ],
   },
   { path: '/login', name: 'Login', component: Login },
   { path: '/register', name: 'Register', component: Register },
   { path: '/reset-password', name: 'ResetPassword', component: ResetPassword },
+  { path: '/new-user1', name: 'NewUserPage1', component: NewUserPage1, meta: { requiresAuth: true } },
+  { path: '/new-user2', name: 'NewUserPage2', component: NewUserPage2, meta: { requiresAuth: true } },
+  { path: '/new-user3', name: 'NewUserPage3', component: NewUserPage3, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({
