@@ -30,10 +30,10 @@
 <script setup>
 import { ref } from 'vue';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/firebase';
+import { auth, db } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import Branding from '@/components/Branding.vue';
 import { useRouter } from 'vue-router';
-
 const router = useRouter();
 
 const goToRegister = () => {
@@ -50,6 +50,19 @@ const password = ref('');
 const handleLogin = async () => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
+    const user = userCredential.user
+    if (!user.emailVerified) {
+      alert("Email not verified.");
+      return;
+    }
+
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    if (!userDoc.exists()) {
+      console.log("Redirecting to new user page");
+      router.push({ name: "NewUserPage1" });
+      return;
+    }
+
     console.log('User signed in:', userCredential.user);
     alert("Successfully Logged In")
     router.push({name: "Home"})
