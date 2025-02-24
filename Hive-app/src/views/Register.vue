@@ -31,7 +31,7 @@
   
   <script setup>
   import { ref } from 'vue';
-  import { createUserWithEmailAndPassword } from 'firebase/auth';
+  import { createUserWithEmailAndPassword , sendEmailVerification } from 'firebase/auth';
   import { auth } from '@/firebase';
   import Branding from '@/components/Branding.vue';
   import { useRouter } from 'vue-router';
@@ -47,7 +47,7 @@
       // Optionally, display an error message to the user here.
       return;
     }
-  
+    
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
       console.log('User registered:', userCredential.user);
@@ -57,6 +57,30 @@
       console.error('Error registering:', error.message);
       // Optionally, display an error message to the user here.
     }
+    
+    /*
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
+        const user = userCredential.user;
+        
+        // Send verification email
+        await sendEmailVerification(user);
+        console.log('Verification email sent.');
+        alert('A verification email has been sent. Please verify your email before logging in.');
+        
+        // Wait for user verification before allowing login
+        const checkVerification = setInterval(async () => {
+            await user.reload(); // Refresh user data
+            if (user.emailVerified) {
+                clearInterval(checkVerification);
+                console.log('Email verified! Redirecting...');
+                router.push({ name: 'NewUserPage1' });
+            }
+        }, 3000); // Check every 3 seconds
+    } catch (error) {
+        console.error('Error registering:', error.message);
+    }
+    */
   };
   </script>
   
