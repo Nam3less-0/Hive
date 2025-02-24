@@ -51,10 +51,10 @@ const handleLogin = async () => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
     const user = userCredential.user
-    if (!user.emailVerified) {
+     /*if (!user.emailVerified) {
       alert("Email not verified.");
       return;
-    }
+    }*/
 
     const userDoc = await getDoc(doc(db, "users", user.uid));
     if (!userDoc.exists()) {
