@@ -89,6 +89,7 @@
   /* Finish button */
   .description-form button {
     align-self: flex-start;
+    width: 100%;
     padding: 12px;
     background: black;
     color: white;
@@ -97,6 +98,7 @@
     font-size: 18px;
     cursor: pointer;
     transition: background 0.3s ease;
+    box-sizing: border-box;
   }
   
   .description-form button:hover {

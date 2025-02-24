@@ -94,7 +94,7 @@ form {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 350px;
+  max-width: 25vw;
 }
 
 label {
@@ -135,7 +135,7 @@ button:hover {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  max-width: 350px;
+  max-width: 25vw;
   margin-top: 20px;
   font-size: 14px;
 }
