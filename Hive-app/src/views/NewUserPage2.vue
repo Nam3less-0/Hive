@@ -258,6 +258,7 @@
     padding: 8px;
     border-radius: 8px;
     border: 1px solid #ccc;
+    box-sizing: border-box;
   }
   
   /* Next Button */

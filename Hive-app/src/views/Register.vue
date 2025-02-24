@@ -92,7 +92,7 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 350px;
+    max-width: 25vw;
   }
   
   label {
@@ -133,7 +133,7 @@
     display: flex;
     justify-content: center;
     width: 100%;
-    max-width: 350px;
+    max-width: 25vw;
     margin-top: 20px;
     font-size: 14px;
   }
