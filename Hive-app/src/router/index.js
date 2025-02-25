@@ -12,6 +12,7 @@ import MyAccount from "@/views/MyAccount.vue";
 import MyBuzzes from "@/views/MyBuzzes.vue";
 import MainLayout from "@/views/MainLayout.vue";
 import Notifications from '@/views/Notifications.vue';
+import Privacy from '@/views/Privacy.vue';
 import { auth } from "@/firebase";
 
 const routes = [
@@ -26,6 +27,7 @@ const routes = [
       { path: 'mybuzzes', name: 'MyBuzzes', component: MyBuzzes },
       { path: 'myaccount', name: 'MyAccount', component: MyAccount },
       { path: 'notifications', name: 'Notifications', component: Notifications },
+      { path: 'privacy', name: 'Privacy', component: Privacy },
       
     ],
   },
