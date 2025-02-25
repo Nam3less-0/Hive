@@ -182,17 +182,18 @@ const messageText = ref("");
   left: 50%;
   transform: translate(-50%, -50%);
   background: white;
-  width: 80%;
-  max-width: 400px;
+  width: 100%;
+  max-width: 30vw;
   border-radius: 15px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   padding: 20px;
   text-align: center;
   border: 1px solid black;
+  box-sizing: border-box;
 }
 
 .message-content h2 {
-  margin-bottom: 10px;
+  margin: 10px;
 }
 
 .receiver-avatar {
