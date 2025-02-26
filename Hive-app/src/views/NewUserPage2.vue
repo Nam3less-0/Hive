@@ -1,167 +1,171 @@
 <template>
-    <div class="user-container">
-      <!-- Right Section: Interests Form -->
-      <div class="interests-form">
-        <div class="form-content">
-        <h3>What are your Interests?</h3>
-  
-        <!-- Search Bar -->
-        <input
-          v-model="searchTerm"
-          type="text"
-          placeholder="Search"
-          class="search-bar"
-        />
-  
-        <!-- Interests List -->
-        <div class="interests-list">
-          <span
-            v-for="interest in filteredInterests"
-            :key="interest"
-            :class="['interest-item', { selected: selectedInterests.includes(interest) }]"
-            @click="toggleInterest(interest)"
-          >
-            {{ interest }}
-          </span>
-        </div>
-    </div>
-        <!-- Studying & Working Checkboxes -->
-        <div class="checkboxes">
-          <label>
-            <input type="checkbox" v-model="isStudying" /> Studying
-          </label>
-          <label>
-            <input type="checkbox" v-model="isWorking" /> Working
-          </label>
-        </div>
-  
-        <!-- School & Industry -->
-        <div v-if="isStudying" class="text-field">
-          <label>What school are you from?</label>
-          <input type="text" v-model="school" placeholder="Search" />
-        </div>
-        <div v-if="isWorking" class="text-field">
-          <label>What industry are you from?</label>
-          <input type="text" v-model="industry" placeholder="What industry?" />
-        </div>
-  
-        <!-- Next Button -->
-        <button @click="handleNext" >Next</button>
+  <div class="user-container">
+    <!-- Right Section: Interests Form -->
+    <div class="interests-form">
+      <div class="form-content">
+      <h3>What are your Interests?</h3>
+
+      <!-- Search Bar -->
+      <input
+        v-model="searchTerm"
+        type="text"
+        placeholder="Search"
+        class="search-bar"
+      />
+
+      <!-- Interests List -->
+      <div class="interests-list">
+        <span
+          v-for="interest in filteredInterests"
+          :key="interest"
+          :class="['interest-item', { selected: selectedInterests.includes(interest) }]"
+          @click="toggleInterest(interest)"
+        >
+          {{ interest }}
+        </span>
       </div>
-  
-      <!-- Left Branding (Optional) -->
-      <Branding />
+  </div>
+      <!-- Studying & Working Checkboxes -->
+      <div class="checkboxes">
+        <label>
+          <input type="checkbox" v-model="isStudying" /> Studying
+        </label>
+        <label>
+          <input type="checkbox" v-model="isWorking" /> Working
+        </label>
+      </div>
+
+      <!-- School Selection Dropdown -->
+      <div v-if="isStudying" class="text-field">
+        <label>What school are you from?</label>
+        <select v-model="school">
+          <option disabled value="">Select Your University</option>
+          <option value="NUS">National University of Singapore (NUS)</option>
+          <option value="NTU">Nanyang Technological University (NTU)</option>
+          <option value="SMU">Singapore Management University (SMU)</option>
+          <option value="SUTD">Singapore University of Technology and Design (SUTD)</option>
+          <option value="SUSS">Singapore University of Social Sciences (SUSS)</option>
+        </select>
+      </div>
+
+      <!-- Industry Selection Dropdown -->
+      <div v-if="isWorking" class="text-field">
+        <label>What industry are you from?</label>
+        <select v-model="industry">
+          <option disabled value="">Select Your Industry</option>
+          <option value="Technology">Technology</option>
+          <option value="Finance">Finance</option>
+          <option value="Healthcare">Healthcare</option>
+          <option value="Education">Education</option>
+          <option value="Engineering">Engineering</option>
+          <option value="Retail">Retail</option>
+          <option value="Hospitality">Hospitality</option>
+          <option value="Government">Government</option>
+        </select>
+      </div>
+
+      <!-- Next Button -->
+      <button @click="handleNext" >Next</button>
     </div>
-  </template>
-  
-  <script setup>
-  import { ref, computed, onMounted } from 'vue';
-  import { useRouter } from 'vue-router';
-  import { doc, setDoc, getDocs, collection } from 'firebase/firestore';
-  import { db, auth } from '@/firebase';
-  import Branding from '@/components/Branding.vue';
-  
-  // ========== STATE ========== //
-  
-  // We store all possible interests in an array. 
 
-  const allInterests = ref([]);
-  
-  // This will store user-selected interests
-  const selectedInterests = ref([]);
-  
-  // For searching
-  const searchTerm = ref('');
-  
-  // Checkboxes
-  const isStudying = ref(false);
-  const isWorking = ref(false);
-  
-  // Additional fields
-  const school = ref('');
-  const industry = ref('');
-  
-  // Router
-  const router = useRouter();
-  
+    <!-- Left Branding (Optional) -->
+    <Branding />
+  </div>
+</template>
 
-  onMounted(async () => {
-  
-    try {
-        const querySnapshot = await getDocs(collection(db, "interests"));
-        const fetchedInterests = [];
-        querySnapshot.forEach((docSnap) => {
-        if (docSnap.exists()) {
-            fetchedInterests.push(docSnap.data().name);
-        }
-        });
-        console.log("Fetched interests:", fetchedInterests);
-        allInterests.value = fetchedInterests;
-    } catch (error) {
-        console.error("Error fetching interests:", error);
-    }
-    /*
-    allInterests.value = [
-      'Boxing', 'Basketball', 'Bowling', 'Video Games', 'Netball', 'Art',
-      'Movies', 'Soccer', 'Bouldering'
-    ];
-    */
-  });
-  
-  // ========== COMPUTED PROPERTIES ========== //
-  const filteredInterests = computed(() => {
-    // If no search term, return all
-    if (!searchTerm.value) {
-      return allInterests.value;
-    }
-    // Filter by search term
-    const term = searchTerm.value.toLowerCase();
-    return allInterests.value.filter(interest =>
-      interest.toLowerCase().includes(term)
-    );
-  });
-  
-  // ========== METHODS ========== //
-  const toggleInterest = (interest) => {
-    const index = selectedInterests.value.indexOf(interest);
-    if (index === -1) {
-      // Not in array => add it
-      selectedInterests.value.push(interest);
-    } else {
-      // Already selected => remove it
-      selectedInterests.value.splice(index, 1);
-    }
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { doc, setDoc, getDocs, collection } from 'firebase/firestore';
+import { db, auth } from '@/firebase';
+import Branding from '@/components/Branding.vue';
+
+// ========== STATE ========== //
+
+// Store all possible interests
+const allInterests = ref([]);
+
+// Store user-selected interests
+const selectedInterests = ref([]);
+
+// Search term for filtering
+const searchTerm = ref('');
+
+// Checkboxes
+const isStudying = ref(false);
+const isWorking = ref(false);
+
+// Dropdown selections
+const school = ref('');
+const industry = ref('');
+
+// Router
+const router = useRouter();
+
+onMounted(async () => {
+  try {
+      const querySnapshot = await getDocs(collection(db, "interests"));
+      const fetchedInterests = [];
+      querySnapshot.forEach((docSnap) => {
+      if (docSnap.exists()) {
+          fetchedInterests.push(docSnap.data().name);
+      }
+      });
+      console.log("Fetched interests:", fetchedInterests);
+      allInterests.value = fetchedInterests;
+  } catch (error) {
+      console.error("Error fetching interests:", error);
+  }
+});
+
+// Computed property for filtering interests
+const filteredInterests = computed(() => {
+  if (!searchTerm.value) {
+    return allInterests.value;
+  }
+  const term = searchTerm.value.toLowerCase();
+  return allInterests.value.filter(interest =>
+    interest.toLowerCase().includes(term)
+  );
+});
+
+// Toggle interests selection
+const toggleInterest = (interest) => {
+  const index = selectedInterests.value.indexOf(interest);
+  if (index === -1) {
+    selectedInterests.value.push(interest);
+  } else {
+    selectedInterests.value.splice(index, 1);
+  }
+};
+
+// Handle Next button click
+const handleNext = async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    console.error('No user is logged in');
+    router.push({ name: 'Login' });
+    return;
+  }
+
+  const dataToSave = {
+    interests: selectedInterests.value,
+    isStudying: isStudying.value,
+    isWorking: isWorking.value,
+    school: school.value,
+    industry: industry.value,
   };
-  
-  const handleNext = async () => {
-    const user = auth.currentUser;
-    if (!user) {
-      console.error('No user is logged in');
-      router.push({ name: 'Login' });
-      return;
-    }
-  
-    // Build object with all new fields
-    const dataToSave = {
-      interests: selectedInterests.value,
-      isStudying: isStudying.value,
-      isWorking: isWorking.value,
-      school: school.value,
-      industry: industry.value,
-    };
-  
-    try {
-      // Use setDoc with { merge: true } so we don't overwrite the previous fields
-      await setDoc(doc(db, 'users', user.uid), dataToSave, { merge: true });
-      console.log('Interests data saved successfully!');
-  
-      // Move to next page 
-      router.push({ name: 'NewUserPage3' });
-    } catch (error) {
-      console.error('Error saving interests data:', error);
-    }
-  };
-  </script>
+
+  try {
+    await setDoc(doc(db, 'users', user.uid), dataToSave, { merge: true });
+    console.log('Interests data saved successfully!');
+    router.push({ name: 'NewUserPage3' });
+  } catch (error) {
+    console.error('Error saving interests data:', error);
+  }
+};
+</script>
+
   
   <style scoped>
   .user-container {

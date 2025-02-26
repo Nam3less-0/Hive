@@ -14,6 +14,12 @@
         placeholder="Bio..."
       ></textarea>
 
+      <h3>Upload a profile picture:</h3>
+      <input type="file" @change="handleFileUpload" accept="image/*" />
+      <div v-if="profilePictureUrl" class="preview">
+        <img :src="profilePictureUrl" alt="Profile Preview" />
+      </div>
+
       <button @click="finishSetup">Finish Setup Profile</button>
     </div>
 
@@ -28,12 +34,25 @@ import { useRouter } from 'vue-router';
 import { doc, setDoc } from 'firebase/firestore';
 import { db, auth } from '@/firebase'; // adjust your Firebase import as needed
 import Branding from '@/components/Branding.vue';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const router = useRouter();
 
 // Two fields: "description" and "bio"
 const description = ref('');
 const bio = ref('');
+const profilePicture = ref(null);
+const profilePictureUrl = ref('');
+
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    profilePicture.value = file;
+    const fileRef = storageRef(storage, `profile_pictures/${auth.currentUser.uid}`);
+    await uploadBytes(fileRef, file);
+    profilePictureUrl.value = await getDownloadURL(fileRef);
+  }
+};
 
 const finishSetup = async () => {
   const user = auth.currentUser;
@@ -114,5 +133,17 @@ const finishSetup = async () => {
 
 .description-form button:hover {
   background: #333;
+}
+
+/* File upload preview */
+.preview {
+  margin-top: 10px;
+}
+
+.preview img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin-top: 10px;
 }
 </style>
