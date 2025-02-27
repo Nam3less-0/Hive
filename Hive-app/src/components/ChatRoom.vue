@@ -54,6 +54,8 @@
 </template>
 
 <script>
+import { getChatPrompts } from "@/gpt.mjs"; // Adjust path as needed
+
 export default {
   name: "ChatRoom",
   props: {
@@ -69,11 +71,8 @@ export default {
   data() {
     return {
       newMessage: "",
-      // Local copy of messages for immediate rendering
       localMessages: this.chat.messages ? [...this.chat.messages] : [],
-      // Chat prompter suggestions
       chatPrompts: [],
-      // Toggle state for the chat prompter
       showPrompter: false,
     };
   },
@@ -100,30 +99,27 @@ export default {
     },
     formatMessageTime(timestamp) {
       const date = new Date(timestamp);
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     },
     shouldShowTimestamp(index) {
       const messages = this.sortedMessages;
       if (index === messages.length - 1) return true;
       const currentTime = new Date(messages[index].timestamp);
       const nextTime = new Date(messages[index + 1].timestamp);
-      const diffMinutes = (nextTime - currentTime) / 60000;
-      return diffMinutes > 5;
+      return (nextTime - currentTime) / 60000 > 5;
     },
-    fetchChatPrompts() {
-      // Simulate calling ChatGPT for suggestions.
-      // In a real scenario, replace this with an API call.
-      this.chatPrompts = [
-        "How has your day been so far?",
-        "What did you do over the weekend?",
-        "Have you read any good books lately?",
-        "What kind of music are you into?",
-        "Do you have any hobbies you're passionate about?"
-      ];
+    async fetchChatPrompts() {
+      try {
+        const prompts = await getChatPrompts();
+        this.chatPrompts = prompts;
+      } catch (error) {
+        console.error("Error fetching chat prompts:", error);
+      }
     },
     togglePrompter() {
       this.showPrompter = !this.showPrompter;
-      if (this.showPrompter && this.chatPrompts.length === 0) {
+      if (this.showPrompter) {
+        // Always reprompt ChatGPT when the prompter is toggled on
         this.fetchChatPrompts();
       }
     },
@@ -132,14 +128,14 @@ export default {
     }
   },
   watch: {
-    'chat.messages': {
+    "chat.messages": {
       handler(newVal) {
         this.localMessages = newVal ? [...newVal] : [];
       },
       immediate: true,
-      deep: true
-    }
-  }
+      deep: true,
+    },
+  },
 };
 </script>
 
@@ -155,7 +151,6 @@ export default {
   margin: 10px;
 }
 
-/* Messages container scrolls and leaves space at bottom */
 .messages-container {
   flex: 1;
   overflow-y: auto;
@@ -204,7 +199,6 @@ export default {
   margin-top: 4px;
 }
 
-/* Input section fixed to bottom using sticky */
 .input-section {
   position: sticky;
   bottom: 0;
@@ -214,7 +208,6 @@ export default {
   border-top: 1px solid #ccc;
 }
 
-/* Chat Prompter */
 .chat-prompter {
   margin-bottom: 4px;
 }
@@ -256,7 +249,6 @@ export default {
   background-color: #d6dadf;
 }
 
-/* Input area */
 .input-bar {
   display: flex;
   padding-top: 10px;
