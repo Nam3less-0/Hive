@@ -7,6 +7,7 @@ import NewUserPage1 from "@/views/NewUserPage1.vue";
 import NewUserPage2 from "@/views/NewUserPage2.vue";
 import NewUserPage3 from "@/views/NewUserPage3.vue";
 import NewUserPage4 from "@/views/NewUserPage4.vue";
+import NewUserPage22 from "@/views/NewUserPage2-2.vue";
 import Connect from "@/views/Connect.vue";
 import Messages from "@/views/Messages.vue";
 import MyAccount from "@/views/MyAccount.vue";
@@ -39,6 +40,7 @@ const routes = [
   { path: '/new-user2', name: 'NewUserPage2', component: NewUserPage2, meta: { requiresAuth: true } },
   { path: '/new-user3', name: 'NewUserPage3', component: NewUserPage3, meta: { requiresAuth: true } },
   { path: '/new-user4', name: 'NewUserPage4', component: NewUserPage4, meta: { requiresAuth: true } },
+  { path: '/new-user2-2', name: 'NewUserPage22', component: NewUserPage22, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

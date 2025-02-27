@@ -1,80 +1,89 @@
 <template>
   <div class="user-container">
-    <!-- Right Section: Interests Form -->
-    <div class="interests-form">
-      <div class="form-content">
-        <h3>What are your Interests?</h3>
-        <!-- Search Bar -->
-        <input
-          v-model="searchTerm"
-          type="text"
-          placeholder="Search"
-          class="search-bar"
-        />
-        <!-- Interests List -->
-        <div class="interests-list">
-          <span
-            v-for="interest in filteredInterests"
-            :key="interest"
-            :class="['interest-item', { selected: selectedInterests.includes(interest) }]"
-            @click="toggleInterest(interest)"
-          >
-            {{ interest }}
-          </span>
-        </div>
+    <!-- Splash Screen Transition -->
+    <transition name="fade" @after-leave="handleAfterSplash">
+      <div v-if="showSplash" class="splash-screen">
+        <p>Let's get to know you a little more...</p>
       </div>
+    </transition>
 
-      <!-- Studying & Working Checkboxes -->
-      <div class="checkboxes">
-        <label>
-          <input type="checkbox" v-model="isStudying" /> Studying
-        </label>
-        <label>
-          <input type="checkbox" v-model="isWorking" /> Working
-        </label>
-      </div>
-
-      <!-- Custom School Picker -->
-      <div v-if="isStudying" class="text-field custom-picker">
-        <label>What school are you from?</label>
-        <div class="custom-dropdown" @click="toggleDropdown('school')">
-          <span>{{ selectedSchoolLabel }}</span>
-          <i class="dropdown-icon"></i>
-        </div>
-        <div v-if="dropdownOpen.school" class="dropdown-options">
-          <div
-            v-for="option in schoolOptions"
-            :key="option.value"
-            class="dropdown-option"
-            @click.stop="selectOption('school', option)"
-          >
-            {{ option.label }}
+    <!-- Interests Form Transition -->
+    <transition name="fade">
+      <div v-if="showForm" class="interests-form">
+        <div class="form-content">
+          <h3>What are your Interests?</h3>
+          <!-- Search Bar -->
+          <input
+            v-model="searchTerm"
+            type="text"
+            placeholder="Search"
+            class="search-bar"
+          />
+          <!-- Interests List -->
+          <div class="interests-list">
+            <span
+              v-for="interest in filteredInterests"
+              :key="interest"
+              :class="['interest-item', { selected: selectedInterests.includes(interest) }]"
+              @click="toggleInterest(interest)"
+            >
+              {{ interest }}
+            </span>
           </div>
         </div>
-      </div>
 
-      <!-- Custom Industry Picker -->
-      <div v-if="isWorking" class="text-field custom-picker">
-        <label>What industry are you from?</label>
-        <div class="custom-dropdown" @click="toggleDropdown('industry')">
-          <span>{{ selectedIndustryLabel }}</span>
-          <i class="dropdown-icon"></i>
+        <!-- Studying & Working Checkboxes -->
+        <div class="checkboxes">
+          <label>
+            <input type="checkbox" v-model="isStudying" /> Studying
+          </label>
+          <label>
+            <input type="checkbox" v-model="isWorking" /> Working
+          </label>
         </div>
-        <div v-if="dropdownOpen.industry" class="dropdown-options">
-          <div
-            v-for="option in industryOptions"
-            :key="option.value"
-            class="dropdown-option"
-            @click.stop="selectOption('industry', option)"
-          >
-            {{ option.label }}
+
+        <!-- Custom School Picker -->
+        <div v-if="isStudying" class="text-field custom-picker">
+          <label>What school are you from?</label>
+          <div class="custom-dropdown" @click="toggleDropdown('school')">
+            <span>{{ selectedSchoolLabel }}</span>
+            <i class="dropdown-icon"></i>
+          </div>
+          <div v-if="dropdownOpen.school" class="dropdown-options">
+            <div
+              v-for="option in schoolOptions"
+              :key="option.value"
+              class="dropdown-option"
+              @click.stop="selectOption('school', option)"
+            >
+              {{ option.label }}
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Next Button -->
-      <button @click="handleNext">Next</button>
-    </div>
+        <!-- Custom Industry Picker -->
+        <div v-if="isWorking" class="text-field custom-picker">
+          <label>What industry are you from?</label>
+          <div class="custom-dropdown" @click="toggleDropdown('industry')">
+            <span>{{ selectedIndustryLabel }}</span>
+            <i class="dropdown-icon"></i>
+          </div>
+          <div v-if="dropdownOpen.industry" class="dropdown-options">
+            <div
+              v-for="option in industryOptions"
+              :key="option.value"
+              class="dropdown-option"
+              @click.stop="selectOption('industry', option)"
+            >
+              {{ option.label }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Next Button -->
+        <button @click="handleNext">Next</button>
+      </div>
+    </transition>
 
     <!-- Left Branding (Optional) -->
     <Branding />
@@ -89,7 +98,6 @@ import { db, auth } from '@/firebase';
 import Branding from '@/components/Branding.vue';
 
 // ========== STATE ========== //
-
 const allInterests = ref([]);
 const selectedInterests = ref([]);
 const searchTerm = ref('');
@@ -98,6 +106,10 @@ const isWorking = ref(false);
 const school = ref('');
 const industry = ref('');
 const router = useRouter();
+
+// Splash and form display state
+const showSplash = ref(true);
+const showForm = ref(false);
 
 onMounted(async () => {
   try {
@@ -113,7 +125,17 @@ onMounted(async () => {
   } catch (error) {
     console.error("Error fetching interests:", error);
   }
+  
+  // Hide splash after 2 seconds. The after-leave callback will then show the form.
+  setTimeout(() => {
+    showSplash.value = false;
+  }, 1000);
 });
+
+// Called after splash leave transition completes
+function handleAfterSplash() {
+  showForm.value = true;
+}
 
 const filteredInterests = computed(() => {
   if (!searchTerm.value) {
@@ -135,7 +157,6 @@ const toggleInterest = (interest) => {
 };
 
 // ========== CUSTOM DROPDOWN STATE ========== //
-
 const dropdownOpen = reactive({
   school: false,
   industry: false
@@ -184,7 +205,6 @@ const selectedIndustryLabel = computed(() => {
 });
 
 // ========== HANDLE NEXT ========== //
-
 const handleNext = async () => {
   const user = auth.currentUser;
   if (!user) {
@@ -204,7 +224,7 @@ const handleNext = async () => {
   try {
     await setDoc(doc(db, 'users', user.uid), dataToSave, { merge: true });
     console.log('Interests data saved successfully!');
-    router.push({ name: 'NewUserPage3' });
+    router.push({ name: 'NewUserPage22' });
   } catch (error) {
     console.error('Error saving interests data:', error);
   }
@@ -220,7 +240,27 @@ const handleNext = async () => {
   overflow-x: hidden;
 }
 
-/* Right side form container */
+/* Splash screen styles */
+.splash-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #555;
+  width: 50vw;
+}
+
+/* Fade Transition */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.75s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+/* Interests Form Styles */
 .interests-form {
   width: 50vw !important;
   max-width: 50vw;

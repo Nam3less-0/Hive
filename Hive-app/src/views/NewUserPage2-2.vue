@@ -1,0 +1,308 @@
+<template>
+  <div class="user-container">
+    <div class="info-form">
+      <h3>Tell us more about yourself</h3>
+
+      <!-- Smoking Picker -->
+      <div class="text-field custom-picker">
+        <label>Do you smoke?</label>
+        <div class="custom-dropdown" @click="toggleDropdown('smoking')">
+          <span>{{ selectedSmokingLabel }}</span>
+          <i class="dropdown-icon"></i>
+        </div>
+        <div v-if="dropdownOpen.smoking" class="dropdown-options">
+          <div
+            v-for="option in smokingOptions"
+            :key="option.value"
+            class="dropdown-option"
+            @click.stop="selectOption('smoking', option)"
+          >
+            {{ option.label }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Alcohol Picker -->
+      <div class="text-field custom-picker">
+        <label>Do you drink alcohol?</label>
+        <div class="custom-dropdown" @click="toggleDropdown('alcohol')">
+          <span>{{ selectedAlcoholLabel }}</span>
+          <i class="dropdown-icon"></i>
+        </div>
+        <div v-if="dropdownOpen.alcohol" class="dropdown-options">
+          <div
+            v-for="option in alcoholOptions"
+            :key="option.value"
+            class="dropdown-option"
+            @click.stop="selectOption('alcohol', option)"
+          >
+            {{ option.label }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Sexual Orientation Picker -->
+      <div class="text-field custom-picker">
+        <label>Sexual Orientation</label>
+        <div class="custom-dropdown" @click="toggleDropdown('sexualOrientation')">
+          <span>{{ selectedSexualOrientationLabel }}</span>
+          <i class="dropdown-icon"></i>
+        </div>
+        <div v-if="dropdownOpen.sexualOrientation" class="dropdown-options">
+          <div
+            v-for="option in sexualOrientationOptions"
+            :key="option.value"
+            class="dropdown-option"
+            @click.stop="selectOption('sexualOrientation', option)"
+          >
+            {{ option.label }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Purpose Picker -->
+      <div class="text-field custom-picker">
+        <label>Purpose of using the app</label>
+        <div class="custom-dropdown" @click="toggleDropdown('purpose')">
+          <span>{{ selectedPurposeLabel }}</span>
+          <i class="dropdown-icon"></i>
+        </div>
+        <div v-if="dropdownOpen.purpose" class="dropdown-options">
+          <div
+            v-for="option in purposeOptions"
+            :key="option.value"
+            class="dropdown-option"
+            @click.stop="selectOption('purpose', option)"
+          >
+            {{ option.label }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Next Button -->
+      <button @click="handleNext">Next</button>
+    </div>
+
+    <!-- Optional Branding Component -->
+    <Branding />
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, reactive } from 'vue';
+import { useRouter } from 'vue-router';
+import { doc, setDoc } from 'firebase/firestore';
+import { db, auth } from '@/firebase';
+import Branding from '@/components/Branding.vue';
+
+const smoking = ref('');
+const alcohol = ref('');
+const sexualOrientation = ref('');
+const purpose = ref('');
+
+const router = useRouter();
+
+const smokingOptions = ref([
+  { value: 'non-smoker', label: 'Non-smoker' },
+  { value: 'social-smoker', label: 'Social smoker' },
+  { value: 'light-smoker', label: 'Light smoker' },
+  { value: 'moderate-smoker', label: 'Moderate smoker' },
+  { value: 'heavy-smoker', label: 'Heavy smoker' }
+]);
+
+const alcoholOptions = ref([
+  { value: 'non-drinker', label: 'Non-drinker' },
+  { value: 'social-drinker', label: 'Social drinker' },
+  { value: 'light-drinker', label: 'Light drinker' },
+  { value: 'moderate-drinker', label: 'Moderate drinker' },
+  { value: 'heavy-drinker', label: 'Heavy drinker' }
+]);
+
+const sexualOrientationOptions = ref([
+  { value: 'heterosexual', label: 'Heterosexual' },
+  { value: 'homosexual', label: 'Homosexual' },
+  { value: 'bisexual', label: 'Bisexual' },
+  { value: 'other', label: 'Other' }
+]);
+
+const purposeOptions = ref([
+  { value: 'meet-new-people', label: 'Meet new people' },
+  { value: 'casual-relationship', label: 'Looking for a casual relationship' },
+  { value: 'serious-relationship', label: 'Looking for a serious relationship' }
+]);
+
+const dropdownOpen = reactive({
+  smoking: false,
+  alcohol: false,
+  sexualOrientation: false,
+  purpose: false
+});
+
+const toggleDropdown = (key) => {
+  dropdownOpen[key] = !dropdownOpen[key];
+};
+
+const selectOption = (key, option) => {
+  if (key === 'smoking') {
+    smoking.value = option.value;
+  } else if (key === 'alcohol') {
+    alcohol.value = option.value;
+  } else if (key === 'sexualOrientation') {
+    sexualOrientation.value = option.value;
+  } else if (key === 'purpose') {
+    purpose.value = option.value;
+  }
+  dropdownOpen[key] = false;
+};
+
+const selectedSmokingLabel = computed(() => {
+  const selected = smokingOptions.value.find(opt => opt.value === smoking.value);
+  return selected ? selected.label : 'Select Smoking Status';
+});
+
+const selectedAlcoholLabel = computed(() => {
+  const selected = alcoholOptions.value.find(opt => opt.value === alcohol.value);
+  return selected ? selected.label : 'Select Alcohol Consumption';
+});
+
+const selectedSexualOrientationLabel = computed(() => {
+  const selected = sexualOrientationOptions.value.find(opt => opt.value === sexualOrientation.value);
+  return selected ? selected.label : 'Select Sexual Orientation';
+});
+
+const selectedPurposeLabel = computed(() => {
+  const selected = purposeOptions.value.find(opt => opt.value === purpose.value);
+  return selected ? selected.label : 'Select App Purpose';
+});
+
+const handleNext = async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    console.error('No user is logged in');
+    router.push({ name: 'Login' });
+    return;
+  }
+
+  const dataToSave = {
+    smoking: smoking.value,
+    alcohol: alcohol.value,
+    sexualOrientation: sexualOrientation.value,
+    purpose: purpose.value
+  };
+
+  try {
+    await setDoc(doc(db, 'users', user.uid), dataToSave, { merge: true });
+    console.log('Profile details saved successfully!');
+    router.push({ name: 'NewUserPage3' });
+  } catch (error) {
+    console.error('Error saving profile details:', error);
+  }
+};
+</script>
+
+<style scoped>
+.user-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Center the form in the left section */
+.info-form {
+  width: 50vw;
+  max-width: 50vw;
+  min-width: 40vw;
+  height: 80vh;
+  background: white;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.info-form h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+/* Custom Picker Styles */
+.text-field {
+  margin-bottom: 15px;
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+.custom-picker label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.custom-dropdown {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.dropdown-icon {
+  border: solid #777;
+  border-width: 0 2px 2px 0;
+  display: inline-block;
+  padding: 3px;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+.dropdown-options {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-top: 5px;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  position: absolute;
+  z-index: 10;
+  width: 100%;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.dropdown-option {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.dropdown-option:hover {
+  background-color: #f0f0f0;
+}
+
+button {
+  align-self: center;
+  padding: 12px;
+  background: black;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  width: 100%;
+  max-width: 400px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  box-sizing: border-box;
+  margin-top: 20px;
+}
+
+button:hover {
+  background: #333;
+}
+</style>

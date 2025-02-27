@@ -1,7 +1,7 @@
 <template>
   <div class="chat-container">
-    <!-- Scrollable messages container -->
-    <div class="messages-container">
+    <!-- Scrollable messages container with a ref -->
+    <div class="messages-container" ref="messagesContainer">
       <div
         v-for="(message, index) in sortedMessages"
         :key="index"
@@ -54,6 +54,7 @@
 </template>
 
 <script>
+import { nextTick } from "vue";
 import { getChatPrompts } from "@/gpt.mjs"; // Adjust path as needed
 
 export default {
@@ -95,6 +96,7 @@ export default {
         this.localMessages.push(message);
         this.$emit("send-message", message);
         this.newMessage = "";
+        this.scrollToBottom();
       }
     },
     formatMessageTime(timestamp) {
@@ -125,16 +127,29 @@ export default {
     },
     selectChatPrompt(prompt) {
       this.newMessage = prompt;
+    },
+    scrollToBottom() {
+      // Wait until DOM updates, then scroll to bottom
+      nextTick(() => {
+        const container = this.$refs.messagesContainer;
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+        }
+      });
     }
   },
   watch: {
     "chat.messages": {
       handler(newVal) {
         this.localMessages = newVal ? [...newVal] : [];
+        this.scrollToBottom();
       },
       immediate: true,
       deep: true,
     },
+  },
+  mounted() {
+    this.scrollToBottom();
   },
 };
 </script>
@@ -149,6 +164,7 @@ export default {
   border: 1px solid #ccc;
   border-radius: 8px;
   margin: 10px;
+  overflow: hidden; /* prevent outer scrolling */
 }
 
 .messages-container {
@@ -183,10 +199,12 @@ export default {
 
 .message-container.sent .message {
   background-color: #FEC20C;
+  margin-right: 3px;
 }
 
 .message-container.received .message {
   background-color: #eee;
+  margin-left: 3px;
 }
 
 .message-text {
@@ -206,6 +224,7 @@ export default {
   z-index: 10;
   padding: 4px 10px;
   border-top: 1px solid #ccc;
+  flex-shrink: 0;
 }
 
 .chat-prompter {
