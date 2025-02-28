@@ -19,8 +19,8 @@
         <h3 class="user-name">{{ buzz.name }}, {{ calculateAge(buzz.dateOfBirth) }}</h3>
         
         <div class="actions">
-          <button class="pass-btn" @click="passUser(buzz.id)">✖️ Pass</button>
-          <button class="like-btn" @click="likeBack(buzz.id)">💛 Like</button>
+          <button class="pass-btn" @click="passUser(buzz.element)">✖️ Pass</button>
+          <button class="like-btn" @click="likeBack(buzz.element)">💛 Like</button>
         </div>
       </div>
     </div>
@@ -69,6 +69,7 @@ export default {
           
           const likedUserData = likedUserSnap.data();
           return {
+            element: likedEntry,
             id: likedUserID,
             name: likedUserData.firstName || "Unknown",
             dateOfBirth: likedUserData.dateOfBirth || null,
