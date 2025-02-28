@@ -7,6 +7,9 @@
         <div class="profile-header">
           <span class="match-badge">{{ buzz.matchPercentage }}% Match</span>
           <span v-if="buzz.online" class="online-dot"></span>
+          
+          <!-- Message Button in the Top Right Corner -->
+          <button v-if="buzz.message && buzz.message !== 'None'" class="message-btn" @click="openMessagePopup(buzz.message)">💬</button>
         </div>
 
         <img 
@@ -19,35 +22,56 @@
         <h3 class="user-name">{{ buzz.name }}, {{ calculateAge(buzz.dateOfBirth) }}</h3>
         
         <div class="actions">
-          <button class="pass-btn" @click="passUser(buzz.element)">✖️ Pass</button>
-          <button class="like-btn" @click="likeBack(buzz.element)">💛 Like</button>
+          <button class="pass-btn" @click="passUser(buzz.id)">✖️ Pass</button>
+          <button class="like-btn" @click="likeBack(buzz.id)">💛 Like</button>
         </div>
       </div>
     </div>
     
     <p v-else>No new likes yet.</p>
+
+    <!-- Message Popup -->
+    <div v-if="showMessagePopup" class="message-popup">
+      <div class="message-content">
+        <h2>Message</h2>
+        <p>{{ messageContent }}</p>
+        <button class="close-btn" @click="closeMessagePopup">Close</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import { ref, onMounted } from "vue";
-import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
-import { auth, db } from "@/firebase"
+import { getFirestore, doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
+import { auth, db } from "@/firebase";
 
 export default {
   setup() {
     const buzzes = ref([]);
-    const userID = auth.currentUser?.uid || "RKoJcfE5m9fqL9FZa8OXbtv9p7Y2";
+    const userID = ref(auth.currentUser?.uid || "RKoJcfE5m9fqL9FZa8OXbtv9p7Y2");
     const defaultProfilePic = "https://placehold.co/150x150/png";
+    const showMessagePopup = ref(false);
+    const messageContent = ref("");
 
     const handleImageError = (event) => {
       event.target.src = defaultProfilePic;
       event.target.onerror = null;
     };
 
+    const openMessagePopup = (message) => {
+      messageContent.value = message;
+      showMessagePopup.value = true;
+    };
+
+    const closeMessagePopup = () => {
+      showMessagePopup.value = false;
+      messageContent.value = "";
+    };
+
     async function fetchBuzzes() {
       try {
-        const userDocRef = doc(db, `users/${userID}`);
+        const userDocRef = doc(db, `users/${userID.value}`);
         const userDocSnap = await getDoc(userDocRef);
 
         if (!userDocSnap.exists()) {
@@ -61,7 +85,8 @@ export default {
           return;
         }
         const likedUserDocs = await Promise.all(userData.likes.map(async (likedEntry) => {
-          const likedUserID = likedEntry.userId
+          const likedUserID = likedEntry.userId;
+          const likedUserMessage = likedEntry.message;
           const likedUserRef = doc(db, `users/${likedUserID}`);
           const likedUserSnap = await getDoc(likedUserRef);
           
@@ -69,13 +94,13 @@ export default {
           
           const likedUserData = likedUserSnap.data();
           return {
-            element: likedEntry,
             id: likedUserID,
             name: likedUserData.firstName || "Unknown",
             dateOfBirth: likedUserData.dateOfBirth || null,
             profilePic: likedUserData.images?.[0] || defaultProfilePic,
             matchPercentage: likedUserData.matchPercentage || "N/A",
             online: likedUserData.online || false,
+            message: likedUserMessage || "None"
           };
         }));
 
@@ -84,7 +109,7 @@ export default {
         console.error("Error fetching buzzes:", error);
       }
     }
-    async function likeBack(likedUserID) {
+async function likeBack(likedUserID) {
   try {
     if (!userID || !likedUserID) {
       console.error("Invalid user ID or liked user ID");
@@ -126,8 +151,9 @@ async function passUser(likedUserID) {
   } catch (error) {
     console.error("Error passing user:", error);
   }
-}
-function calculateAge(dob) {
+}  
+
+  function calculateAge(dob) {
       if (!dob) return 'Unknown';
       const birthDate = new Date(dob);
       const diff = Date.now() - birthDate.getTime();
@@ -136,9 +162,11 @@ function calculateAge(dob) {
     
     onMounted(fetchBuzzes);
 
-    return { buzzes, likeBack, passUser, handleImageError, defaultProfilePic, calculateAge };
+    return { buzzes, likeBack, passUser, handleImageError, defaultProfilePic, calculateAge,showMessagePopup, messageContent, openMessagePopup, closeMessagePopup };
   }
 };
+
+
 </script>
   
   <style>
@@ -267,5 +295,66 @@ transition: background 0.2s ease-in-out;
 
 .fake-likes-btn:hover {
 background: #e6b800;
+}
+
+
+/* View Message CSS */
+.message-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ffcc00;
+  border: none;
+  padding: 8px 10px;
+  font-size: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  transition: background 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.message-btn:hover {
+  background: #e6b800;
+  transform: scale(1.1);
+}
+
+.message-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  width: 80%;
+  max-width: 400px;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  padding: 20px;
+  text-align: center;
+  border: 1px solid black;
+}
+
+.message-content h2 {
+  margin-bottom: 10px;
+}
+
+.message-popup p {
+  padding: 10px;
+  border: 1px solid lightgray;
+  border-radius: 5px;
+  background: #f9f9f9;
+}
+
+.close-btn {
+  background: lightcoral;
+  border: 1px solid black;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.close-btn:hover {
+  background: pink;
 }
 </style>
