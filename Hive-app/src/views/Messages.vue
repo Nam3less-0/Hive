@@ -39,12 +39,13 @@
   import ChatList from "@/components/ChatList.vue";
   import ChatRoom from "@/components/ChatRoom.vue";
   import BlockConfirmationModal from "@/components/BlockConfirmationModal.vue";
+  import { auth } from "@/firebase";
   
   export default {
     name: "MessagesPage",
     components: { ChatList, ChatRoom, BlockConfirmationModal },
     setup() {
-      const currentUserId = ref("user123"); // Replace with actual user ID retrieval
+      const currentUserId = ref(auth.currentUser?.uid); // Replace with actual user ID retrieval
       const selectedChat = ref(null);
       const isBlockModalVisible = ref(false);
   

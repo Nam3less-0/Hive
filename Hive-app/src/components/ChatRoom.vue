@@ -7,7 +7,7 @@
         :key="index"
         :class="[
           'message-container',
-          message.sender === currentUserId ? 'sent' : 'received'
+          message.sender == currentUserId ? 'sent' : 'received'
         ]"
       >
         <!-- Message bubble -->
@@ -56,6 +56,8 @@
 <script>
 import { nextTick } from "vue";
 import { getChatPrompts } from "@/gpt.mjs"; // Adjust path as needed
+import { db } from "@/firebase"; // Adjust import path
+import { doc, getDoc, updateDoc, arrayUnion, onSnapshot, Timestamp } from "firebase/firestore";
 
 export default {
   name: "ChatRoom",
@@ -72,33 +74,63 @@ export default {
   data() {
     return {
       newMessage: "",
-      localMessages: this.chat.messages ? [...this.chat.messages] : [],
+      localMessages: [],
       chatPrompts: [],
       showPrompter: false,
+      unsubscribe: null,
     };
   },
   computed: {
     sortedMessages() {
-      if (!this.localMessages) return [];
-      return this.localMessages.slice().sort((a, b) => {
-        return new Date(a.timestamp) - new Date(b.timestamp);
-      });
+      return [...this.localMessages].sort((a, b) => a.timestamp?.seconds - b.timestamp?.seconds);
     },
   },
   methods: {
-    handleSendMessage() {
+    setupRealTimeListener() {
+  if (!this.chat.id) return;
+
+  console.log("Setting up real-time listener for chat:", this.chat.id);
+  
+  const matchRef = doc(db, "matches", this.chat.id);
+
+  this.unsubscribe = onSnapshot(matchRef, (docSnap) => {
+    if (docSnap.exists()) {
+      const matchData = docSnap.data();
+      this.localMessages = matchData.messages ? [...matchData.messages] : [];
+      console.log("📢 Real-time messages updated:", this.localMessages);
+      this.scrollToBottom();
+    } else {
+      console.log("❌ No match found in Firestore.");
+    }
+  }, (error) => {
+    console.error("❌ Error setting up real-time listener:", error);
+  });
+},
+
+    async handleSendMessage() {
       if (this.newMessage.trim()) {
         const message = {
           text: this.newMessage,
           sender: this.currentUserId,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date().toISOString() // ✅ Ensure timestamp is stored in Firestore format
         };
-        this.localMessages.push(message);
-        this.$emit("send-message", message);
+
+        const matchRef = doc(db, "matches", this.chat.id);
+
+        try {
+          await updateDoc(matchRef, {
+            messages: arrayUnion(message) // ✅ Append message to Firestore array
+          });
+
+          console.log("✅ Message added to Firestore!");
+        } catch (error) {
+          console.error("❌ Error sending message:", error);
+        }
+
         this.newMessage = "";
-        this.scrollToBottom();
       }
     },
+    
     formatMessageTime(timestamp) {
       const date = new Date(timestamp);
       return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -139,15 +171,19 @@ export default {
     }
   },
   watch: {
-    "chat.messages": {
-      handler(newVal) {
-        this.localMessages = newVal ? [...newVal] : [];
-        this.scrollToBottom();
-      },
-      immediate: true,
-      deep: true,
+  "chat.id": {
+    handler() {
+      if (this.unsubscribe) this.unsubscribe();
+      this.setupRealTimeListener();
     },
+    immediate: true,
   },
+},
+beforeUnmount() {
+  if (this.unsubscribe) {
+    this.unsubscribe();
+  }
+},  
   mounted() {
     this.scrollToBottom();
   },
