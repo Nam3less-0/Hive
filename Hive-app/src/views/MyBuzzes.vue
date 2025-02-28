@@ -93,7 +93,7 @@ export default {
     const matchID = [userID, likedUserID].sort().join('_'); // Unique match ID
     const matchRef = doc(db, 'matches', matchID);
     await setDoc(matchRef, {
-      userIds: [userID, likedUserID],
+      userIds: [userID, likedUserID.userId],
       messages: [],
       matchedAt: new Date()
     });
