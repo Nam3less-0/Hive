@@ -34,12 +34,10 @@
   <script>
   import { ref, onMounted } from "vue";
   import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, getDoc } from "firebase/firestore";
-  import { getAuth } from "firebase/auth";
+  import { auth, db } from "@/firebase"
   
   export default {
     setup() {
-      const db = getFirestore();
-      const auth = getAuth();
       const buzzes = ref([]);
       const userID = auth.currentUser?.uid || "RKoJcfE5m9fqL9FZa8OXbtv9p7Y2"; // Replace dynamically if needed
       const defaultProfilePic = "https://placehold.co/150x150/png"; // ✅ Backup image if missing

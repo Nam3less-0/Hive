@@ -49,6 +49,7 @@ function logout() {
 .sidebar {
   padding: 20px;
   width: 250px;
+  min-width: 15vw;
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
