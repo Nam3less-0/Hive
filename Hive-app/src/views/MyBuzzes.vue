@@ -163,121 +163,121 @@ async function passUser(likedUserID) {
 }
 
 .buzzes-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px; /* Uniform spacing */
-  padding: 20px;
+display: flex;
+flex-wrap: wrap;
+justify-content: center;
+gap: 20px; /* Uniform spacing */
+padding: 20px;
 }
 
 .buzz-card {
-  width: 260px;
-  padding: 15px;
-  border: 5px solid #ffcc00; /* Bright yellow border */
-  border-radius: 20px;
-  background: white;
-  text-align: center;
-  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
-  position: relative;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+width: 260px;
+padding: 15px;
+border: 5px solid #ffcc00; /* Bright yellow border */
+border-radius: 20px;
+background: white;
+text-align: center;
+box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
+position: relative;
+transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .buzz-card:hover {
-  transform: scale(1.03);
-  box-shadow: 7px 7px 20px rgba(0, 0, 0, 0.2);
+transform: scale(1.03);
+box-shadow: 7px 7px 20px rgba(0, 0, 0, 0.2);
 }
 
 .match-badge {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #ffcc00;
-  padding: 6px 12px;
-  border-radius: 15px;
-  font-weight: bold;
-  font-size: 14px;
-  color: #333;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+position: absolute;
+top: -10px;
+left: 50%;
+transform: translateX(-50%);
+background: #ffcc00;
+padding: 6px 12px;
+border-radius: 15px;
+font-weight: bold;
+font-size: 14px;
+color: #333;
+box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .online-dot {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 12px;
-  height: 12px;
-  background: green;
-  border-radius: 50%;
-  border: 2px solid white;
+position: absolute;
+top: 10px;
+right: 10px;
+width: 12px;
+height: 12px;
+background: green;
+border-radius: 50%;
+border: 2px solid white;
 }
 
 .profile-pic {
-  width: 100%;
-  height: 260px;
-  border-radius: 15px;
-  object-fit: cover;
+width: 100%;
+height: 260px;
+border-radius: 15px;
+object-fit: cover;
 }
 
 .user-name {
-  font-size: 18px;
-  font-weight: bold;
-  margin-top: 10px;
-  color: #333;
+font-size: 18px;
+font-weight: bold;
+margin-top: 10px;
+color: #333;
 }
 
 .actions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-  padding: 10px;
+display: flex;
+justify-content: space-between;
+margin-top: 10px;
+padding: 10px;
 }
 
 .pass-btn, .like-btn {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 16px;
-  margin: 5px;
-  transition: background 0.2s ease-in-out, transform 0.2s ease-in-out;
+flex: 1;
+padding: 12px;
+border: none;
+border-radius: 10px;
+cursor: pointer;
+font-weight: bold;
+font-size: 16px;
+margin: 5px;
+transition: background 0.2s ease-in-out, transform 0.2s ease-in-out;
 }
 
 .pass-btn {
-  background: #ff4d4d;
-  color: white;
+background: #ff4d4d;
+color: white;
 }
 
 .pass-btn:hover {
-  background: #e60000;
-  transform: scale(1.05);
+background: #e60000;
+transform: scale(1.05);
 }
 
 .like-btn {
-  background: #ffcc00;
-  color: black;
+background: #ffcc00;
+color: black;
 }
 
 .like-btn:hover {
-  background: #e6b800;
-  transform: scale(1.05);
+background: #e6b800;
+transform: scale(1.05);
 }
 
 .fake-likes-btn {
-  background: #ffcc00;
-  color: black;
-  font-size: 16px;
-  padding: 10px 15px;
-  margin-bottom: 15px;
-  border: none;
-  cursor: pointer;
-  border-radius: 10px;
-  transition: background 0.2s ease-in-out;
+background: #ffcc00;
+color: black;
+font-size: 16px;
+padding: 10px 15px;
+margin-bottom: 15px;
+border: none;
+cursor: pointer;
+border-radius: 10px;
+transition: background 0.2s ease-in-out;
 }
 
 .fake-likes-btn:hover {
-  background: #e6b800;
+background: #e6b800;
 }
-  </style>
+</style>
