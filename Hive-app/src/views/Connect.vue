@@ -10,7 +10,7 @@
       </div>
       <div class="profile-details">
         <h2>{{ users[currentUserIndex].firstName }} {{ users[currentUserIndex].lastName }}</h2>
-        <p><strong>Height:</strong> {{ users[currentUserIndex]?.selectedHeight || 'N/A' }}</p>
+        <p><strong>Height:</strong> {{ users[currentUserIndex]?.height || 'N/A' }}</p>
         <p><strong>Age:</strong> {{ calculateAge(users[currentUserIndex]?.dateOfBirth) }}</p>
         <p><strong>Bio:</strong> {{ users[currentUserIndex]?.bio || 'No bio available' }}</p>
         <button class="message-btn" @click="showMessagePopup = true">Write a message 💬</button>
@@ -357,7 +357,8 @@ textarea {
 }
 
 .profile-picture img {
-  width: 80%;
+  width: 300px;
+  height: 300px;
   border-radius: 15px;
   object-fit: cover;
   margin-bottom: 5px;
