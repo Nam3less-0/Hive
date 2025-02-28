@@ -25,7 +25,7 @@
       <div class="navbar-right">
         <router-link to="/myaccount" class="nav-profile">
           <img src="@/assets/profile-logo.png" alt="Profile" />
-          <span>{{ currentUser?.firstName || "Guest" }}</span>
+          <span>{{ currentUser && currentUser.firstName ? currentUser.firstName : "Guest" }}</span>
         </router-link>
       </div>
     </nav>
@@ -37,29 +37,28 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { onMounted, ref } from 'vue';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '@/firebase';
-import { onAuthStateChanged } from "firebase/auth";
 
-// Reactive variables
-const currentUser = ref(null); // Holds the logged-in user's data
+
+const currentUser = ref(null);
 const error = ref(null);
 const route = useRoute();
 const isActive = (path) => route.path.startsWith(path);
 
-// Listen for auth state changes
+// Listen for authentication state changes and fetch the user document using the UID
 onMounted(() => {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       try {
-        // Query Firestore for the logged-in user's data
-        const userQuery = query(collection(db, "users"), where("uid", "==", user.uid));
-        const querySnapshot = await getDocs(userQuery);
-
-        if (!querySnapshot.empty) {
-          currentUser.value = querySnapshot.docs[0].data();
+        // Use the authenticated user's UID as the reference to the user document
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          currentUser.value = userDocSnap.data();
         } else {
           error.value = "User data not found.";
         }
@@ -68,13 +67,11 @@ onMounted(() => {
         error.value = "Failed to load user.";
       }
     } else {
-      // No user is logged in, show "Guest"
-      currentUser.value = null;
+      error.value = "No authenticated user.";
     }
   });
 });
 </script>
-
 
 <style scoped>
 html, body {
@@ -151,7 +148,7 @@ html, body {
   height: 30px;
   width: 30px;
   border-radius: 50%;
-  background-color: #FFD400;
+  background-color: #ffd400;
   padding: 5px;
 }
 
@@ -162,5 +159,4 @@ html, body {
   overflow-y: auto;
   box-sizing: border-box;
 }
-
 </style>

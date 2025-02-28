@@ -137,6 +137,8 @@
       </div>
     </div>
   </div>
+
+  <NoMoreUsersPopup v-if="noMoreUsersPopup" @close="noMoreUsersPopup = false" />
 </template>
 
 <script setup>
@@ -146,6 +148,7 @@ import { db, auth } from '@/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import placeholderProfile from '@/assets/placeholder-profile.jpg';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import NoMoreUsersPopup from '@/components/NoMoreUsersPopup.vue';
 
 //Logic for filter button
 const showFilter = ref(false);
@@ -163,6 +166,7 @@ const users = ref([]);
 const interestOptions = ["Basketball", "Reading", "Gymming", "Music", "Travel", "Gaming", "Cooking", "Photography"];
 const currentUserIndex = ref(0);
 const currentUser = ref(null);
+const noMoreUsersPopup = ref(false);
 
 const adjustAgeRange = () => {
   if (selectedAgeMin.value > selectedAgeMax.value) {
@@ -220,8 +224,8 @@ const messageText = ref("");
 
 // Function to move to the next user
 const nextUser = () => {
-  if (users.value.length === 0) {
-    console.log("No users available.");
+  if (users.value.length === 0 || currentUserIndex.value >= users.value.length - 1) {
+    noMoreUsersPopup.value = true;
     return;
   }
   if (currentUserIndex.value < users.value.length - 1) {
@@ -261,6 +265,8 @@ const calculateAge = (dob) => {
 </script>
 
 <style scoped>
+
+
 /* Message Popup Styling */
 .message-popup {
   position: fixed;
