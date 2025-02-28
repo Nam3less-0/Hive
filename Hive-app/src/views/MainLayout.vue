@@ -41,36 +41,37 @@ import { useRoute } from 'vue-router';
 import { onMounted, ref } from 'vue';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db, auth } from '@/firebase';
+import { onAuthStateChanged } from "firebase/auth";
 
-// Variables
-const currentUser = ref({});
+// Reactive variables
+const currentUser = ref(null); // Holds the logged-in user's data
 const error = ref(null);
 const route = useRoute();
 const isActive = (path) => route.path.startsWith(path);
 
-// Fetch only the currently authenticated user's data
-onMounted(async () => {
-try {
-  const user = auth.currentUser; // Get logged-in user
+// Listen for auth state changes
+onMounted(() => {
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      try {
+        // Query Firestore for the logged-in user's data
+        const userQuery = query(collection(db, "users"), where("uid", "==", user.uid));
+        const querySnapshot = await getDocs(userQuery);
 
-  if (!user) {
-    error.value = "No authenticated user.";
-    return;
-  }
-
-  // Query Firestore for the logged-in user's data
-  const userQuery = query(collection(db, "users"), where("uid", "==", user.uid));
-  const querySnapshot = await getDocs(userQuery);
-
-  if (!querySnapshot.empty) {
-    currentUser.value = querySnapshot.docs[0].data();
-  } else {
-    error.value = "User data not found.";
-  }
-} catch (err) {
-  console.error("Error fetching user:", err);
-  error.value = "Failed to load user.";
-}
+        if (!querySnapshot.empty) {
+          currentUser.value = querySnapshot.docs[0].data();
+        } else {
+          error.value = "User data not found.";
+        }
+      } catch (err) {
+        console.error("Error fetching user:", err);
+        error.value = "Failed to load user.";
+      }
+    } else {
+      // No user is logged in, show "Guest"
+      currentUser.value = null;
+    }
+  });
 });
 </script>
 

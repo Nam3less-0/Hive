@@ -1,7 +1,7 @@
 <template>
   <div class="connect-container">
     <!-- Left Section --> 
-    <div v-if="currentUserIndex < users.length" class="profile-card">
+    <div v-if="users.length > 0 && currentUserIndex < users.length" class="profile-card">
       <div class="profile-picture">
         <img :src="users[currentUserIndex].images && users[currentUserIndex].images.length > 0 
           ? users[currentUserIndex].images[0] 
@@ -13,21 +13,22 @@
         <p><strong>Height:</strong> {{ users[currentUserIndex]?.height || 'N/A' }}</p>
         <p><strong>Age:</strong> {{ calculateAge(users[currentUserIndex]?.dateOfBirth) }}</p>
         <p><strong>Bio:</strong> {{ users[currentUserIndex]?.bio || 'No bio available' }}</p>
+        <p class="user-progress">Viewing user {{ currentUserIndex + 1 }} of {{ users.length }}</p>
         <button class="message-btn" @click="showMessagePopup = true">Write a message 💬</button>
       </div>
     </div>
 
-<!-- No More Users -->
-<div v-else class="no-more-users">
-  <h2>No more users available</h2>
-</div>
+    <!-- No More Users --> 
+    <div v-else class="no-more-users">
+      <h2>No more users available</h2>
+    </div>
 
 
     <!-- Right Section -->
     <div class="interaction-area">
       <div class="actions">
         <button class="pass-btn" @click="nextUser">✖️ Pass</button>
-        <button class="like-btn" @click="nextUser">❤️ Like</button>
+        <button class="like-btn" @click="likeUser">❤️ Like</button>
         <button class="filter-btn" @click="showFilter = true"> 🔎 Filter </button>
       </div>
 
@@ -144,7 +145,7 @@ import { onMounted } from 'vue';
 import { db, auth } from '@/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import placeholderProfile from '@/assets/placeholder-profile.jpg';
-
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 
 //Logic for filter button
 const showFilter = ref(false);
@@ -157,9 +158,11 @@ const selectedReligion = ref("None");
 const selectedSchool = ref("");
 const selectedIndustry = ref("");
 const selectedGender = ref("Female");
-const users = ref([]); // Placeholder, populate from Firebase later
+
+const users = ref([]);
 const interestOptions = ["Basketball", "Reading", "Gymming", "Music", "Travel", "Gaming", "Cooking", "Photography"];
 const currentUserIndex = ref(0);
+const currentUser = ref(null);
 
 const adjustAgeRange = () => {
   if (selectedAgeMin.value > selectedAgeMax.value) {
@@ -184,12 +187,27 @@ const applyFilters = () => {
 
 onMounted(async () => {
   try {
-    const querySnapshot = await getDocs(collection(db, "users"));
-    users.value = querySnapshot.docs.map(doc => doc.data());
+    // Wait for Firebase auth state
+    auth.onAuthStateChanged(async (loggedInUser) => {
+      if (!loggedInUser) {
+        console.error("No authenticated user found.");
+        return;
+      }
 
-    if (users.value.length === 0) {
-      console.warn("No users found in Firestore.");
-    }
+      console.log("Logged-in UID:", loggedInUser.uid);
+      currentUser.value = loggedInUser;
+
+      // Fetch all users from Firestore
+      const userCollection = collection(db, "users");
+      const querySnapshot = await getDocs(userCollection);
+
+      // Filter out the logged-in user based on UID
+      users.value = querySnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(user => user.id !== loggedInUser.uid); // Ensure correct comparison
+
+      console.log("Filtered users:", users.value);
+    });
   } catch (error) {
     console.error("Error fetching users:", error);
   }
@@ -199,14 +217,36 @@ onMounted(async () => {
 //Logic for Message Button
 const showMessagePopup = ref(false);
 const messageText = ref("");
-//Logic for nextUser handling
+
+// Function to move to the next user
 const nextUser = () => {
   if (users.value.length === 0) {
     console.log("No users available.");
     return;
   }
+  if (currentUserIndex.value < users.value.length - 1) {
+    currentUserIndex.value += 1;
+  } else {
+    console.log("Reached the last user.");
+  }
+};
 
-  currentUserIndex.value = (currentUserIndex.value + 1) % users.value.length;
+// Function to handle "Like" button click
+const likeUser = async () => {
+  if (!currentUser.value || users.value.length === 0) return;
+
+  const myUserId = currentUser.value.uid;
+  const likedUser = users.value[currentUserIndex.value];
+  const likedUserId = likedUser.id;
+
+  try {
+    await updateDoc(doc(db, "users", likedUserId), {
+      likes: arrayUnion(myUserId)
+    });
+  } catch (error) {
+    console.error("Error liking user:", error);
+  }
+  nextUser()
 };
 
 
@@ -217,7 +257,6 @@ const calculateAge = (dob) => {
   const diff = Date.now() - birthDate.getTime();
   return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
 };
-
 
 </script>
 
@@ -357,8 +396,8 @@ textarea {
 }
 
 .profile-picture img {
-  width: 300px;
-  height: 300px;
+  width: 20vw;
+  height: 20vw;
   border-radius: 15px;
   object-fit: cover;
   margin-bottom: 5px;
