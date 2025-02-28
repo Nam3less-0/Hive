@@ -1,214 +1,157 @@
 <template>
-    <div class="mybuzzes-container">
-      <h2>These People have buzzed you! 🐝</h2>
-  
-      <button class="fake-likes-btn" @click="addFakeLikes">➕ Add 5 Fake Likes</button>
-  
-      <div v-if="buzzes.length > 0" class="buzzes-grid">
-        <div v-for="buzz in buzzes" :key="buzz.id" class="buzz-card">
-          <div class="profile-header">
-            <span class="match-badge">{{ buzz.matchPercentage }}% Match</span>
-            <span v-if="buzz.online" class="online-dot"></span>
-          </div>
-  
-          <img 
-            :src="buzz.profilePic || defaultProfilePic" 
-            :alt="buzz.name" 
-            class="profile-pic"
-            @error="handleImageError($event)"
-          />
-  
-          <h3 class="user-name">{{ buzz.name }}, {{ buzz.age }}</h3>
-          
-          <div class="actions">
-            <button class="pass-btn" @click="passUser(buzz.id)">✖ Pass</button>
-            <button class="like-btn" @click="likeBack(buzz.id)">💛 Like</button>
-          </div>
+  <div class="mybuzzes-container">
+    <h2>These People have buzzed you! 🐝</h2>
+
+    <div v-if="buzzes.length > 0" class="buzzes-grid">
+      <div v-for="buzz in buzzes" :key="buzz.id" class="buzz-card">
+        <div class="profile-header">
+          <span class="match-badge">{{ buzz.matchPercentage }}% Match</span>
+          <span v-if="buzz.online" class="online-dot"></span>
+        </div>
+
+        <img 
+          :src="buzz.profilePic || defaultProfilePic" 
+          :alt="buzz.name" 
+          class="profile-pic"
+          @error="handleImageError($event)"
+        />
+
+        <h3 class="user-name">{{ buzz.name }}, {{ calculateAge(buzz.dateOfBirth) }}</h3>
+        
+        <div class="actions">
+          <button class="pass-btn" @click="passUser(buzz.id)">✖️ Pass</button>
+          <button class="like-btn" @click="likeBack(buzz.id)">💛 Like</button>
         </div>
       </div>
-  
-      <p v-else>No new likes yet.</p>
     </div>
-  </template>
-  
-  <script>
-  import { ref, onMounted } from "vue";
-  import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, getDoc } from "firebase/firestore";
-  import { auth, db } from "@/firebase"
-  
-  export default {
-    setup() {
-      const buzzes = ref([]);
-      const userID = auth.currentUser?.uid || "RKoJcfE5m9fqL9FZa8OXbtv9p7Y2"; // Replace dynamically if needed
-      const defaultProfilePic = "https://placehold.co/150x150/png"; // ✅ Backup image if missing
-  
-      const handleImageError = (event) => {
-        console.warn("⚠ Broken Image Detected, Using Placeholder");
-        event.target.src = "https://placehold.co/150x150/png"; 
-        event.target.onerror = null; 
-      };
-  
-      async function fetchBuzzes() {
-        const likesRef = collection(db, `users/${userID}/likes_received`);
-  
-        try {
-          console.log("Fetching from Firestore...");
-          const snapshot = await getDocs(likesRef);
-  
-          if (snapshot.empty) {
-            console.log("⚠ No likes received! Check Firestore.");
-          } else {
-            snapshot.forEach(doc => console.log("✅ Fetched:", doc.id, doc.data()));
-          }
-  
-          buzzes.value = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-  
-          console.log("🚀 Buzzes in Vue state:", buzzes.value);
-        } catch (error) {
-          console.error("🔥 Error fetching likes:", error);
+
+    <p v-else>No new likes yet.</p>
+  </div>
+</template>
+
+<script>
+import { ref, onMounted } from "vue";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
+import { auth, db } from "@/firebase"
+
+export default {
+  setup() {
+    const buzzes = ref([]);
+    const userID = auth.currentUser?.uid || "RKoJcfE5m9fqL9FZa8OXbtv9p7Y2";
+    const defaultProfilePic = "https://placehold.co/150x150/png";
+
+    const handleImageError = (event) => {
+      event.target.src = defaultProfilePic;
+      event.target.onerror = null;
+    };
+
+    async function fetchBuzzes() {
+      try {
+        const userDocRef = doc(db, `users/${userID}`);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (!userDocSnap.exists()) {
+          console.error("User document not found");
+          return;
         }
+
+        const userData = userDocSnap.data();
+
+        if (!userData.likes || userData.likes.length === 0) {
+          console.log("No likes received");
+          buzzes.value = [];
+          return;
+        }
+
+        const likedUserDocs = await Promise.all(userData.likes.map(async (likedUserID) => {
+          const likedUserRef = doc(db, `users/${likedUserID}`);
+          const likedUserSnap = await getDoc(likedUserRef);
+          
+          if (!likedUserSnap.exists()) return null;
+          
+          const likedUserData = likedUserSnap.data();
+          return {
+            id: likedUserID,
+            name: likedUserData.firstName || "Unknown",
+            dateOfBirth: likedUserData.dateOfBirth || null,
+            profilePic: likedUserData.images?.[0] || defaultProfilePic,
+            matchPercentage: likedUserData.matchPercentage || "N/A",
+            online: likedUserData.online || false,
+          };
+        }));
+
+        buzzes.value = likedUserDocs.filter(user => user !== null);
+      } catch (error) {
+        console.error("Error fetching buzzes:", error);
       }
-  
-      async function likeBack(likedUserID) {
-    console.log(`💛 Like clicked for user: ${likedUserID}`);
-
-    try {
-        // ✅ Fetch liked user's details
-        const likedUserDocRef = doc(db, `users/${likedUserID}`);
-        const likedUserDocSnap = await getDoc(likedUserDocRef);
-
-        if (!likedUserDocSnap.exists()) {
-            console.error("⚠ Liked user not found!");
-            return;
-        }
-
-        const likedUserData = likedUserDocSnap.data();
-        const likedUserName = likedUserData.firstName || "Unknown";
-        const likedUserAge = likedUserData.age || "N/A";
-        const likedUserProfilePic = likedUserData.profilePic || "https://placehold.co/150x150/png";
-        
-        // ✅ Fetch current user's details
-        const currentUserDocRef = doc(db, `users/${userID}`);
-        const currentUserDocSnap = await getDoc(currentUserDocRef);
-
-        if (!currentUserDocSnap.exists()) {
-            console.error("⚠ Current user not found!");
-            return;
-        }
-
-        const currentUserData = currentUserDocSnap.data();
-        const currentUserName = currentUserData.firstName || "Unknown";
-        const currentUserAge = currentUserData.age || "N/A";
-        const currentUserProfilePic = currentUserData.profilePic || "https://placehold.co/150x150/png";
-
-        const matchTime = new Date();
-
-        // ✅ Add each other to matches collection
-        await setDoc(doc(db, `users/${userID}/matches/${likedUserID}`), {
-            uid: likedUserID,
-            name: likedUserName,
-            age: likedUserAge,
-            profilePic: likedUserProfilePic,
-            matchedAt: matchTime
-        });
-
-        await setDoc(doc(db, `users/${likedUserID}/matches/${userID}`), {
-            uid: userID,
-            name: currentUserName,
-            age: currentUserAge,
-            profilePic: currentUserProfilePic,
-            matchedAt: matchTime
-        });
-
-        // ✅ Remove from likes_received
-        await deleteDoc(doc(db, `users/${userID}/likes_received/${likedUserID}`));
-
-        // ✅ Create a new chat document if it doesn't already exist
-        const chatsRef = collection(db, "chats");
-        const chatQuery = query(chatsRef, where("userIds", "array-contains", userID));
-        const chatSnapshot = await getDocs(chatQuery);
-
-        let chatExists = false;
-        chatSnapshot.forEach((doc) => {
-            const chatData = doc.data();
-            if (chatData.userIds.includes(likedUserID)) {
-                chatExists = true;
-            }
-        });
-
-        if (!chatExists) {
-            const newChatRef = doc(chatsRef); // Auto-generate a unique chat ID
-            await setDoc(newChatRef, {
-                userIds: [userID, likedUserID], // Store both users in chat
-                createdAt: new Date(),
-                lastMessage: "", // Empty at first
-                profilePic: "https://via.placeholder.com/40", // Default chat icon
-            });
-            console.log("💬 New chat created between", userID, "and", likedUserID);
-        } else {
-            console.log("✅ Chat already exists between", userID, "and", likedUserID);
-        }
-
-        console.log("🔄 Fetching updated likes...");
-        await fetchBuzzes(); // ✅ Refresh UI after action
-
-    } catch (error) {
-        console.error("🔥 Error handling like:", error);
     }
+
+    async function likeBack(likedUserID) {
+  try {
+    if (!userID || !likedUserID) {
+      console.error("Invalid user ID or liked user ID");
+      return;
+    }
+
+    const matchID = [userID, likedUserID].sort().join('_'); // Unique match ID
+    const matchRef = doc(db, 'matches', matchID);
+
+    // Create match document
+    await setDoc(matchRef, {
+      userIds: [userID, likedUserID],
+      messages: [],
+      matchedAt: new Date()
+    });
+
+    // Remove each other from 'likes' collections
+    const userLikesRef = doc(db, 'users', userID);
+    await updateDoc(userLikesRef, {
+      likes: arrayRemove(likedUserID)
+    });
+
+    await fetchBuzzes(); // Refresh UI
+
+    console.log("Successfully liked back and created a match.");
+  } catch (error) {
+    console.error("Error liking back:", error);
+  }
 }
+
 
 async function passUser(likedUserID) {
-    console.log(`❌ Pass clicked for user: ${likedUserID}`);
-
-    try {
-        await deleteDoc(doc(db, `users/${userID}/likes_received/${likedUserID}`));
-
-
-        console.log("🔄 Fetching updated likes...");
-        await fetchBuzzes(); // ✅ Fetch latest data to update UI
-
-    } catch (error) {
-        console.error("🔥 Error handling pass:", error);
+  try {
+    if (!userID || !likedUserID) {
+      console.error("Invalid user ID or liked user ID");
+      return;
     }
+
+    const userLikesRef = doc(db, 'users', userID);
+    await updateDoc(userLikesRef, {
+      likes: arrayRemove(likedUserID)
+    });
+
+    await fetchBuzzes();
+
+    console.log("Successfully passed user.");
+  } catch (error) {
+    console.error("Error passing user:", error);
+  }
 }
-  
-      // ✅ Function to add 5 fake likes
-      async function addFakeLikes() {
-        const fakeProfiles = [
-          { id: "4OpelAcMJphFv3ll6sTUFedb8a62", name: "Sophia", age: 21, profilePic: "https://randomuser.me/api/portraits/women/3.jpg", matchPercentage: 97 },
-          { id: "8BfCSmUpIwZRkVFTNz1SGYOvSho2", name: "Olivia", age: 22, profilePic: "https://randomuser.me/api/portraits/women/5.jpg", matchPercentage: 95 },
-          { id: "8j7tWvxAdrfxfew8ZMDJamKHc4o1", name: "Emma", age: 20, profilePic: "https://randomuser.me/api/portraits/women/8.jpg", matchPercentage: 99 },
-          { id: "FiItnI37YoZp96Ih7KMuhOoIAqN2", name: "Isabella", age: 24, profilePic: "https://randomuser.me/api/portraits/women/10.jpg", matchPercentage: 90 },
-          { id: "K14kLwOEeMa1lhtyyp9jCpBFPit2", name: "Ava", age: 23, profilePic: "https://randomuser.me/api/portraits/women/15.jpg", matchPercentage: 92 }
-        ];
-  
-        try {
-          const likesCollection = collection(db, `users/${userID}/likes_received`);
-  
-          for (const profile of fakeProfiles) {
-            const profileRef = doc(likesCollection, profile.id);
-            await setDoc(profileRef, profile);
-            console.log(`✅ Added fake like for ${profile.name}`);
-          }
-  
-          console.log("🎉 5 Fake Likes Added Successfully!");
-          fetchBuzzes(); // ✅ Refresh UI after adding
-        } catch (error) {
-          console.error("🔥 Error adding fake likes:", error);
-        }
-      }
-  
-      onMounted(() => {
-        fetchBuzzes();
-      });
-  
-      return { buzzes, likeBack, passUser, handleImageError, addFakeLikes, defaultProfilePic };
+
+
+    function calculateAge(dob) {
+      if (!dob) return 'Unknown';
+      const birthDate = new Date(dob);
+      const diff = Date.now() - birthDate.getTime();
+      return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
     }
-  };
-  </script>
+
+    onMounted(fetchBuzzes);
+
+    return { buzzes, likeBack, passUser, handleImageError, defaultProfilePic, calculateAge };
+  }
+};
+</script>
   
   <style>
   .mybuzzes-container {
