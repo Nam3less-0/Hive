@@ -9,15 +9,22 @@
           <span v-if="buzz.online" class="online-dot"></span>
         </div>
 
-        <img 
-          :src="buzz.profilePic || defaultProfilePic" 
-          :alt="buzz.name" 
-          class="profile-pic"
-          @error="handleImageError($event)"
-        />
+        <div class="profile-pic-container">
+          <!-- Message Icon (Only appears if there's a message) -->
+          <button v-if="buzz.message" class="message-icon" @click="openMessagePopup(buzz.message)">
+            💬
+          </button>
+
+          <img 
+            :src="buzz.profilePic || defaultProfilePic" 
+            :alt="buzz.name" 
+            class="profile-pic"
+            @error="handleImageError($event)"
+          />
+        </div>
 
         <h3 class="user-name">{{ buzz.name }}, {{ calculateAge(buzz.dateOfBirth) }}</h3>
-        
+
         <div class="actions">
           <button class="pass-btn" @click="passUser(buzz.id)">✖️ Pass</button>
           <button class="like-btn" @click="likeBack(buzz.id)">💛 Like</button>
@@ -26,6 +33,15 @@
     </div>
 
     <p v-else>No new likes yet.</p>
+
+    <!-- Message Popup -->
+    <div v-if="showMessagePopup" class="message-popup">
+      <div class="message-content">
+        <h2>Message</h2>
+        <p>{{ messageContent }}</p>
+        <button class="close-btn" @click="closeMessagePopup">Close</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -33,11 +49,30 @@
 import { ref, onMounted } from "vue";
 import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
 import { auth, db } from "@/firebase"
+import { onAuthStateChanged } from "firebase/auth";
+
+const buzzes = ref([]);
+const showMessagePopup = ref(false);
+const messageContent = ref("");
+
+const openMessagePopup = (message) => {
+  messageContent.value = message;
+  showMessagePopup.value = true;
+};
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    userID.value = user.uid;
+    fetchBuzzes();
+  }
+});
+
 
 export default {
   setup() {
     const buzzes = ref([]);
-    const userID = auth.currentUser?.uid || "RKoJcfE5m9fqL9FZa8OXbtv9p7Y2";
+    const userID = auth.currentUser?.id || "RKoJcfE5m9fqL9FZa8OXbtv9p7Y2";
+    console.log(userID);
     const defaultProfilePic = "https://placehold.co/150x150/png";
 
     const handleImageError = (event) => {
@@ -57,28 +92,31 @@ export default {
 
         const userData = userDocSnap.data();
 
-        if (!userData.likes || userData.likes.length === 0) {
+        if (!userData.likes || Object.keys(userData.likes).length === 0) {
           console.log("No likes received");
           buzzes.value = [];
           return;
         }
 
-        const likedUserDocs = await Promise.all(userData.likes.map(async (likedUserID) => {
-          const likedUserRef = doc(db, `users/${likedUserID}`);
-          const likedUserSnap = await getDoc(likedUserRef);
-          
-          if (!likedUserSnap.exists()) return null;
-          
-          const likedUserData = likedUserSnap.data();
-          return {
-            id: likedUserID,
-            name: likedUserData.firstName || "Unknown",
-            dateOfBirth: likedUserData.dateOfBirth || null,
-            profilePic: likedUserData.images?.[0] || defaultProfilePic,
-            matchPercentage: likedUserData.matchPercentage || "N/A",
-            online: likedUserData.online || false,
-          };
-        }));
+        const likedUserDocs = await Promise.all(
+          Object.entries(userData.likes).map(async ([likedUserID, message]) => {
+            const likedUserRef = doc(db, `users/${likedUserID}`);
+            const likedUserSnap = await getDoc(likedUserRef);
+            
+            if (!likedUserSnap.exists()) return null;
+            
+            const likedUserData = likedUserSnap.data();
+            return {
+              id: likedUserID,
+              name: likedUserData.firstName || "Unknown",
+              dateOfBirth: likedUserData.dateOfBirth || null,
+              profilePic: likedUserData.images?.[0] || defaultProfilePic,
+              matchPercentage: likedUserData.matchPercentage || "N/A",
+              online: likedUserData.online || false,
+              message: message || "", // Now correctly retrieves the message
+            };
+          })
+        );
 
         buzzes.value = likedUserDocs.filter(user => user !== null);
       } catch (error) {
@@ -87,70 +125,66 @@ export default {
     }
 
     async function likeBack(likedUserID) {
-  try {
-    if (!userID || !likedUserID) {
-      console.error("Invalid user ID or liked user ID");
-      return;
+      try {
+        if (!userID || !likedUserID) {
+          console.error("Invalid user ID or liked user ID");
+          return;
+        }
+
+        const matchID = [userID, likedUserID].sort().join('_'); // Unique match ID
+        const matchRef = doc(db, 'matches', matchID);
+
+        // Create match document
+        await setDoc(matchRef, {
+          userIds: [userID, likedUserID],
+          messages: [],
+          matchedAt: new Date()
+        });
+
+        // Remove each other from 'likes' collections
+        const userLikesRef = doc(db, 'users', userID);
+        await updateDoc(userLikesRef, {
+          [`likes.${likedUserID}`]: deleteField()
+        });
+
+        await fetchBuzzes(); // Refresh UI
+
+        console.log("Successfully liked back and created a match.");
+      } catch (error) {
+        console.error("Error liking back:", error);
+      }
     }
 
-    const matchID = [userID, likedUserID].sort().join('_'); // Unique match ID
-    const matchRef = doc(db, 'matches', matchID);
+    async function passUser(likedUserID) {
+      try {
+        if (!userID || !likedUserID) {
+          console.error("Invalid user ID or liked user ID");
+          return;
+        }
 
-    // Create match document
-    await setDoc(matchRef, {
-      userIds: [userID, likedUserID],
-      messages: [],
-      matchedAt: new Date()
-    });
+        const userLikesRef = doc(db, 'users', userID);
+        await updateDoc(userLikesRef, {
+          [`likes.${likedUserID}`]: deleteField()
+        });
 
-    // Remove each other from 'likes' collections
-    const userLikesRef = doc(db, 'users', userID);
-    await updateDoc(userLikesRef, {
-      likes: arrayRemove(likedUserID)
-    });
+        await fetchBuzzes();
 
-    await fetchBuzzes(); // Refresh UI
-
-    console.log("Successfully liked back and created a match.");
-  } catch (error) {
-    console.error("Error liking back:", error);
-  }
-}
-
-
-async function passUser(likedUserID) {
-  try {
-    if (!userID || !likedUserID) {
-      console.error("Invalid user ID or liked user ID");
-      return;
+        console.log("Successfully passed user.");
+      } catch (error) {
+        console.error("Error passing user:", error);
+      }
     }
 
-    const userLikesRef = doc(db, 'users', userID);
-    await updateDoc(userLikesRef, {
-      likes: arrayRemove(likedUserID)
-    });
-
-    await fetchBuzzes();
-
-    console.log("Successfully passed user.");
-  } catch (error) {
-    console.error("Error passing user:", error);
-  }
-}
-
-
-    function calculateAge(dob) {
-      if (!dob) return 'Unknown';
-      const birthDate = new Date(dob);
-      const diff = Date.now() - birthDate.getTime();
-      return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
-    }
-
-    onMounted(fetchBuzzes);
-
-    return { buzzes, likeBack, passUser, handleImageError, defaultProfilePic, calculateAge };
+    return {
+      buzzes,
+      fetchBuzzes,
+      likeBack,
+      passUser,
+      handleImageError,
+    };
   }
 };
+
 </script>
   
   <style>

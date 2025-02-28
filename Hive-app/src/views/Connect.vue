@@ -129,10 +129,12 @@
   <div v-if="showMessagePopup" class="message-popup">
     <div class="message-content">
       <h2>Send a Message</h2>
-      <img class="receiver-avatar" src="@/assets/placeholder-profile.jpg" alt="Receiver" />
+      <img class="receiver-avatar" 
+           :src="users[currentUserIndex]?.images?.[0] || placeholderProfile" 
+           alt="Receiver" />
       <textarea v-model="messageText" placeholder="Type your message..."></textarea>
       <div class="message-buttons">
-        <button class="like-btn">❤️ Like & 📩 Send</button>
+        <button class="like-btn" @click="likeAndSendMessage">❤️ Like & 📩 Send</button>
         <button class="cancel-btn" @click="showMessagePopup = false">❌ Cancel</button>
       </div>
     </div>
@@ -235,7 +237,7 @@ const nextUser = () => {
   }
 };
 
-// Function to handle "Like" button click
+// Function to handle "Like" button click (adds user ID with a null message)
 const likeUser = async () => {
   if (!currentUser.value || users.value.length === 0) return;
 
@@ -245,13 +247,42 @@ const likeUser = async () => {
 
   try {
     await updateDoc(doc(db, "users", likedUserId), {
-      likes: arrayUnion(myUserId)
+      likes: arrayUnion({ userId: myUserId, message: null }) // Store userId with a null message
     });
+    console.log(`Liked user ${likedUserId} with message: null`);
   } catch (error) {
     console.error("Error liking user:", error);
   }
-  nextUser()
+  nextUser();
 };
+
+// Function to handle "Like & Send Message" button click
+const likeAndSendMessage = async () => {
+  if (!messageText.value.trim()) {
+    alert("Message cannot be empty!");
+    return;
+  }
+
+  if (!currentUser.value || users.value.length === 0) return;
+
+  const myUserId = currentUser.value.uid;
+  const likedUser = users.value[currentUserIndex.value];
+  const likedUserId = likedUser.id;
+
+  try {
+    await updateDoc(doc(db, "users", likedUserId), {
+      likes: arrayUnion({ userId: myUserId, message: messageText.value }) // Store userId with message
+    });
+    console.log(`Liked user ${likedUserId} with message: ${messageText.value}`);
+  } catch (error) {
+    console.error("Error liking user with message:", error);
+  }
+
+  showMessagePopup.value = false;
+  messageText.value = "";
+  nextUser();
+};
+
 
 
 //Logic for age calculation
@@ -265,7 +296,6 @@ const calculateAge = (dob) => {
 </script>
 
 <style scoped>
-
 
 /* Message Popup Styling */
 .message-popup {
