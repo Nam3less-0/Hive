@@ -22,8 +22,8 @@
         <h3 class="user-name">{{ buzz.name }}, {{ calculateAge(buzz.dateOfBirth) }}</h3>
         
         <div class="actions">
-          <button class="pass-btn" @click="passUser(buzz.id)">✖️ Pass</button>
-          <button class="like-btn" @click="likeBack(buzz.id)">💛 Like</button>
+          <button class="pass-btn" @click="passUser(buzz.element)">✖️ Pass</button>
+          <button class="like-btn" @click="likeBack(buzz.element)">💛 Like</button>
         </div>
       </div>
     </div>
@@ -43,13 +43,13 @@
 
 <script>
 import { ref, onMounted } from "vue";
-import { getFirestore, doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
+import { getFirestore, collection, getDocs, deleteDoc, doc, getDoc, updateDoc, arrayRemove , setDoc} from "firebase/firestore";
 import { auth, db } from "@/firebase";
 
 export default {
   setup() {
     const buzzes = ref([]);
-    const userID = ref(auth.currentUser?.uid || "RKoJcfE5m9fqL9FZa8OXbtv9p7Y2");
+    const userID = auth.currentUser?.uid || "RKoJcfE5m9fqL9FZa8OXbtv9p7Y2";
     const defaultProfilePic = "https://placehold.co/150x150/png";
     const showMessagePopup = ref(false);
     const messageContent = ref("");
@@ -71,7 +71,7 @@ export default {
 
     async function fetchBuzzes() {
       try {
-        const userDocRef = doc(db, `users/${userID.value}`);
+        const userDocRef = doc(db, `users/${userID}`);
         const userDocSnap = await getDoc(userDocRef);
 
         if (!userDocSnap.exists()) {
@@ -94,6 +94,7 @@ export default {
           
           const likedUserData = likedUserSnap.data();
           return {
+            element: likedEntry,
             id: likedUserID,
             name: likedUserData.firstName || "Unknown",
             dateOfBirth: likedUserData.dateOfBirth || null,
