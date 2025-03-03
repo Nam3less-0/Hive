@@ -9,7 +9,7 @@
           <span v-if="buzz.online" class="online-dot"></span>
           
           <!-- Message Button in the Top Right Corner -->
-          <button v-if="buzz.message && buzz.message !== 'None'" class="message-btn" @click="openMessagePopup(buzz.message)">💬</button>
+          <button v-if="buzz.message && buzz.message !== 'None'" class="viewmessage-btn" @click="openMessagePopup(buzz.message)">💬</button>
         </div>
 
         <img 
@@ -300,21 +300,19 @@ background: #e6b800;
 
 
 /* View Message CSS */
-.message-btn {
+.viewmessage-btn {
   position: absolute;
   top: 10px;
   right: 10px;
-  background: #ffcc00;
-  border: none;
-  padding: 8px 10px;
-  font-size: 16px;
-  border-radius: 50%;
+  background-color: #ffd400;
+  border: 1px solid black;
+  padding: 10px;
+  border-radius: 20px;
+  font-size: medium;
   cursor: pointer;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-  transition: background 0.2s ease-in-out, transform 0.2s ease-in-out;
 }
 
-.message-btn:hover {
+.viewmessage-btn:hover {
   background: #e6b800;
   transform: scale(1.1);
 }

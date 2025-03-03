@@ -1,6 +1,6 @@
 <template>
   <div class="connect-container">
-    <!-- Left Section --> 
+    <!-- Display One User at a Time -->
     <div v-if="users.length > 0 && currentUserIndex < users.length" class="profile-card">
       <div class="profile-picture">
         <img :src="users[currentUserIndex].images && users[currentUserIndex].images.length > 0 
@@ -13,8 +13,8 @@
         <p><strong>Height:</strong> {{ users[currentUserIndex]?.height || 'N/A' }}</p>
         <p><strong>Age:</strong> {{ calculateAge(users[currentUserIndex]?.dateOfBirth) }}</p>
         <p><strong>Bio:</strong> {{ users[currentUserIndex]?.bio || 'No bio available' }}</p>
-        <p class="user-progress">Viewing user {{ currentUserIndex + 1 }} of {{ users.length }}</p>
         <button class="message-btn" @click="showMessagePopup = true">Write a message 💬</button>
+        <p class="user-progress">Viewing user {{ currentUserIndex + 1 }} of {{ users.length }}</p>
       </div>
     </div>
 
@@ -23,11 +23,10 @@
       <h2>No more users available</h2>
     </div>
 
-
     <!-- Right Section -->
     <div class="interaction-area">
       <div class="actions">
-        <button class="pass-btn" @click="nextUser">✖️ Pass</button>
+        <button class="pass-btn" @click="passUser">✖️ Pass</button>
         <button class="like-btn" @click="likeUser">❤️ Like</button>
         <button class="filter-btn" @click="showFilter = true"> 🔎 Filter </button>
       </div>
@@ -193,7 +192,6 @@ const applyFilters = () => {
 
 onMounted(async () => {
   try {
-    // Wait for Firebase auth state
     auth.onAuthStateChanged(async (loggedInUser) => {
       if (!loggedInUser) {
         console.error("No authenticated user found.");
@@ -203,16 +201,30 @@ onMounted(async () => {
       console.log("Logged-in UID:", loggedInUser.uid);
       currentUser.value = loggedInUser;
 
+      // Get the logged-in user's Firestore document
+      const userDocRef = doc(db, "users", loggedInUser.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (!userDocSnap.exists()) {
+        console.error("Logged-in user document not found in Firestore.");
+        return;
+      }
+
+      const loggedInUserData = userDocSnap.data();
+      const seenArray = loggedInUserData.seen || []; // Ensure seen array exists
+
+      console.log("Seen Users:", seenArray);
+
       // Fetch all users from Firestore
       const userCollection = collection(db, "users");
       const querySnapshot = await getDocs(userCollection);
 
-      // Filter out the logged-in user based on UID
+      // Filter out the logged-in user AND users in the seen array
       users.value = querySnapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(user => user.id !== loggedInUser.uid); // Ensure correct comparison
+        .filter(user => user.id !== loggedInUser.uid && !seenArray.includes(user.id));
 
-      console.log("Filtered users:", users.value);
+      console.log("Filtered users (not in seen array):", users.value);
     });
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -237,24 +249,53 @@ const nextUser = () => {
   }
 };
 
-// Function to handle "Like" button click (adds user ID with a null message)
+// Function to update the "seen" array in Firestore
+const updateSeenArray = async (userId, seenUserId) => {
+  try {
+    await updateDoc(doc(db, "users", userId), {
+      seen: arrayUnion(seenUserId),
+    });
+    console.log(`Updated seen array for user ${userId} with ${seenUserId}`);
+  } catch (error) {
+    console.error("Error updating seen array:", error);
+  }
+};
+
+// Function to handle "Pass" button click
+const passUser = async () => {
+  if (!currentUser.value || users.value.length === 0) return;
+
+  const myUserId = currentUser.value.uid;
+  const passedUserId = users.value[currentUserIndex.value].id;
+
+  await updateSeenArray(myUserId, passedUserId);
+  nextUser();
+};
+
+// Function to handle "Like" button click
 const likeUser = async () => {
   if (!currentUser.value || users.value.length === 0) return;
 
   const myUserId = currentUser.value.uid;
-  const likedUser = users.value[currentUserIndex.value];
-  const likedUserId = likedUser.id;
+  const likedUserId = users.value[currentUserIndex.value].id;
 
   try {
+    // Update the logged-in user's seen array
+    await updateSeenArray(myUserId, likedUserId);
+
+    // Update the liked user's "likes" array
     await updateDoc(doc(db, "users", likedUserId), {
-      likes: arrayUnion({ userId: myUserId, message: null }) // Store userId with a null message
+      likes: arrayUnion({ userId: myUserId, message: null }),
     });
+
     console.log(`Liked user ${likedUserId} with message: null`);
   } catch (error) {
     console.error("Error liking user:", error);
   }
+
   nextUser();
 };
+
 
 // Function to handle "Like & Send Message" button click
 const likeAndSendMessage = async () => {
@@ -266,13 +307,17 @@ const likeAndSendMessage = async () => {
   if (!currentUser.value || users.value.length === 0) return;
 
   const myUserId = currentUser.value.uid;
-  const likedUser = users.value[currentUserIndex.value];
-  const likedUserId = likedUser.id;
+  const likedUserId = users.value[currentUserIndex.value].id;
 
   try {
+    // Update the logged-in user's seen array
+    await updateSeenArray(myUserId, likedUserId);
+
+    // Update the liked user's "likes" array with the message
     await updateDoc(doc(db, "users", likedUserId), {
-      likes: arrayUnion({ userId: myUserId, message: messageText.value }) // Store userId with message
+      likes: arrayUnion({ userId: myUserId, message: messageText.value }),
     });
+
     console.log(`Liked user ${likedUserId} with message: ${messageText.value}`);
   } catch (error) {
     console.error("Error liking user with message:", error);
@@ -282,7 +327,6 @@ const likeAndSendMessage = async () => {
   messageText.value = "";
   nextUser();
 };
-
 
 
 //Logic for age calculation
@@ -331,12 +375,6 @@ textarea {
   border-radius: 10px;
   border: 1px solid gray;
   resize: none;
-}
-
-.message-buttons {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 10px;
 }
 
 .like-btn, .cancel-btn {
