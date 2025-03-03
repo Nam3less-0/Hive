@@ -148,7 +148,7 @@ import { onMounted } from 'vue';
 import { db, auth } from '@/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import placeholderProfile from '@/assets/placeholder-profile.jpg';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import NoMoreUsersPopup from '@/components/NoMoreUsersPopup.vue';
 
 //Logic for filter button
@@ -218,7 +218,7 @@ onMounted(async () => {
       // Fetch all users from Firestore
       const userCollection = collection(db, "users");
       const querySnapshot = await getDocs(userCollection);
-
+      console.log("All users fetched from Firestore:", querySnapshot.docs.map(doc => doc.data()));
       // Filter out the logged-in user AND users in the seen array
       users.value = querySnapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
