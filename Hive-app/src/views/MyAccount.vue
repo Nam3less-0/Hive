@@ -33,185 +33,182 @@
       
       <section class="content-container">
   <h2>Interests</h2>
-  <div class="interests-tags">
-    <span v-for="(interest, index) in userData.interests" :key="index">
+
+  <!-- Selected Interests Display -->
+  <div class="interests-container">
+    <div v-for="(interest, index) in userData.interests" :key="index" class="interest-tag">
       {{ interest }}
-      <button class="remove-interest-btn" @click="removeInterest(index)">✖</button>
-    </span>
+      <button class="remove-btn" @click="removeInterest(index)">✖</button>
+    </div>
   </div>
 
-  <!-- Interest Dropdown -->
-  <div class="form-group">
-    <label>Select Interest</label>
+  <!-- Interest Selection & Input -->
+  <div class="interest-selection">
     <select v-model="selectedInterest" class="input-field">
       <option disabled value="">Choose an Interest</option>
       <option v-for="interest in predefinedInterests" :key="interest" :value="interest">
         {{ interest }}
       </option>
     </select>
+    <button class="add-interests-btn" @click="addInterest(selectedInterest)">＋</button>
   </div>
 
-  <!-- Add Selected Interest Button -->
-  <button class="add-interest-btn" @click="addInterest(selectedInterest)">＋ Add Interest</button>
-
-  <!-- Custom Interest Input -->
-  <div class="form-group">
-    <label>Or Add a Custom Interest</label>
+  <div class="interest-selection">
     <input v-model="newInterest" placeholder="Type your own interest" class="input-field" />
+    <button class="add-interests-btn" @click="addInterest(newInterest)">＋</button>
   </div>
-
-  <!-- Add Custom Interest Button -->
-  <button class="add-interest-btn" @click="addInterest(newInterest)">＋ Add Custom Interest</button>
 </section>
       
-      <section class="content-container">
+<section class="content-container">
   <h2>About Me</h2>
 
-  <!-- Height stays as an input field -->
-  <table class="about-me-table">
-    <tr><td>Height:</td><td><input v-model="userData.height" type="text" class="input-field" /></td></tr>
-  </table>
+  <div class="about-me-grid">
+    <!-- Height -->
+    <div class="form-group">
+      <label>Height</label>
+      <input v-model="userData.height" type="text" class="input-field" />
+    </div>
 
-  <!-- Orientation Dropdown -->
-  <div class="form-group">
-    <label>Orientation</label>
-    <select v-model="userData.sexualOrientation" class="input-field">
-      <option disabled value="">Select Orientation</option>
-      <option value="Heterosexual">Heterosexual</option>
-      <option value="Homosexual">Homosexual</option>
-      <option value="Bisexual">Bisexual</option>
-      <option value="Other">Other</option>
-    </select>
+    <!-- Orientation -->
+    <div class="form-group">
+      <label>Orientation</label>
+      <select v-model="userData.sexualOrientation" class="input-field">
+        <option disabled value="">Select Orientation</option>
+        <option value="Heterosexual">Heterosexual</option>
+        <option value="Homosexual">Homosexual</option>
+        <option value="Bisexual">Bisexual</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <!-- Purpose -->
+    <div class="form-group">
+      <label>Purpose</label>
+      <select v-model="userData.purpose" class="input-field">
+        <option disabled value="">Select Purpose</option>
+        <option value="Dating">Meet new people</option>
+        <option value="Friendship">Looking for a casual relationship</option>
+        <option value="Long-term Relationship">Looking for a serious relationship</option>
+      </select>
+    </div>
+
+    <!-- Race -->
+    <div class="form-group">
+      <label>Race</label>
+      <select v-model="userData.race" class="input-field">
+        <option disabled value="">Select Race</option>
+        <option value="Chinese">Chinese</option>
+        <option value="Malay">Malay</option>
+        <option value="Indian">Indian</option>
+        <option value="Eurasian">Eurasian</option>
+        <option value="Other">Others</option>
+      </select>
+    </div>
+
+    <!-- Religion -->
+    <div class="form-group">
+      <label>Religion</label>
+      <select v-model="userData.religion" class="input-field">
+        <option disabled value="">Select Religion</option>
+        <option value="Christian">Christian</option>
+        <option value="Buddhist">Buddhist</option>
+        <option value="Taoist">Taoist</option>
+        <option value="Muslim">Muslim</option>
+        <option value="Hindu">Hindu</option>
+        <option value="Other">Others</option>
+      </select>
+    </div>
+
+    <!-- School -->
+    <div class="form-group">
+      <label>School</label>
+      <select v-model="userData.school" class="input-field">
+        <option disabled value="">Select School</option>
+        <option value="NUS">National University of Singapore (NUS)</option>
+        <option value="NTU">Nanyang Technological University (NTU)</option>
+        <option value="SMU">Singapore Management University (SMU)</option>
+        <option value="SIT">Singapore Institute of Technology (SIT)</option>
+        <option value="SUSS">Singapore University of Social Sciences (SUSS)</option>
+        <option value="SUTD">Singapore University of Technology and Design (SUTD)</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <!-- Smoking -->
+    <div class="form-group">
+      <label>Smoking</label>
+      <select v-model="userData.smoking" class="input-field">
+        <option disabled value="">Select Smoking Preference</option>
+        <option value="No">Non-smoker</option>
+        <option value="Occasionally">Social smoker</option>
+        <option value="Yes">Regular smoker</option>
+      </select>
+    </div>
+
+    <!-- Alcohol -->
+    <div class="form-group">
+      <label>Alcohol</label>
+      <select v-model="userData.alcohol" class="input-field">
+        <option disabled value="">Select Alcohol Preference</option>
+        <option value="No">Non-drinker</option>
+        <option value="Occasionally">Social drinker</option>
+        <option value="Yes">Regular drinker</option>
+      </select>
+    </div>
   </div>
-
-  <!-- Purpose Dropdown -->
-  <div class="form-group">
-    <label>Purpose</label>
-    <select v-model="userData.purpose" class="input-field">
-      <option disabled value="">Select Purpose</option>
-      <option value="Dating">Meet new people</option>
-      <option value="Friendship">Looking for a casual relationship</option>
-      <option value="Long-term Relationship">Looking for a serious relationship</option>
-    </select>
-  </div>
-
-  <!-- Race Dropdown -->
-  <div class="form-group">
-    <label>Race</label>
-    <select v-model="userData.race" class="input-field">
-      <option disabled value="">Select Race</option>
-      <option value="Chinese">Chinese</option>
-      <option value="Malay">Malay</option>
-      <option value="Indian">Indian</option>
-      <option value="Eurasian">Eurasian</option>
-      <option value="Other">Others</option>
-    </select>
-  </div>
-
-  <!-- Religion Dropdown -->
-  <div class="form-group">
-    <label>Religion</label>
-    <select v-model="userData.religion" class="input-field">
-      <option disabled value="">Select Religion</option>
-      <option value="Christian">Christian</option>
-      <option value="Buddhist">Buddhist</option>
-      <option value="Taoist">Taoist</option>
-      <option value="Muslim">Muslim</option>
-      <option value="Hindu">Hindu</option>
-      <option value="Other">Others</option>
-    </select>
-  </div>
-
-  <!-- School Dropdown -->
-  <div class="form-group">
-    <label>School</label>
-    <select v-model="userData.school" class="input-field">
-      <option disabled value="">Select School</option>
-      <option value="NUS">National University of Singapore (NUS)</option>
-      <option value="NTU">Nanyang Technological University (NTU)</option>
-      <option value="SMU">Singapore Management University (SMU)</option>
-      <option value="SIT">Singapore Institute of Technology (SIT)</option>
-      <option value="SUSS">Singapore University of Social Sciences (SUSS)</option>
-      <option value="SUTD">Singapore University of Technology and Design (SUTD)</option>
-      <option value="Other">Other</option>
-    </select>
-  </div>
-
-  <!-- Smoking Dropdown -->
-  <div class="form-group">
-    <label>Smoking</label>
-    <select v-model="userData.smoking" class="input-field">
-      <option disabled value="">Select Smoking Preference</option>
-      <option value="Yes">Non smoker</option>
-      <option value="No">Social smoker</option>
-      <option value="Occasionally">Light smoker</option>
-      <option value="Yes">Moderate smoker</option>
-      <option value="Yes">Heavy smoker</option>
-    </select>
-  </div>
-  
-
-
-
-
-  <!-- Alcohol Dropdown -->
-  <div class="form-group">
-    <label>Alcohol</label>
-    <select v-model="userData.alcohol" class="input-field">
-      <option disabled value="">Select Alcohol Preference</option>
-      <option value="No">Non-drinker</option>
-      <option value="Occasionally">Social drinker</option>
-      <option value="Yes">Light drinker</option>
-      <option value="Yes">Moderate drinker</option>
-      <option value="Yes">Light drinker</option>
-    </select>
-  </div>
-
-  
-
-
-
-
-
-
 </section>
+
 
      
       
       <!-- My Account Section -->
       <section class="content-container">
-        <h2>My Account</h2>
-        <div class="account-form">
-          <div class="form-group">
-            <label>First Name</label>
-            <input v-model="userData.firstName" type="text" placeholder="First Name" class="input-field" />
-          </div>
-          <div class="form-group">
-            <label>Last Name</label>
-            <input v-model="userData.lastName" type="text" placeholder="Last Name" class="input-field" />
-          </div>
-          <div class="form-group">
-            <label>Height</label>
-            <input v-model="userData.height" type="text" placeholder="Height" class="input-field" />
-          </div>
-          <div class="form-group">
-            <label>Date of Birth</label>
-            <input v-model="userData.dateOfBirth" type="date" class="input-field" />
-          </div>
-          <div class="form-group">
-            <label>School</label>
-            <input v-model="userData.school" type="text" placeholder="School" class="input-field" />
-          </div>
-          <div class="form-group">
-            <label>Religion</label>
-            <input v-model="userData.religion" type="text" placeholder="Religion" class="input-field" />
-          </div>
-          <div class="form-group">
-            <label>Race</label>
-            <input v-model="userData.race" type="text" placeholder="Race" class="input-field" />
-          </div>
-        </div>
-      </section>
+  <h2>My Account</h2>
+
+  <div class="my-account-grid">
+    <!-- First Name -->
+    <div class="form-group">
+      <label>First Name</label>
+      <input v-model="userData.firstName" type="text" placeholder="First Name" class="input-field" />
+    </div>
+
+    <!-- Last Name -->
+    <div class="form-group">
+      <label>Last Name</label>
+      <input v-model="userData.lastName" type="text" placeholder="Last Name" class="input-field" />
+    </div>
+
+    <!-- Height -->
+    <div class="form-group">
+      <label>Height</label>
+      <input v-model="userData.height" type="text" placeholder="Height" class="input-field" />
+    </div>
+
+    <!-- Date of Birth -->
+    <div class="form-group">
+      <label>Date of Birth</label>
+      <input v-model="userData.dateOfBirth" type="date" class="input-field" />
+    </div>
+
+    <!-- School -->
+    <div class="form-group">
+      <label>School</label>
+      <input v-model="userData.school" type="text" placeholder="School" class="input-field" />
+    </div>
+
+    <!-- Religion -->
+    <div class="form-group">
+      <label>Religion</label>
+      <input v-model="userData.religion" type="text" placeholder="Religion" class="input-field" />
+    </div>
+
+    <!-- Race -->
+    <div class="form-group">
+      <label>Race</label>
+      <input v-model="userData.race" type="text" placeholder="Race" class="input-field" />
+    </div>
+  </div>
+</section>
 
      
       
@@ -222,7 +219,7 @@
         <div class="security-form">
           <div class="form-group full-width">
             <label>Email</label>
-            <input type="email" v-model="userData.email" class="input-field" disabled />
+            <input type="email" v-model="userData.email" class="input-field" :style="{ maxWidth: '100%' }" disabled />
           </div>
           <div class="button-group">
             <button class="reset-btn" @click="openResetPopup">Reset Password</button>
@@ -582,47 +579,94 @@ onMounted(fetchUserData);
 }
 
 /* Interests Section */
-.interests-tags {
+.interests-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 15px;
 }
 
-.interests-tags span {
-  background: #f6f6f6;
-  padding: 10px 15px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  font-size: 0.95rem;
-  line-height: 1.2;
+.interest-tag {
+  display: flex;
+  align-items: center;
+  background: #f4f4f4;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  border-width: 10px;
+  border-color: rgb(62, 60, 60);
 }
 
-.add-interest-btn {
-  background: #f6f6f6;
-  padding: 10px 15px;
+.remove-btn {
+  background: none;
+  border: none;
+  color: #ff5b5b;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.interest-selection {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.input-field {
+  width: 100%;
+  padding: 8px;
   border-radius: 6px;
   border: 1px solid #ddd;
-  font-size: 1.2rem;
+  font-size: 1rem;
+}
+
+.add-interests-btn {
+  background: #ffd166;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 1rem;
   cursor: pointer;
 }
-
 /* Description Section */
-.desc {
-  background: #f6f6f6;
-  padding: 10px;
-  border-radius: 6px;
-  line-height: 1.6;
-  margin: 10px 0;
+.desc-input {
+  width: 90%; /* Expands to full container width */
+  min-height: 100px; /* Slightly taller for better readability */
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  resize: vertical; /* Allows resizing vertically */
+  box-sizing: border-box;
 }
 
 /* About Me Section */
-.about-me-table td {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
+.about-me-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns */
+  gap: 1px; /* Spacing between items */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-field {
+  width: 200%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
 }
 
 /* My Account & Security Sections */
+.my-account-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns */
+  gap: 15px; /* Spacing between items */
+}
+
 .my-account-form, .security-form {
   display: flex;
   flex-wrap: wrap;
