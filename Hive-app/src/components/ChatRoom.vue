@@ -42,11 +42,11 @@
       </div>
 
       <div class="input-bar">
-        <input 
-          v-model="newMessage" 
-          @keyup.enter="handleSendMessage" 
-          placeholder="Type a message..."
-        />
+        <button @click="showEmojiPicker = !showEmojiPicker">😀</button>
+      
+        <EmojiPicker v-if="showEmojiPicker" @select="addEmoji" />
+
+        <input v-model="newMessage" @keyup.enter="handleSendMessage" placeholder="Type a message..." />
         <button @click="handleSendMessage">Send</button>
       </div>
     </div>
@@ -54,12 +54,17 @@
 </template>
 
 <script>
+import EmojiPicker from "vue3-emoji-picker";
+import "vue3-emoji-picker/css";
 import { nextTick } from "vue";
 import { getChatPrompts } from "@/gpt.mjs"; // Adjust path as needed
 import { db } from "@/firebase"; // Adjust import path
 import { doc, getDoc, updateDoc, arrayUnion, onSnapshot, Timestamp } from "firebase/firestore";
 
 export default {
+  components: {
+    EmojiPicker, // ✅ Register the component
+  },
   name: "ChatRoom",
   props: {
     chat: {
@@ -78,6 +83,7 @@ export default {
       chatPrompts: [],
       showPrompter: false,
       unsubscribe: null,
+      showEmojiPicker: false,
     };
   },
   computed: {
@@ -86,6 +92,11 @@ export default {
     },
   },
   methods: {
+    addEmoji(emoji) {
+      this.newMessage += emoji.i; // Appends the selected emoji
+      this.showEmojiPicker = false;
+    },
+    
     setupRealTimeListener() {
   if (!this.chat.id) return;
 
@@ -143,13 +154,13 @@ export default {
       return (nextTime - currentTime) / 60000 > 5;
     },
     async fetchChatPrompts() {
-      try {
-        const prompts = await getChatPrompts();
-        this.chatPrompts = prompts;
-      } catch (error) {
-        console.error("Error fetching chat prompts:", error);
-      }
-    },
+  try {
+    const prompts = await getChatPrompts(this.chat.id, this.currentUserId);
+    this.chatPrompts = prompts;
+  } catch (error) {
+    console.error("Error fetching chat prompts:", error);
+  }
+},
     togglePrompter() {
       this.showPrompter = !this.showPrompter;
       if (this.showPrompter) {
