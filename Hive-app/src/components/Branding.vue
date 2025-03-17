@@ -27,7 +27,7 @@
   }
   
   .logo img {
-    width: 250px;
+    width: 15vw;
   }
   </style>
   

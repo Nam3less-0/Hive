@@ -15,6 +15,7 @@ import MyBuzzes from "@/views/MyBuzzes.vue";
 import MainLayout from "@/views/MainLayout.vue";
 import Notifications from '@/views/Notifications.vue';
 import Privacy from '@/views/Privacy.vue';
+import LoadingPage from "@/views/LoadingPage.vue";
 import { auth } from "@/firebase";
 
 const routes = [
@@ -41,6 +42,7 @@ const routes = [
   { path: '/new-user3', name: 'NewUserPage3', component: NewUserPage3, meta: { requiresAuth: true } },
   { path: '/new-user4', name: 'NewUserPage4', component: NewUserPage4, meta: { requiresAuth: true } },
   { path: '/new-user2-2', name: 'NewUserPage22', component: NewUserPage22, meta: { requiresAuth: true } },
+  { path: '/loading', name: 'LoadingPage', component: LoadingPage, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

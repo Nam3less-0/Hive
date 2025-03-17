@@ -65,7 +65,7 @@ const handleLogin = async () => {
 
     console.log('User signed in:', userCredential.user);
     alert("Successfully Logged In")
-    router.push({name: "Home"})
+    router.push({name: "LoadingPage"})
     // You can redirect the user or perform additional actions here
   } catch (error) {
     console.error('Error signing in:', error.message);

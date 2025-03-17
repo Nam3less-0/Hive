@@ -126,7 +126,7 @@
         { merge: true }
       );
       console.log('Profile images saved successfully!');
-      router.push({ name: 'Home' });
+      router.push({ name: 'LoadingPage' });
     } catch (error) {
       console.error('Error saving images to Firestore:', error);
     }
