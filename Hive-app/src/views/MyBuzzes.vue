@@ -1,6 +1,6 @@
 <template>
   <div class="mybuzzes-container">
-    <h2>These People have buzzed you! 🐝</h2>
+    <h2>WHERE THE BUZZ AT? 🐝</h2>
 
     <div v-if="buzzes.length > 0" class="buzzes-grid">
       <div v-for="buzz in buzzes" :key="buzz.id" class="buzz-card">
@@ -70,6 +70,13 @@ export default {
     };
 
     async function fetchBuzzes() {
+      try {
+        const userRef = doc(db, "users", userID);
+        await updateDoc(userRef, { likeCount: 0 });
+        console.log("likeCount reset to 0.");
+      } catch (error) {
+        console.error("Error resetting likeCount:", error);
+      }
       try {
         const userDocRef = doc(db, `users/${userID}`);
         const userDocSnap = await getDoc(userDocRef);

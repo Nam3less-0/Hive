@@ -146,7 +146,7 @@
 import { ref } from 'vue';
 import { onMounted } from 'vue';
 import { db, auth } from '@/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, increment } from 'firebase/firestore';
 import placeholderProfile from '@/assets/placeholder-profile.jpg';
 import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import NoMoreUsersPopup from '@/components/NoMoreUsersPopup.vue';
@@ -286,6 +286,7 @@ const likeUser = async () => {
     // Update the liked user's "likes" array
     await updateDoc(doc(db, "users", likedUserId), {
       likes: arrayUnion({ userId: myUserId, message: null }),
+      likeCount: increment(1)
     });
 
     console.log(`Liked user ${likedUserId} with message: null`);

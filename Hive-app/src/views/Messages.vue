@@ -39,7 +39,8 @@
   import ChatList from "@/components/ChatList.vue";
   import ChatRoom from "@/components/ChatRoom.vue";
   import BlockConfirmationModal from "@/components/BlockConfirmationModal.vue";
-  import { auth } from "@/firebase";
+  import { doc, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
+  import { auth, db } from "@/firebase";
   
   export default {
     name: "MessagesPage",
@@ -62,14 +63,44 @@
       const closeBlockModal = () => {
         isBlockModalVisible.value = false;
       };
-  
-      const handleBlockConfirm = () => {
-        if (selectedChat.value) {
-          // Here you would implement the block logic (e.g., API call)
-          alert(`${selectedChat.value.name} has been blocked.`);
-        }
-        closeBlockModal();
-      };
+
+      const handleBlockConfirm = async () => {
+        if (!selectedChat.value) return;
+
+        const matchRef = doc(db, "matches", selectedChat.value.id);
+        const currentUserRef = doc(db, "users", currentUserId.value);
+
+        try {
+          // Fetch the match document to find the other user's ID
+          const matchSnap = await getDoc(matchRef);
+          if (!matchSnap.exists()) {
+            alert("Chat match doesn't exist.");
+            return;
+          }
+
+          const matchData = matchSnap.data();
+          const otherUserId = matchData.userIds.find(id => id !== currentUserId.value);
+
+          // Update match document to set 'blocked' to true
+          await updateDoc(matchRef, {
+            blocked: true
+          });
+
+          // Update current user's document to add otherUserId into 'blocked' array
+          await updateDoc(currentUserRef, {
+            blocked: arrayUnion(otherUserId)
+          });
+
+    alert(`${selectedChat.value.name} has been successfully blocked.`);
+    
+  } catch (error) {
+    console.error("Error blocking user:", error);
+    alert("Failed to block user. Please try again.");
+  } finally {
+    closeBlockModal();
+  }
+};
+
   
       return { currentUserId, selectedChat, isBlockModalVisible, handleChatSelection, openBlockModal, closeBlockModal, handleBlockConfirm };
     },

@@ -16,7 +16,7 @@
           <img src="@/assets/info-sign.png" alt="info" class="info" />
           <div class="other-likes">
             <h3>Welcome Back!</h3>
-            <p>You have 0 new likes!</p>
+            <p>You have {{ likeCount }} new {{ likeCount === 1 ? 'like' : 'likes' }}!</p>
             <button class="view-likes" @click="goToMyBuzzes">
               View Likes
             </button>
@@ -25,17 +25,18 @@
 
         <div class="streak-box">
           <h2>Longest Streak:</h2>
-          <div class="streak-details">
+          <div class="streak-details" v-if="longestStreak.matchId">
             <img
-              src="@/assets/placeholder-profile.jpg"
+              :src="longestStreak.profilePic || '@/assets/placeholder-profile.jpg'"
               alt="profile"
               class="streak-pic"
             />
             <div class="streak-text">
-              <p class="streak-name"><b>Karen Ng</b></p>
-              <p class="streak-days">20 Days! 🔥</p>
+              <p class="streak-name"><b>{{ longestStreak.name }}</b></p>
+              <p class="streak-days">{{ longestStreak.streakCount }} Days! 🔥</p>
             </div>
           </div>
+          <p v-else>No streaks yet.</p>
         </div>
       </div>
     </div>
@@ -57,14 +58,77 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { auth, db } from "@/firebase";
+import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
 
 const router = useRouter();
+const likeCount = ref(0);
+const longestStreak = ref({});
+const userID = auth.currentUser?.uid;
 
 const goToMyBuzzes = () => {
   router.push({ name: 'MyBuzzes' });
 };
+
+const fetchLikeCount = async () => {
+  try {
+    const userRef = doc(db, "users", userID);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      likeCount.value = userSnap.data().likeCount || 0;
+    }
+  } catch (error) {
+    console.error("Error fetching like count:", error);
+  }
+};
+
+const fetchLongestStreak = async () => {
+  try {
+    const matchesRef = collection(db, "matches");
+    const q = query(matchesRef, where("userIds", "array-contains", userID));
+    const matchDocs = await getDocs(q);
+    
+    let maxStreak = 0;
+    let bestMatch = null;
+    
+    for (const docSnap of matchDocs.docs) {
+      const data = docSnap.data();
+      if (data.streakCount > maxStreak) {
+        const otherUserId = data.userIds.find(id => id !== userID);
+        if (!otherUserId) continue;
+
+        // Fetch other user's data
+        const userRef = doc(db, "users", otherUserId);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          bestMatch = { 
+            matchId: docSnap.id,
+            streakCount: data.streakCount,
+            name: userData.firstName || "Unknown", 
+            profilePic: userData.images?.[0] || "@/assets/placeholder-profile.jpg"
+          };
+          maxStreak = data.streakCount;
+        }
+      }
+    }
+    
+    longestStreak.value = bestMatch || {};
+  } catch (error) {
+    console.error("Error fetching longest streak:", error);
+  }
+};
+
+
+onMounted(async () => {
+  await fetchLikeCount();
+  await fetchLongestStreak();
+});
 </script>
+
 
 <style scoped>
 /* Container for the overall page */
@@ -159,7 +223,7 @@ const goToMyBuzzes = () => {
 }
 
 .streak-pic {
-  width: 70px;
+  width: 10vw;
   height: auto;
   border-radius: 25px;
   margin-right: 10px;

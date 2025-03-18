@@ -118,29 +118,60 @@ export default {
   });
 },
 
-    async handleSendMessage() {
-      if (this.newMessage.trim()) {
-        const message = {
-          text: this.newMessage,
-          sender: this.currentUserId,
-          timestamp: new Date().toISOString() // ✅ Ensure timestamp is stored in Firestore format
-        };
+async handleSendMessage() {
+  if (!this.newMessage.trim()) return;
 
-        const matchRef = doc(db, "matches", this.chat.id);
+  const matchRef = doc(db, "matches", this.chat.id);
+  const message = {
+    text: this.newMessage,
+    sender: this.currentUserId,
+    timestamp: new Date().toISOString()
+  };
 
-        try {
-          await updateDoc(matchRef, {
-            messages: arrayUnion(message) // ✅ Append message to Firestore array
-          });
+  try {
+    const matchDoc = await getDoc(matchRef);
+    if (!matchDoc.exists()) {
+      console.error("Match document doesn't exist.");
+      return;
+    }
 
-          console.log("✅ Message added to Firestore!");
-        } catch (error) {
-          console.error("❌ Error sending message:", error);
-        }
+    const matchData = matchDoc.data();
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD format
 
-        this.newMessage = "";
-      }
-    },
+    let updatedStreakCount = matchData.streakCount || 0;
+    let lastStreakDate = matchData.lastStreakDate || "";
+
+    // Check if it's a new day (resets participants list)
+    let participantsToday = new Set(matchData.messagesSentToday || []);
+    if (lastStreakDate !== today && participantsToday.size == 0) {
+      participantsToday = new Set(); // Reset participants on a new day
+    }
+
+    // Add current user to today's participants
+    participantsToday.add(this.currentUserId);
+
+    // If both users have sent messages today and the streak is not already updated for today
+    if (participantsToday.size === 2 && lastStreakDate !== today) {
+      updatedStreakCount += 1;
+      lastStreakDate = today;
+      participantsToday = new Set();
+    }
+
+    // Update Firestore
+    await updateDoc(matchRef, {
+      messages: arrayUnion(message),
+      messagesSentToday: Array.from(participantsToday), // Update today's senders
+      lastStreakDate, // Update last streak date to prevent duplicate increments
+      streakCount: updatedStreakCount, // Update streak count correctly
+    });
+
+    console.log(`✅ Message sent and streak updated! Current streak: ${updatedStreakCount}`);
+  } catch (error) {
+    console.error("❌ Error sending message:", error);
+  }
+
+  this.newMessage = "";
+},
     
     formatMessageTime(timestamp) {
       const date = new Date(timestamp);
