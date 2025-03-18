@@ -126,6 +126,7 @@
     cursor: pointer;
     font-weight: bold;
     border-radius: 5px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   .block-button:hover {
     background-color: darkred;
@@ -166,6 +167,7 @@
   .chat-name {
     font-size: 1.2rem;
     font-weight: bold;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   
   /* Placeholder */
@@ -174,7 +176,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-style: italic;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   </style>
   

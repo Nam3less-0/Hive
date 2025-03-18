@@ -94,6 +94,7 @@
     font-weight: bold;
     color: rgb(156, 156, 156);
     margin-top: 10px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   
   input {
@@ -120,6 +121,7 @@
     font-size: 16px;
     cursor: pointer;
     transition: background 0.3s ease;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   
   /* Cancel button styling */

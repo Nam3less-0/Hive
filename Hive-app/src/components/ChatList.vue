@@ -173,13 +173,14 @@ export default {
   padding: 1rem;
   margin: 0 auto;
   border-radius: 8px;
-  font-family: sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .chat-list-title {
   margin: 0 0 1rem 0;
   font-size: 1.5rem;
   color: #000;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .chat-search-container {
@@ -192,6 +193,7 @@ export default {
   border: none;
   border-radius: 4px;
   font-size: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .chat-list {
@@ -237,11 +239,13 @@ export default {
 .chat-name {
   font-weight: bold;
   font-size: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .chat-handle {
   font-size: 0.875rem;
   color: #666;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .chat-last-message {
@@ -251,12 +255,14 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 200px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .chat-date {
   font-size: 0.75rem;
   color: black;
   margin-left: 0.5rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Optional media query for smaller screens */
@@ -277,19 +283,23 @@ export default {
 
   .chat-name {
     font-size: 0.95rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 
   .chat-handle {
     font-size: 0.8rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 
   .chat-last-message {
     font-size: 0.8rem;
     max-width: 120px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 
   .chat-date {
     font-size: 0.7rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 }
 </style>

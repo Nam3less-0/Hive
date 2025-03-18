@@ -183,7 +183,7 @@ async function passUser(likedUserID) {
   padding: 20px;
   background: #ffffff; /* Light yellow background for a softer look */
   min-height: 100vh;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .buzzes-grid {
@@ -223,6 +223,7 @@ font-weight: bold;
 font-size: 14px;
 color: #333;
 box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .online-dot {
@@ -248,6 +249,7 @@ font-size: 18px;
 font-weight: bold;
 margin-top: 10px;
 color: #333;
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .actions {
@@ -267,6 +269,7 @@ font-weight: bold;
 font-size: 16px;
 margin: 5px;
 transition: background 0.2s ease-in-out, transform 0.2s ease-in-out;
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .pass-btn {
@@ -299,6 +302,7 @@ border: none;
 cursor: pointer;
 border-radius: 10px;
 transition: background 0.2s ease-in-out;
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .fake-likes-btn:hover {
@@ -317,6 +321,7 @@ background: #e6b800;
   border-radius: 20px;
   font-size: medium;
   cursor: pointer;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .viewmessage-btn:hover {
@@ -358,6 +363,7 @@ background: #e6b800;
   cursor: pointer;
   font-weight: bold;
   margin-top: 10px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .close-btn:hover {

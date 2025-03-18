@@ -65,6 +65,7 @@ function logout() {
 .sidebar .greeting {
   color: #888;
   font-size: 0.9rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .sidebar .profile-label {
@@ -72,6 +73,7 @@ function logout() {
   font-weight: bold;
   padding-bottom: 10px;
   border-bottom: 1px solid #eee;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .sidebar ul {
@@ -124,6 +126,7 @@ function logout() {
   margin-bottom: 30px;
   font-size: 2rem;
   color: #333;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .button-group {
@@ -140,6 +143,7 @@ function logout() {
   font-weight: bold;
   transition: 0.3s ease;
   font-size: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .cancel-btn {
@@ -168,6 +172,7 @@ function logout() {
   font-size: 2rem;
   cursor: pointer;
   color: #555;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .close-btn:hover {

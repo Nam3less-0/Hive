@@ -77,6 +77,7 @@ onMounted(() => {
 html, body {
   margin: 0;
   padding: 0;
+  
 }
 
 .app-container {
@@ -84,6 +85,7 @@ html, body {
   flex-direction: column;
   width: 100vw;
   height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .navbar {

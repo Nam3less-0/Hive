@@ -293,6 +293,7 @@ beforeUnmount() {
   font-size: 0.6rem;
   color: #888;
   margin-top: 4px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .input-section {

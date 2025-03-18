@@ -136,6 +136,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   max-height: 70vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Wrapper for left and right sections */
@@ -147,6 +148,7 @@ onMounted(async () => {
   gap: 20px;
   justify-content: center;
   align-items: flex-start;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Left Section (Beehive Image) */
@@ -190,7 +192,7 @@ onMounted(async () => {
 .other-likes h3,
 .other-likes p {
   margin: 0 0 5px;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .view-likes {
@@ -201,6 +203,7 @@ onMounted(async () => {
   padding: 8px 12px;
   border: none;
   cursor: pointer;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Streak Box */
@@ -213,7 +216,7 @@ onMounted(async () => {
   background-position: center;
   background-repeat: no-repeat;
   font-size: 1.8rem;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .streak-details {

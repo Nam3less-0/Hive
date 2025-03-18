@@ -81,6 +81,7 @@ const handleLogin = async () => {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .login-form {
@@ -96,6 +97,7 @@ const handleLogin = async () => {
   background: white;
   height: 100vh;
   box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .logo-small img {
@@ -108,12 +110,14 @@ form {
   flex-direction: column;
   width: 100%;
   max-width: 25vw;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 label {
   font-weight: bold;
   color: rgb(156, 156, 156);
   margin-top: 10px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 input {
@@ -124,6 +128,7 @@ input {
   border-radius: 8px;
   background: #f9f9f9;
   box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 button {
@@ -138,10 +143,12 @@ button {
   cursor: pointer;
   transition: background 0.3s ease;
   box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 button:hover {
   background: #333;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .links {

@@ -69,6 +69,7 @@
   .modal-message {
     font-size: 1rem;
     color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   
   .modal-actions {
@@ -83,6 +84,7 @@
     border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   
   .confirm-button {
