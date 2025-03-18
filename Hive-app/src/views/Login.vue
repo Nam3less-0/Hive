@@ -64,11 +64,11 @@ const handleLogin = async () => {
     }
 
     console.log('User signed in:', userCredential.user);
-    alert("Successfully Logged In")
     router.push({name: "LoadingPage"})
     // You can redirect the user or perform additional actions here
   } catch (error) {
     console.error('Error signing in:', error.message);
+    alert('Error signing in: ' + error.message)
     // Optionally, handle error feedback for the user here
   }
 };
