@@ -34,27 +34,67 @@
   </template>
   
   <script setup>
-  import { reactive } from 'vue'
-  import Sidebar from '@/components/Sidebar.vue'
-  
-  const notificationOptions = reactive([
-    { label: 'New likes', email: true, push: true },
-    { label: 'New matches', email: true, push: true },
-    { label: 'New messages', email: true, push: true },
-  ])
-  
-  function saveNotificationSettings() {
-    const settings = notificationOptions.map(option => ({
-      notification: option.label,
+import { ref, onMounted } from 'vue'
+import Sidebar from '@/components/Sidebar.vue'
+import { db, auth } from '@/firebase'
+import { doc, getDoc, updateDoc } from 'firebase/firestore'
+
+// Reactive list of notification settings
+const notificationOptions = ref([
+  { label: 'New likes', email: false, push: false },
+  { label: 'New matches', email: false, push: false },
+  { label: 'New messages', email: false, push: false }
+]);
+
+// 🔹 Fetch user's notification settings from Firestore
+async function fetchNotificationSettings() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const userDocRef = doc(db, "users", user.uid);
+  const userDocSnap = await getDoc(userDocRef);
+
+  if (userDocSnap.exists()) {
+    const userData = userDocSnap.data();
+    
+    if (userData.notifications) {
+      notificationOptions.value = notificationOptions.value.map(option => ({
+        ...option,
+        email: userData.notifications[option.label]?.email ?? false,
+        push: userData.notifications[option.label]?.push ?? false
+      }));
+    }
+  }
+}
+
+// 🔹 Save updated notification settings to Firestore
+async function saveNotificationSettings() {
+  const user = auth.currentUser;
+  if (!user) return alert("Please log in to save settings.");
+
+  const userDocRef = doc(db, "users", user.uid);
+
+  const updatedSettings = {};
+  notificationOptions.value.forEach(option => {
+    updatedSettings[option.label] = {
       email: option.email,
       push: option.push
-    }))
-    
-    console.log('Saved notification settings:', settings)
-    alert('Notification settings saved successfully!')
+    };
+  });
+
+  try {
+    await updateDoc(userDocRef, { notifications: updatedSettings });
+    alert('Notification settings saved successfully!');
+  } catch (error) {
+    console.error("Error saving notification settings:", error);
+    alert("Failed to save settings.");
   }
-  </script>
-  
+}
+
+// Fetch data when component loads
+onMounted(fetchNotificationSettings);
+</script>
+
   <style scoped>
   .layout {
     display: flex;
