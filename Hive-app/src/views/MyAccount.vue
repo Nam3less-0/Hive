@@ -278,6 +278,10 @@
       </div>
     </main>
   </div>
+  <div v-if="showNotification" class="notification-toast" :class="notificationType">
+      {{ notificationMessage }}
+      <div class="progress-bar"></div> 
+  </div>
 </template>
 
 <script setup>
@@ -304,6 +308,10 @@ const confirmNewPassword = ref('');
 const userEmail = ref('');
 const fileInput = ref(null);
 const predefinedInterests = ref([]);
+const showNotification = ref(false);
+const notificationMessage = ref("");
+const notificationType = ref("success");
+
 
 // **Trigger File Input Click**
 
@@ -371,6 +379,16 @@ const setAsMainPic = async (newMainPic) => {
   }
 };
 
+const triggerNotification = (message, type) => {
+  notificationMessage.value = message;
+  notificationType.value = type; // Set type ("success" or "error")
+  showNotification.value = true;
+
+  // Auto-hide the notification after 3 seconds
+  setTimeout(() => {
+    showNotification.value = false;
+  }, 2000);
+};
 
 
 // **Upload Image to Firebase Storage**
@@ -421,7 +439,16 @@ const removeImage = async (imageUrl) => {
   try {
     const user = auth.currentUser;
     if (!user) {
-      alert('You must be logged in to remove images.');
+      notificationMessage.value = `You must be logged in to remove images.`;
+        showNotification.value = true;
+        notificationType.value = "error";
+        console.log("✅ Notification should be visible now!");
+
+    // ✅ Auto-hide the notification after 3 seconds
+        setTimeout(() => {
+          console.log("⏳ Hiding notification...");
+          showNotification.value = false;
+        }, 2000);
       return;
     }
 
@@ -433,7 +460,16 @@ const removeImage = async (imageUrl) => {
 
       // 🚨 Prevent deletion if it's the only image
       if (updatedImages.length === 1) {
-        alert("You cannot delete your only profile picture.");
+        notificationMessage.value = `You cannot delete your only profile picture.`;
+        showNotification.value = true;
+        notificationType.value = "error";
+        console.log("✅ Notification should be visible now!");
+
+    // ✅ Auto-hide the notification after 3 seconds
+        setTimeout(() => {
+          console.log("⏳ Hiding notification...");
+          showNotification.value = false;
+        }, 2000);
         return;
       }
 
@@ -455,7 +491,17 @@ const removeImage = async (imageUrl) => {
     }
   } catch (error) {
     console.error('Error removing image:', error);
-    alert('Error: ' + error.message);
+
+    notificationMessage.value = 'Error: ' + error.message;
+    showNotification.value = true;
+    notificationType.value = "error";
+    console.log("✅ Notification should be visible now!");
+
+    // ✅ Auto-hide the notification after 3 seconds
+    setTimeout(() => {
+      console.log("⏳ Hiding notification...");
+      showNotification.value = false;
+    }, 2000);
   }
 };
 
@@ -498,10 +544,28 @@ async function saveProfile() {
     if (!user) return;
     const userDocRef = doc(db, `users/${user.uid}`);
     await updateDoc(userDocRef, userData.value);
-    alert('Profile updated successfully!');
+    notificationMessage.value = 'Profile updated successfully!';
+    showNotification.value = true;
+    notificationType.value = "success";
+    console.log("✅ Notification should be visible now!");
+
+    // ✅ Auto-hide the notification after 3 seconds
+    setTimeout(() => {
+      console.log("⏳ Hiding notification...");
+      showNotification.value = false;
+    }, 2000);
   } catch (error) {
     console.error('Error updating profile:', error);
-    alert('Error: ' + error.message);
+    notificationMessage.value = 'Error: ' + error.message;
+    showNotification.value = true;
+    notificationType.value = "error";
+    console.log("✅ Notification should be visible now!");
+
+    // ✅ Auto-hide the notification after 3 seconds
+    setTimeout(() => {
+      console.log("⏳ Hiding notification...");
+      showNotification.value = false;
+    }, 2000);
   }
 }
 
@@ -518,7 +582,7 @@ async function changePassword() {
   try {
     const user = auth.currentUser;
     if (!user || newPassword.value !== confirmNewPassword.value) {
-      alert("Passwords do not match.");
+      triggerNotification("Passwords do not match.","error");
       return;
     }
     const credential = EmailAuthProvider.credential(user.email, currentPassword.value);
@@ -528,19 +592,19 @@ async function changePassword() {
     closePopup();
   } catch (error) {
     console.error("Error changing password:", error);
-    alert("Error: " + error.message);
+    triggerNotification("Error: " + error.message,"error");
   }
 }
 
 async function forgotPassword() {
-  if (!userEmail.value) return alert('Please enter your email.');
+  if (!userEmail.value) return triggerNotification('Please enter your email.',"error");
   try {
     await sendPasswordResetEmail(auth, userEmail.value);
-    alert('Password reset email sent! Check your inbox.');
+    triggerNotification('Password reset email sent! Check your inbox.', "success");
     closePopup();
   } catch (error) {
     console.error('Error sending reset email:', error);
-    alert('Error: ' + error.message);
+    triggerNotification('Error: ' + error.message, "error");
   }
 }
 
@@ -550,16 +614,16 @@ async function deleteAccount() {
     if (!user) return;
     await deleteDoc(doc(db, `users/${user.uid}`));
     await deleteUser(user);
-    alert("Account deleted successfully.");
+    triggerNotification("Account deleted successfully.", "success");
   } catch (error) {
     console.error("Error deleting account:", error);
-    alert("Error: " + error.message);
+    triggerNotification('Error: ' + error.message, "error");
   }
 }
 
 async function addInterest(interest) {
   try {
-    if (!interest) return alert("Please select an interest!");
+    if (!interest) return triggerNotification("Please select an interest!", "error");
 
     const user = auth.currentUser;
     if (!user) return;
@@ -584,10 +648,11 @@ async function addInterest(interest) {
       userData.value.interests = updatedInterests;
       selectedInterest.value = ""; // Reset selection
 
-      alert("Interest added successfully!");
+      triggerNotification("Interest added successfully!", "success");
     }
   } catch (error) {
     console.error("Error adding interest:", error);
+    triggerNotification('Error: ' + error.message, "error");
   }
 }
 
@@ -647,6 +712,47 @@ onMounted(() => {
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   padding: 20px;
   margin-bottom: 25px;
+}
+
+.notification-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+  overflow: hidden;
+}
+
+.notification-toast.success .progress-bar {
+  background-color: rgba(0, 255, 51, 0.696); /* ✅ Orange for success */
+}
+
+/* Error Notification */
+.notification-toast.error .progress-bar {
+  background-color: rgb(237, 0, 0); /* ✅ Green for errors */
+}
+
+/* Orange progress bar */
+.progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%; /* Full width initially */
+  height: 4px; /* Thin height */
+  animation: progressShrink 2s linear forwards;
+}
+
+/* Animation: Shrink the progress bar */
+@keyframes progressShrink {
+  from { width: 100%; }
+  to { width: 0%; }
 }
 
 /* Image Section */

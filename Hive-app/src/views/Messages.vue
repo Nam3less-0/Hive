@@ -32,6 +32,10 @@
         @cancel="closeBlockModal"
       />
     </div>
+    <div v-if="showNotification" class="notification-toast">
+      {{ notificationMessage }}
+      <div class="progress-bar"></div> 
+    </div>
   </template>
   
   <script>
@@ -49,6 +53,8 @@
       const currentUserId = ref(auth.currentUser?.uid); // Replace with actual user ID retrieval
       const selectedChat = ref(null);
       const isBlockModalVisible = ref(false);
+      const showNotification = ref(false);
+      const notificationMessage = ref("");
   
       const handleChatSelection = (chat) => {
         selectedChat.value = chat;
@@ -65,33 +71,42 @@
       };
 
       const handleBlockConfirm = async () => {
-        if (!selectedChat.value) return;
+  if (!selectedChat.value) return;
 
-        const matchRef = doc(db, "matches", selectedChat.value.id);
-        const currentUserRef = doc(db, "users", currentUserId.value);
+  const matchRef = doc(db, "matches", selectedChat.value.id);
+  const currentUserRef = doc(db, "users", currentUserId.value);
 
-        try {
-          // Fetch the match document to find the other user's ID
-          const matchSnap = await getDoc(matchRef);
-          if (!matchSnap.exists()) {
-            alert("Chat match doesn't exist.");
-            return;
-          }
+  try {
+    // Fetch match document
+    const matchSnap = await getDoc(matchRef);
+    if (!matchSnap.exists()) {
+      alert("Chat match doesn't exist.");
+      return;
+    }
 
-          const matchData = matchSnap.data();
-          const otherUserId = matchData.userIds.find(id => id !== currentUserId.value);
+    const matchData = matchSnap.data();
+    const otherUserId = matchData.userIds.find(id => id !== currentUserId.value);
 
-          // Update match document to set 'blocked' to true
-          await updateDoc(matchRef, {
-            blocked: true
-          });
+    // Update match document to set 'blocked' to true
+    await updateDoc(matchRef, {
+      blocked: true
+    });
 
-          // Update current user's document to add otherUserId into 'blocked' array
-          await updateDoc(currentUserRef, {
-            blocked: arrayUnion(otherUserId)
-          });
+    // Update current user's document to add otherUserId into 'blocked' array
+    await updateDoc(currentUserRef, {
+      blocked: arrayUnion(otherUserId)
+    });
 
-    alert(`${selectedChat.value.name} has been successfully blocked.`);
+    // ✅ Show notification and log if it's triggered
+    notificationMessage.value = `${selectedChat.value.name} has been successfully blocked.`;
+    showNotification.value = true;
+    console.log("✅ Notification should be visible now!");
+
+    // ✅ Auto-hide the notification after 3 seconds
+    setTimeout(() => {
+      console.log("⏳ Hiding notification...");
+      showNotification.value = false;
+    }, 2000);
     
   } catch (error) {
     console.error("Error blocking user:", error);
@@ -101,8 +116,9 @@
   }
 };
 
+
   
-      return { currentUserId, selectedChat, isBlockModalVisible, handleChatSelection, openBlockModal, closeBlockModal, handleBlockConfirm };
+      return { currentUserId, selectedChat, isBlockModalVisible, handleChatSelection, openBlockModal, closeBlockModal, handleBlockConfirm, showNotification, notificationMessage };
     },
   };
   </script>
@@ -178,5 +194,42 @@
     align-items: center;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
+
+  
+/* Notification Toast */
+.notification-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+  overflow: hidden;
+}
+
+/* Orange progress bar */
+.progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%; /* Full width initially */
+  height: 4px; /* Thin height */
+  background-color: rgba(255, 0, 0, 0.696); 
+  animation: progressShrink 2s linear forwards;
+}
+
+/* Animation: Shrink the progress bar */
+@keyframes progressShrink {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+
   </style>
   
