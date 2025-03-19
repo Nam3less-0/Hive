@@ -15,29 +15,34 @@
       <!-- Chat List -->
       <ul class="chat-list">
         <li
-          v-for="chat in filteredChats"
-          :key="chat.id"
-          class="chat-list-item"
-          @click="handleChatSelected(chat)"
-        >
-          <img
-            :src="chat.avatar"
-            :alt="`${chat.name}'s avatar`"
-            class="chat-avatar"
-          />
-          <div class="chat-details">
-            <div class="chat-header">
-              <span class="chat-name">{{ chat.name }}</span>
-              <span class="chat-handle">{{ chat.handle }}</span>
-            </div>
-            <div class="chat-last-message">
-              {{ getLatestMessage(chat).text }}
-            </div>
-          </div>
-          <div class="chat-date">
-            {{ formatTimestamp(getLatestMessage(chat).timestamp) }}
-          </div>
-        </li>
+  v-for="chat in filteredChats"
+  :key="chat.id"
+  class="chat-list-item"
+  @click="handleChatSelected(chat)"
+>
+  <img
+    :src="chat.avatar"
+    :alt="`${chat.name}'s avatar`"
+    class="chat-avatar"
+  />
+  <div class="chat-details">
+    <div class="chat-header">
+      <span class="chat-name">
+        {{ chat.name }}
+        <span v-if="chat.streakCount > 0" class="streak-badge" :class="{'streak-animate': chat.animateStreak}">
+          🔥 {{ chat.streakCount }}
+        </span>
+      </span>
+      <span class="chat-handle">{{ chat.handle }}</span>
+    </div>
+    <div class="chat-last-message">
+      {{ getLatestMessage(chat).text }}
+    </div>
+  </div>
+  <div class="chat-date">
+    {{ formatTimestamp(getLatestMessage(chat).timestamp) }}
+  </div>
+</li>
       </ul>
     </div>
   </template>
@@ -75,35 +80,50 @@ export default {
   },
   methods: {
     async fetchChats() {
-      const currentUser = auth.currentUser;
-      if (!currentUser) return;
-      
-      const matchesQuery = query(
-        collection(db, "matches"),
-        where("userIds", "array-contains", currentUser.uid)
-      );
-      const matchesSnapshot = await getDocs(matchesQuery);
-      const chatPromises = matchesSnapshot.docs.map(async (matchDoc) => {
-        const matchData = matchDoc.data();
-        const matchedUserId = matchData.userIds.find(id => id !== currentUser.uid);
-        
-        if (!matchedUserId) return null;
-        
-        const userDoc = await getDoc(doc(db, "users", matchedUserId));
-        if (!userDoc.exists()) return null;
-        
-        const userData = userDoc.data();
-        return {
-          id: matchDoc.id,
-          name: `${userData.firstName} ${userData.lastName}`,
-          handle: `@${userData.firstName.toLowerCase()}`,
-          avatar: userData.images?.[0] || "https://via.placeholder.com/150", // Fallback avatar
-          messages: matchData.messages || []
-        };
-      });
-      
-      this.chats = (await Promise.all(chatPromises)).filter(chat => chat !== null);
-    },
+  const currentUser = auth.currentUser;
+  if (!currentUser) return;
+  
+  const matchesQuery = query(
+    collection(db, "matches"),
+    where("userIds", "array-contains", currentUser.uid)
+  );
+  const matchesSnapshot = await getDocs(matchesQuery);
+
+  const chatPromises = matchesSnapshot.docs.map(async (matchDoc) => {
+    const matchData = matchDoc.data();
+    const matchedUserId = matchData.userIds.find(id => id !== currentUser.uid);
+    
+    if (!matchedUserId) return null;
+    
+    const userDoc = await getDoc(doc(db, "users", matchedUserId));
+    if (!userDoc.exists()) return null;
+    
+    const userData = userDoc.data();
+
+    // Find existing chat entry
+    const existingChat = this.chats.find(chat => chat.id === matchDoc.id);
+    const previousStreak = existingChat ? existingChat.streakCount : 0;
+    const newStreak = matchData.streakCount || 0;
+
+    return {
+      id: matchDoc.id,
+      name: `${userData.firstName} ${userData.lastName}`,
+      handle: `@${userData.firstName.toLowerCase()}`,
+      avatar: userData.images?.[0] || "https://via.placeholder.com/150", 
+      messages: matchData.messages || [],
+      streakCount: newStreak,
+      animateStreak: newStreak > previousStreak, // Animate only if streak increases
+    };
+  });
+
+  this.chats = (await Promise.all(chatPromises)).filter(chat => chat !== null);
+
+  // Remove animation class after delay to allow re-triggering
+  setTimeout(() => {
+    this.chats.forEach(chat => chat.animateStreak = false);
+  }, 1000);
+},
+
     getLatestMessage(chat) {
       if (!chat.messages || chat.messages.length === 0) {
         return { text: "", timestamp: "" };
@@ -163,6 +183,36 @@ export default {
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+.streak-badge {
+  background: linear-gradient(45deg, rgba(255, 67, 217, 0.8), rgba(168, 67, 255, 0.8));
+  background-size: 200% 200%;
+  color: white;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 12px;
+  margin-left: 8px;
+  font-weight: bold;
+  display: inline-block;
+  animation: fireMove 2s infinite ease-in-out;
+}
+
+/* Keyframes to animate the background gradient like fire */
+@keyframes fireMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes firePulse {
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.3); filter: brightness(1.5); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.streak-animate {
+  animation: firePulse 1s ease-in-out;
 }
 
 /* Responsive container: full width with a max-width on larger screens */

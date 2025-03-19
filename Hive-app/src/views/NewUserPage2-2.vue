@@ -119,16 +119,16 @@ const alcoholOptions = ref([
 ]);
 
 const sexualOrientationOptions = ref([
-  { value: 'heterosexual', label: 'Heterosexual' },
-  { value: 'homosexual', label: 'Homosexual' },
-  { value: 'bisexual', label: 'Bisexual' },
-  { value: 'other', label: 'Other' }
+  { value: 'Heterosexual', label: 'Heterosexual' },
+  { value: 'Homosexual', label: 'Homosexual' },
+  { value: 'Bisexual', label: 'Bisexual' },
+  { value: 'Other', label: 'Other' }
 ]);
 
 const purposeOptions = ref([
-  { value: 'meet-new-people', label: 'Meet new people' },
-  { value: 'casual-relationship', label: 'Looking for a casual relationship' },
-  { value: 'serious-relationship', label: 'Looking for a serious relationship' }
+  { value: 'Dating', label: 'Meet new people' },
+  { value: 'Friendship', label: 'Looking for a casual relationship' },
+  { value: 'Long-term Relationship', label: 'Looking for a serious relationship' }
 ]);
 
 const dropdownOpen = reactive({

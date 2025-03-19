@@ -44,12 +44,18 @@
 
   <!-- Interest Selection & Input -->
   <div class="interest-selection">
-    <select v-model="selectedInterest" class="input-field">
-      <option disabled value="">Choose an Interest</option>
-      <option v-for="interest in predefinedInterests" :key="interest" :value="interest">
+    <div class="dropdown">
+    <button class="dropdown-button" @click="toggleDropdown">
+      {{ selectedInterest || "Choose an Interest" }}
+    </button>
+    <ul v-if="isDropdownOpen" class="dropdown-menu">
+      <li v-for="interest in predefinedInterests" 
+          :key="interest" 
+          @click="selectInterest(interest)">
         {{ interest }}
-      </option>
-    </select>
+      </li>
+    </ul>
+  </div>
     <button class="add-interests-btn" @click="addInterest(selectedInterest)">＋</button>
   </div>
 
@@ -139,9 +145,11 @@
       <label>Smoking</label>
       <select v-model="userData.smoking" class="input-field">
         <option disabled value="">Select Smoking Preference</option>
-        <option value="No">Non-smoker</option>
-        <option value="Occasionally">Social smoker</option>
-        <option value="Yes">Regular smoker</option>
+        <option value="non-smoker">Non-smoker</option>
+        <option value="social-smoker">Social smoker</option>
+        <option value="light-smoker">Light smoker</option>
+        <option value="moderate-smoker">Regular smoker</option>
+        <option value="heavy-smoker">Heavy smoker</option>
       </select>
     </div>
 
@@ -150,9 +158,11 @@
       <label>Alcohol</label>
       <select v-model="userData.alcohol" class="input-field">
         <option disabled value="">Select Alcohol Preference</option>
-        <option value="No">Non-drinker</option>
-        <option value="Occasionally">Social drinker</option>
-        <option value="Yes">Regular drinker</option>
+        <option value="non-drinker">Non-drinker</option>
+        <option value="social-drinker">Social drinker</option>
+        <option value="light-drinker">Light drinker</option>
+        <option value="moderate-drinker">Regular drinker</option>
+        <option value="heavy-drinker">Heavy drinker</option>
       </select>
     </div>
   </div>
@@ -193,19 +203,33 @@
     <!-- School -->
     <div class="form-group">
       <label>School</label>
-      <input v-model="userData.school" type="text" placeholder="School" class="input-field" />
+      <select v-model="userData.school" class="input-field">
+        <option disabled value="">Select School</option>
+        <option value="NUS">National University of Singapore (NUS)</option>
+        <option value="NTU">Nanyang Technological University (NTU)</option>
+        <option value="SMU">Singapore Management University (SMU)</option>
+        <option value="SIT">Singapore Institute of Technology (SIT)</option>
+        <option value="SUSS">Singapore University of Social Sciences (SUSS)</option>
+        <option value="SUTD">Singapore University of Technology and Design (SUTD)</option>
+        <option value="Other">Other</option>
+      </select>
     </div>
 
-    <!-- Religion -->
+    <!-- Industry -->
     <div class="form-group">
-      <label>Religion</label>
-      <input v-model="userData.religion" type="text" placeholder="Religion" class="input-field" />
-    </div>
-
-    <!-- Race -->
-    <div class="form-group">
-      <label>Race</label>
-      <input v-model="userData.race" type="text" placeholder="Race" class="input-field" />
+      <label>Industry</label>
+      <select v-model="userData.industry" class="input-field">
+        <option disabled value="">Select Industry</option>
+        <option value="Technology">Technology</option>
+        <option value="Finance">Finance</option>
+        <option value="Healthcare">Healthcare</option>
+        <option value="Education">Education</option>
+        <option value="Engineering">Engineering</option>
+        <option value="Retail">Retail</option>
+        <option value="Hospitality">Hospitality</option>
+        <option value="Government">Government</option>
+        <option value="Other">Other</option>
+      </select>
     </div>
   </div>
 </section>
@@ -259,13 +283,15 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { auth, db } from '@/firebase';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, updateDoc, deleteDoc, getDocs } from 'firebase/firestore';
 import { updatePassword, reauthenticateWithCredential, EmailAuthProvider, sendPasswordResetEmail, deleteUser } from 'firebase/auth';
 import Sidebar from '@/components/Sidebar.vue'
 import { onAuthStateChanged } from 'firebase/auth';
 import { storage} from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 
+const isDropdownOpen = ref(false);
+const selectedInterest = ref("");
 const userData = ref({});
 const mainPic = ref('');
 const secondaryPics = ref([]);
@@ -277,11 +303,32 @@ const newPassword = ref('');
 const confirmNewPassword = ref('');
 const userEmail = ref('');
 const fileInput = ref(null);
+const predefinedInterests = ref([]);
 
 // **Trigger File Input Click**
 
 import { deleteObject } from 'firebase/storage';
 
+const toggleDropdown = () => {
+  isDropdownOpen.value = !isDropdownOpen.value;
+};
+
+const selectInterest = (interest) => {
+  selectedInterest.value = interest;
+  isDropdownOpen.value = false; // Close dropdown after selection
+};
+
+async function fetchInterests() {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'interests'));
+
+    predefinedInterests.value = querySnapshot.docs.map(doc => doc.data().name);
+
+    console.log('Interests fetched:', predefinedInterests.value);
+  } catch (error) {
+    console.error('Error fetching interests:', error);
+  }
+}
 
 // **Trigger File Input Click**
 const triggerFileInput = () => {
@@ -435,6 +482,7 @@ async function fetchUserData() {
 
         // Assign email to userData as well, to ensure reactivity
         userData.value.email = user.email || '';
+        console.log(userData.purpose)
       } else {
         console.error("User document not found in Firestore.");
       }
@@ -509,7 +557,69 @@ async function deleteAccount() {
   }
 }
 
-onMounted(fetchUserData);
+async function addInterest(interest) {
+  try {
+    if (!interest) return alert("Please select an interest!");
+
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const userDocRef = doc(db, `users/${user.uid}`);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (userDocSnap.exists()) {
+      let updatedInterests = userDocSnap.data().interests || [];
+
+      if (updatedInterests.includes(interest)) {
+        alert("Interest already added!");
+        return;
+      }
+
+      updatedInterests.push(interest);
+
+      // Update Firestore
+      await updateDoc(userDocRef, { interests: updatedInterests });
+
+      // Update UI
+      userData.value.interests = updatedInterests;
+      selectedInterest.value = ""; // Reset selection
+
+      alert("Interest added successfully!");
+    }
+  } catch (error) {
+    console.error("Error adding interest:", error);
+  }
+}
+
+// 🔹 Remove interest from Firestore
+async function removeInterest(index) {
+  try {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const userDocRef = doc(db, `users/${user.uid}`);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (userDocSnap.exists()) {
+      let updatedInterests = [...userDocSnap.data().interests]; // Clone the array
+
+      updatedInterests.splice(index, 1); // Remove selected interest
+
+      // Update Firestore
+      await updateDoc(userDocRef, { interests: updatedInterests });
+
+      // Update UI
+      userData.value.interests = updatedInterests;
+    }
+  } catch (error) {
+    console.error("Error removing interest:", error);
+  }
+}
+
+onMounted(() => {
+  fetchUserData();
+  fetchInterests();
+});
 </script>
 
 
@@ -545,6 +655,7 @@ onMounted(fetchUserData);
   height: 200px;
   border-radius: 10px;
   border: 1px solid #ddd;
+  object-fit: cover;
 }
 
 .profile-pic-section {
@@ -614,10 +725,39 @@ onMounted(fetchUserData);
 
 .input-field {
   width: 100%;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
+  padding: 12px;
+  border-radius: 8px;
+  border: 2px solid #d1d5db; /* Light gray border */
   font-size: 1rem;
+  background-color: white;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 18px;
+}
+
+/* Hover and Focus Effect */
+.input-field:hover, .input-field:focus {
+  border-color: #f59e0b; /* Orange border */
+  background-color: #fff7ed; /* Light orange background */
+  box-shadow: 0px 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+/* Style for Disabled Option */
+.input-field option:disabled {
+  color: #9ca3af;
+}
+
+.input-field option {
+  max-height: 150px; /* Limits dropdown height */
+  overflow-y: auto;
+}
+
+.selected {
+  border-color: #10b981; /* Green border */
+  background-color: #ecfdf5; /* Light green background */
+  color: #065f46;
 }
 
 .add-interests-btn {
@@ -869,5 +1009,49 @@ h2 {
 
 .save-profile-btn:hover {
   background-color: #45a049;
+}
+
+/* Wrapper */
+.dropdown {
+  position: relative;
+  width: 100%;
+}
+
+/* Button */
+.dropdown-button {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 2px solid #d1d5db;
+  background-color: white;
+  cursor: pointer;
+  text-align: left;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  position: absolute;
+  width: 100%;
+  max-height: 150px; /* Limits dropdown height */
+  overflow-y: auto;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: white;
+  list-style-type: none;
+  padding: 0;
+  margin: 5px 0;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Menu Items */
+.dropdown-menu li {
+  padding: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-menu li:hover {
+  background-color: #f59e0b; /* Orange hover */
+  color: white;
 }
 </style>

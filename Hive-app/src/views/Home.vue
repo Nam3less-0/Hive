@@ -226,8 +226,10 @@ onMounted(async () => {
 }
 
 .streak-pic {
-  width: 10vw;
+  max-width: 10vw;
+  max-height: 10vw;
   height: auto;
+  width: auto;
   border-radius: 25px;
   margin-right: 10px;
 }
