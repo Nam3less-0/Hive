@@ -98,7 +98,6 @@
         <h3>FAQ</h3>
         <p>Question: Why can I not see a user's profile? <br/> Answer: <b>YOU HAVE BEEN BLOCKED.</b></p>
         <p>Question: How to delete my account? <br/> Answer: <b>Go to your profile -> Security -> "Delete Account".</b></p>
-        <p>Question: How to delete my account? <br/> Answer: <b>Go to your profile -> Security -> "Delete Account".</b></p>
       </div>
     </div>
 

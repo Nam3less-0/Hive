@@ -3,7 +3,7 @@
     <nav class="navbar">
       <div class="navbar-left">
         <router-link to="/home" class="nav-logo">
-          <img src="@/assets/hive-logo2.png" alt="HIVE Logo" />
+          <img src="@/assets/hive-logo2.png" alt="HIVE Logo" style="width: 70px; height: auto;" />
         </router-link>
       </div>
 
