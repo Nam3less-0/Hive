@@ -49,8 +49,12 @@
         <a href="#" @click="openFAQModal">FAQ</a>
       </div>
       <div class="social-icons">
-        <img src="@/assets/facebook.png" alt="Facebook" />
-        <img src="@/assets/instagram.png" alt="Instagram" />
+        <a href="https://www.facebook.com/santtosh.mohan" target="_blank">
+          <img src="@/assets/facebook.png" alt="Facebook" />
+        </a>
+        <a href="https://www.instagram.com/sant.tosh/" target="_blank">
+          <img src="@/assets/instagram.png" alt="Instagram" />
+        </a>
         <img src="@/assets/X.png" alt="X" />
       </div>
     </footer>
