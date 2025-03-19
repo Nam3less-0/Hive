@@ -43,10 +43,10 @@
     
     <footer class="footer">
       <div class="footer-content">
-        <a href="#">Contact</a>
-        <a href="#">Terms of Use</a>
-        <a href="#">Privacy Policy</a>
-        <a href="#">FAQ</a>
+        <a href="#" @click="openContactModal">Contact</a>
+        <a href="#" @click="openTermsModal">Terms of Use</a>
+        <a href="#" @click="openPrivacyPolicyModal">Privacy Policy</a>
+        <a href="#" @click="openFAQModal">FAQ</a>
       </div>
       <div class="social-icons">
         <img src="@/assets/facebook.png" alt="Facebook" />
@@ -54,6 +54,54 @@
         <img src="@/assets/X.png" alt="X" />
       </div>
     </footer>
+
+    <!-- Contact Modal -->
+    <div v-if="showContactModal" class="modal-overlay">
+      <div class="modal-content">
+        <button class="close-button" @click="closeContactModal">✖</button>
+        <h3>💻 Tech Support - We're Here to Help! 🛠️</h3>
+        <p>Need assistance? Our tech support team is ready to assist you with any technical issues, troubleshooting, or general inquiries.</p>
+        <div class="contact-info">
+          <p>📞 +65 9781 8604 (Santtosh)</p>
+          <p>📧 <a href="mailto:herobrine0239@gmail.com">herobrine0239@gmail.com</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terms of Use Modal -->
+    <div v-if="showTermsModal" class="modal-overlay">
+      <div class="modal-content">
+        <button class="close-button" @click="closeTermsModal">✖</button>
+        <h3>Terms of Use</h3>
+        <p>By using our services, you agree to abide by our terms and conditions.</p>
+        <p>Ensure responsible usage and compliance with our policies to maintain a safe and engaging experience.</p>
+      </div>
+    </div>
+
+    <!-- Terms of Privacy Policy Modal -->
+    <div v-if="showPrivacyPolicyModal" class="modal-overlay">
+      <div class="modal-content">
+        <button class="close-button" @click="closePrivacyPolicyModal">✖</button>
+        <h3>Privacy Policy</h3>
+        <p>Your privacy is important to us. We are committed to protecting your personal information and ensuring a secure experience.</p>
+        <p><b>Data Collection</b>: We collect only the necessary information to enhance your experience.</p>
+        <p><b>Usage</b>: Your data is used solely for service improvement and will never be shared without consent.</p>
+        <p><b>Security</b>: We implement industry-standard measures to keep your data safe.</p>
+        <p><b>Your rights</b>: You have control over your personal information and can request modifications or deletions at any time.</p>
+      </div>
+    </div>
+
+    <!-- FAQ Modal -->
+    <div v-if="showFAQModal" class="modal-overlay">
+      <div class="modal-content">
+        <button class="close-button" @click="closeFAQModal">✖</button>
+        <h3>FAQ</h3>
+        <p>Question: Why can I not see a user's profile? <br/> Answer: <b>YOU HAVE BEEN BLOCKED.</b></p>
+        <p>Question: How to delete my account? <br/> Answer: <b>Go to your profile -> Security -> "Delete Account".</b></p>
+        <p>Question: How to delete my account? <br/> Answer: <b>Go to your profile -> Security -> "Delete Account".</b></p>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -67,6 +115,42 @@ const router = useRouter();
 const likeCount = ref(0);
 const longestStreak = ref({});
 const userID = auth.currentUser?.uid;
+const showContactModal = ref(false);
+const showTermsModal = ref(false);
+const showPrivacyPolicyModal = ref(false);
+const showFAQModal = ref(false);
+
+const openContactModal = () => {
+  showContactModal.value = true;
+};
+
+const closeContactModal = () => {
+  showContactModal.value = false;
+};
+
+const openTermsModal = () => {
+  showTermsModal.value = true;
+};
+
+const closeTermsModal = () => {
+  showTermsModal.value = false;
+};
+
+const openPrivacyPolicyModal = () => {
+  showPrivacyPolicyModal.value = true;
+};
+
+const closePrivacyPolicyModal = () => {
+  showPrivacyPolicyModal.value = false;
+};
+
+const openFAQModal = () => {
+  showFAQModal.value = true;
+};
+
+const closeFAQModal = () => {
+  showFAQModal.value = false;
+};
 
 const goToMyBuzzes = () => {
   router.push({ name: 'MyBuzzes' });
@@ -287,4 +371,42 @@ onMounted(async () => {
     flex: 1 1 100%;
   }
 }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  position: relative; /* Ensures close button is positioned inside */
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  width: 50%;
+  max-width: 400px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Fix: Close button is now properly positioned inside the modal */
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  color: black;
+}
+
 </style>
