@@ -117,6 +117,7 @@ export default {
   });
 
   this.chats = (await Promise.all(chatPromises)).filter(chat => chat !== null);
+  console.log("Matches retrieved from Firebase:", matchesSnapshot.docs.map(doc => doc.id));
 
   // Remove animation class after delay to allow re-triggering
   setTimeout(() => {

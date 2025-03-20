@@ -117,27 +117,43 @@ export default {
         console.error("Error fetching buzzes:", error);
       }
     }
+    const likeQueue = ref([]);
+
+async function processLikeQueue() {
+  while (likeQueue.value.length > 0) {
+    const likedUserID = likeQueue.value.shift();
+    await likeBackHandler(likedUserID);
+  }
+}
+
 async function likeBack(likedUserID) {
+  likeQueue.value.push(likedUserID);
+  if (likeQueue.value.length === 1) {
+    processLikeQueue();
+  }
+}
+
+async function likeBackHandler(likedUserID) {
   try {
     if (!userID || !likedUserID) {
       console.error("Invalid user ID or liked user ID");
       return;
     }
-    const matchID = [userID, likedUserID].sort().join('_'); // Unique match ID
+    const matchID = [userID, likedUserID.userId].sort().join('_');
     const matchRef = doc(db, 'matches', matchID);
+
     await setDoc(matchRef, {
       userIds: [userID, likedUserID.userId],
       messages: [],
       matchedAt: new Date()
     });
-     // Remove each other from 'likes' collections
-     const userLikesRef = doc(db, 'users', userID);
+
+    const userLikesRef = doc(db, 'users', userID);
     await updateDoc(userLikesRef, {
       likes: arrayRemove(likedUserID)
     });
 
-    await fetchBuzzes(); // Refresh UI
-
+    await fetchBuzzes();
     console.log("Successfully liked back and created a match.");
   } catch (error) {
     console.error("Error liking back:", error);

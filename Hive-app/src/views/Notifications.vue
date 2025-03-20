@@ -31,6 +31,10 @@
         </section>
       </main>
     </div>
+    <div v-if="showNotification" class="notification-toast" :class="notificationType">
+      {{ notificationMessage }}
+      <div class="progress-bar"></div> 
+  </div>
   </template>
   
   <script setup>
@@ -40,6 +44,21 @@ import { db, auth } from '@/firebase'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 
 // Reactive list of notification settings
+const showNotification = ref(false);
+const notificationMessage = ref("");
+const notificationType = ref("success");
+
+const triggerNotification = (message, type) => {
+  notificationMessage.value = message;
+  notificationType.value = type; // Set type ("success" or "error")
+  showNotification.value = true;
+
+  // Auto-hide the notification after 3 seconds
+  setTimeout(() => {
+    showNotification.value = false;
+  }, 2000);
+};
+
 const notificationOptions = ref([
   { label: 'New likes', email: false, push: false },
   { label: 'New matches', email: false, push: false },
@@ -70,7 +89,7 @@ async function fetchNotificationSettings() {
 // 🔹 Save updated notification settings to Firestore
 async function saveNotificationSettings() {
   const user = auth.currentUser;
-  if (!user) return alert("Please log in to save settings.");
+  if (!user) return triggerNotification("Please log in to save settings.", "error");
 
   const userDocRef = doc(db, "users", user.uid);
 
@@ -84,10 +103,10 @@ async function saveNotificationSettings() {
 
   try {
     await updateDoc(userDocRef, { notifications: updatedSettings });
-    alert('Notification settings saved successfully!');
+    triggerNotification('Notification settings saved successfully!', "success");
   } catch (error) {
     console.error("Error saving notification settings:", error);
-    alert("Failed to save settings.");
+    triggerNotification("Failed to save settings.", "error");
   }
 }
 
@@ -96,6 +115,48 @@ onMounted(fetchNotificationSettings);
 </script>
 
   <style scoped>
+
+.notification-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+  overflow: hidden;
+}
+
+.notification-toast.success .progress-bar {
+  background-color: rgba(0, 255, 51, 0.696); /* ✅ Orange for success */
+}
+
+/* Error Notification */
+.notification-toast.error .progress-bar {
+  background-color: rgb(237, 0, 0); /* ✅ Green for errors */
+}
+
+/* Orange progress bar */
+.progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%; /* Full width initially */
+  height: 4px; /* Thin height */
+  animation: progressShrink 2s linear forwards;
+}
+
+/* Animation: Shrink the progress bar */
+@keyframes progressShrink {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
   .layout {
     display: flex;
     align-items: flex-start;
