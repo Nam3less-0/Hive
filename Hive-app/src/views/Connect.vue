@@ -13,7 +13,7 @@
         <p><strong>Height:</strong> {{ users[currentUserIndex]?.height || 'N/A' }}</p>
         <p><strong>Age:</strong> {{ calculateAge(users[currentUserIndex]?.dateOfBirth) }}</p>
         <p><strong>Bio:</strong> {{ users[currentUserIndex]?.bio || 'No bio available' }}</p>
-        <button class="message-btn" @click="showMessagePopup = true">Write a message 💬</button>
+        <button class="message-btn" @click="showMessagePopup = true">Write a message here 💬</button>
         <p class="user-progress">Viewing user {{ currentUserIndex + 1 }} of {{ users.length }}</p>
       </div>
     </div>
