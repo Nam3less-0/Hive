@@ -1,5 +1,16 @@
 <template>
   <div class="mybuzzes-container">
+    <div class="background-grid-wrapper">
+      <div class="background-grid">
+        <div
+          v-for="n in 400"
+          :key="n"
+          class="grid-cell"
+          :style="getRandomAnimationStyle()"
+        ></div>
+      </div>
+    </div>
+
     <h2>WHERE THE BUZZ AT? 🐝</h2>
 
     <div v-if="buzzes.length > 0" class="buzzes-grid">
@@ -53,6 +64,15 @@ export default {
     const defaultProfilePic = "https://placehold.co/150x150/png";
     const showMessagePopup = ref(false);
     const messageContent = ref("");
+
+    const getRandomAnimationStyle = () => {
+    const delay = (Math.random() * 5).toFixed(2);      // 0 to 5s
+    const duration = (2 + Math.random() * 3).toFixed(2); // 2 to 5s
+    return {
+      animationDelay: `${delay}s`,
+      animationDuration: `${duration}s`
+    };
+  };
 
     const handleImageError = (event) => {
       event.target.src = defaultProfilePic;
@@ -184,17 +204,60 @@ async function passUser(likedUserID) {
       return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
     }
     
+    
     onMounted(fetchBuzzes);
 
-    return { buzzes, likeBack, passUser, handleImageError, defaultProfilePic, calculateAge,showMessagePopup, messageContent, openMessagePopup, closeMessagePopup };
+    return { buzzes, likeBack, getRandomAnimationStyle, passUser, handleImageError, defaultProfilePic, calculateAge,showMessagePopup, messageContent, openMessagePopup, closeMessagePopup };
   }
 };
 
 
+
+
 </script>
   
-  <style>
-  .mybuzzes-container {
+  <style scoped>
+
+.background-grid-wrapper {
+  position: fixed;
+  top: 8vh;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 8vh);
+  z-index: 0;
+  overflow: hidden;
+  backdrop-filter: blur(10px); /* 🔥 the actual blur */
+  -webkit-backdrop-filter: blur(10px); /* Safari support */
+  pointer-events: none;
+}
+
+.background-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-auto-rows: 100px;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-cell {
+  background-color: #ffd400;
+  border: 1px solid #fbc02d;
+  animation-name: sparkle;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  filter: blur(6px);
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    background-color: #ffd400;
+  }
+  50% {
+    background-color: rgb(255, 252, 103);
+  }
+}
+
+.mybuzzes-container {
   text-align: center;
   padding: 20px;
   background: #ffffff; /* Light yellow background for a softer look */
