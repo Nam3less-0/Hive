@@ -347,7 +347,7 @@ const setAsMainPic = async (newMainPic) => {
   try {
     const user = auth.currentUser;
     if (!user) {
-      alert('You must be logged in to update your profile picture.');
+      triggerNotification('You must be logged in to update your profile picture.', "error");
       return;
     }
 
@@ -375,7 +375,7 @@ const setAsMainPic = async (newMainPic) => {
     }
   } catch (error) {
     console.error('Error setting new main picture:', error);
-    alert('Error: ' + error.message);
+    triggerNotification('Error: ' + error.message, "error");
   }
 };
 
@@ -430,7 +430,7 @@ const uploadImage = async (event) => {
     }
   } catch (error) {
     console.error('Error uploading image:', error);
-    alert('Error uploading image: ' + error.message);
+    triggerNotification('Error uploading image: ' + error.message, "error");
   }
 };
 
@@ -588,7 +588,7 @@ async function changePassword() {
     const credential = EmailAuthProvider.credential(user.email, currentPassword.value);
     await reauthenticateWithCredential(user, credential);
     await updatePassword(user, newPassword.value);
-    alert("Password updated successfully!");
+    triggerNotification("Password updated successfully!", "success");
     closePopup();
   } catch (error) {
     console.error("Error changing password:", error);
@@ -635,7 +635,7 @@ async function addInterest(interest) {
       let updatedInterests = userDocSnap.data().interests || [];
 
       if (updatedInterests.includes(interest)) {
-        alert("Interest already added!");
+        triggerNotification("Interest already added!", "error");
         return;
       }
 
