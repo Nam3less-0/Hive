@@ -9,15 +9,15 @@
 
       <div class="navbar-center">
         <router-link to="/connect" class="nav-link" :class="{ active: isActive('/connect') }">
-          <img src="@/assets/connect-logo.png" alt="Connect" />
+          <img src="@/assets/connect-logo-nobg.png" alt="Connect" />
           Connect
         </router-link>
         <router-link to="/messages" class="nav-link" :class="{ active: isActive('/messages') }">
-          <img src="@/assets/messages-logo.png" alt="Messages" />
+          <img src="@/assets/messages-logo-nobg.png" alt="Messages" />
           Messages
         </router-link>
         <router-link to="/mybuzzes" class="nav-link" :class="{ active: isActive('/mybuzzes') }">
-          <img src="@/assets/mybuzzes-logo.png" alt="MyBuzzes" />
+          <img src="@/assets/mybuzzes-logo-nobg.png" alt="MyBuzzes" />
           MyBuzzes
         </router-link>
       </div>
