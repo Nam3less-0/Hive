@@ -218,14 +218,16 @@ export default {
 
 /* Responsive container: full width with a max-width on larger screens */
 .chat-list-container {
-  width: 100%;
-  max-width: 480px;
-  background-color: #ffcc00;
+  flex: 1;
+  height: 100vh; /* Ensure it extends fully */
+  background-color: rgb(239, 228, 193);
   padding: 1rem;
-  margin: 0 auto;
   border-radius: 8px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
 }
+
 
 .chat-list-title {
   margin: 0 0 1rem 0;
