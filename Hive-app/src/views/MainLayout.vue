@@ -95,6 +95,7 @@ html, body {
   background-color: #ffd400;
   padding: 10px 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 6vh;
 }
 
 .navbar-left img {

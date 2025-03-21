@@ -1,15 +1,11 @@
 <template>
+  <div class="page-wrapper">
+    <div class="background-grid">
+      <div v-for="n in 500" :key="n" class="grid-cell" :style="getRandomAnimationStyle()"></div>
+    </div>
   <div class="home-container">
+    
     <div class="content-wrapper">
-      <!-- Left Section: Beehive Image -->
-      <div class="left-section">
-        <img
-          src="@/assets/beehive.png"
-          alt="Hive Welcome"
-          class="welcome-image"
-        />
-      </div>
-      
       <!-- Right Section: Info (Likes and Streak) -->
       <div class="right-section">
         <div class="likes-box">
@@ -104,6 +100,7 @@
         <p>Question: How to delete my account? <br/> Answer: <b>Go to your profile -> Security -> "Delete Account".</b></p>
       </div>
     </div>
+  </div>
 
   </div>
 </template>
@@ -122,6 +119,19 @@ const showContactModal = ref(false);
 const showTermsModal = ref(false);
 const showPrivacyPolicyModal = ref(false);
 const showFAQModal = ref(false);
+
+const gridSize = 500; // Number of squares
+const grid = Array(gridSize).fill(null);
+const hoveredIndex = ref(null);
+
+const getRandomAnimationStyle = () => {
+  const delay = (Math.random() * 5).toFixed(2);      // 0 to 5s
+  const duration = (2 + Math.random() * 3).toFixed(2); // 2 to 5s
+  return {
+    animationDelay: `${delay}s`,
+    animationDuration: `${duration}s`
+  };
+};
 
 const openContactModal = () => {
   showContactModal.value = true;
@@ -218,13 +228,46 @@ onMounted(async () => {
 
 
 <style scoped>
-/* Container for the overall page */
-.home-container {
-  display: flex;
-  flex-direction: column;
-  max-height: 70vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.page-wrapper {
+  position: relative;
+  z-index: 0;
 }
+.home-container {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+.background-grid {
+  position: fixed;
+  top: 8vh;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 8vh);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-auto-rows: 100px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.grid-cell {
+  background-color: #ffd400;
+  border: 1px solid #fbc02d;
+  animation-name: sparkle;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    background-color: #ffd400;
+  }
+  50% {
+    background-color: white;
+  }
+}
+
 
 /* Wrapper for left and right sections */
 .content-wrapper {
@@ -238,39 +281,27 @@ onMounted(async () => {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Left Section (Beehive Image) */
-.left-section {
-  flex: 1 1 300px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.welcome-image {
-  max-width: 100%;
-  height: auto;
-}
 
 /* Right Section (Likes and Streak) */
 .right-section {
-  flex: 1 1 300px;
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  justify-content: center;
+  gap: 30px;
+  width: 100%;
+  max-width: 500px;
 }
 
 /* Likes Box */
-.likes-box {
-  border: 2px solid brown;
+.likes-box,
+.streak-box {
+  background-color: #fff8e1;
+  border: 2px solid #fbc02d;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   border-radius: 20px;
   padding: 20px;
-  font-size: 1.8rem;
-  display: flex;
-  align-items: center;
-  gap: 20px;
+  font-size: 1.6rem;
+  pointer-events: none;
 }
-
 .info {
   width: 50px;
   height: auto;
@@ -291,20 +322,26 @@ onMounted(async () => {
   border: none;
   cursor: pointer;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: 0.3s;
+  pointer-events: auto;
 }
 
-/* Streak Box */
+.view-likes:hover {
+  background-color: #fdd835;
+  transform: scale(1.05);
+}
+
 .streak-box {
-  border: 2px solid brown;
-  border-radius: 20px;
-  padding: 20px;
   background-image: url('@/assets/streak-honeycomb.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  font-size: 1.8rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+.streak-details {
+  margin-top: 15px;
+}
+
 
 .streak-details {
   display: flex;
@@ -334,6 +371,8 @@ onMounted(async () => {
   bottom: 0;
   left: 0;
   width: 100%;
+  z-index: 2;
+  height: 6vh;
 }
 
 
@@ -386,6 +425,7 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
+  pointer-events: none;
 }
 
 .modal-content {
