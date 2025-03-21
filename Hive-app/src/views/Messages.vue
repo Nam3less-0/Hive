@@ -164,14 +164,23 @@
   display: flex;
   flex-direction: column;
   max-width: 60vw;
-  background-color: #fff4c2; /* Fallback color */
-  background-image: url('src/assets/chatbg.webp'); /* Adjust the path as needed */
-  background-size: cover; /* or 'contain' if you prefer */
-  background-repeat: no-repeat;
-  background-position: center;
+  background-color: #fff4c2;
   border-radius: 10px;
   overflow: hidden;
   position: relative;
+  z-index: 0; /* Ensure content is above the background */
+}
+
+.chat-content-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0; /* shorthand for top, right, bottom, left: 0 */
+  background-image: url('src/assets/chatbg.webp');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: blur(5px); /* Adjust blur as needed */
+  z-index: -1; /* Keep it behind the content */
 }
 
 /* Chat header */
