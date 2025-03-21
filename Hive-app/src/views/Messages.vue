@@ -157,35 +157,61 @@
     border-right: 1px solid #ccc;
     padding-right: 10px;
   }
-  
-  /* Right column (Chat header + ChatRoom) */
-  .chat-content-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    max-width: 60vw;
-  }
-  
-  /* Chat header */
-  .chat-header {
-    display: flex;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid #ccc;
-  }
-  .chat-profile-pic {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 1rem;
-  }
-  .chat-name {
-    font-size: 1.2rem;
-    font-weight: bold;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-  
+
+/* Right column (Chat header + ChatRoom) */
+.chat-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 60vw;
+  background-color: #fff4c2; /* Fallback color */
+  background-image: url('src/assets/chatbg.webp'); /* Adjust the path as needed */
+  background-size: cover; /* or 'contain' if you prefer */
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Chat header */
+.chat-header {
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  background-color: rgb(239, 228, 193); /* Fallback color */
+  border-bottom: 2px solid #ddd;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(5px); /* Soft blur effect */
+  transition: all 0.3s ease-in-out;
+}
+
+/* Profile picture */
+.chat-profile-pic {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ffcc00;
+  transition: transform 0.2s ease-in-out, border 0.2s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.chat-profile-pic:hover {
+  transform: scale(1.1);
+  border-color: #ffb300;
+}
+
+/* Chat name styling */
+.chat-name {
+  font-size: 1.4rem;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  color: #333;
+  margin-left: 1rem;
+  display: flex;
+  align-items: center;
+}
   /* Placeholder */
   .chat-content-placeholder {
     flex: 1;
