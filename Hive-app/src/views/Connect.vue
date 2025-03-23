@@ -1,7 +1,8 @@
 <template>
   <div class="connect-container">
     <!-- Display One User at a Time -->
-    <div v-if="users.length > 0 && currentUserIndex < users.length" class="profile-card">
+    <div v-if="users.length > 0 && currentUserIndex < users.length" class="profile-card" :class="animationDirection"
+  @animationend="handleAnimationEnd">
       <div class="profile-picture">
         <img :src="users[currentUserIndex].images && users[currentUserIndex].images.length > 0 
           ? users[currentUserIndex].images[0] 
@@ -19,12 +20,10 @@
     </div>
 
     <!-- No More Users --> 
-    <div v-else class="no-more-users">
-      <h2>No more users available</h2>
-    </div>
+    <NoMoreUsers v-else />
 
     <!-- Right Section -->
-    <div class="interaction-area">
+    <div v-if="users.length > 0 && currentUserIndex < users.length" class="interaction-area">
       <div class="actions">
         <button class="pass-btn" @click="passUser">✖️ Pass</button>
         <button class="like-btn" @click="likeUser">❤️ Like</button>
@@ -139,7 +138,7 @@
     </div>
   </div>
 
-  <NoMoreUsersPopup v-if="noMoreUsersPopup" @close="noMoreUsersPopup = false" />
+
 </template>
 
 <script setup>
@@ -150,6 +149,8 @@ import { collection, getDocs, increment } from 'firebase/firestore';
 import placeholderProfile from '@/assets/placeholder-profile.jpg';
 import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import NoMoreUsersPopup from '@/components/NoMoreUsersPopup.vue';
+import NoMoreUsers from "@/components/NoMoreUsers.vue";
+
 
 //Logic for filter button
 const showFilter = ref(false);
@@ -167,7 +168,8 @@ const users = ref([]);
 const interestOptions = ["Basketball", "Reading", "Gymming", "Music", "Travel", "Gaming", "Cooking", "Photography"];
 const currentUserIndex = ref(0);
 const currentUser = ref(null);
-const noMoreUsersPopup = ref(false);
+const noMoreUsers = ref(false);
+const animationDirection = ref(null);
 
 const adjustAgeRange = () => {
   if (selectedAgeMin.value > selectedAgeMax.value) {
@@ -231,21 +233,23 @@ onMounted(async () => {
   }
 });
 
-
 //Logic for Message Button
 const showMessagePopup = ref(false);
 const messageText = ref("");
 
 // Function to move to the next user
 const nextUser = () => {
-  if (users.value.length === 0 || currentUserIndex.value >= users.value.length - 1) {
-    noMoreUsersPopup.value = true;
+  // Remove the current user from the list
+  users.value.splice(currentUserIndex.value, 1);
+
+  if (users.value.length === 0) {
+    noMoreUsers.value = true;
     return;
   }
-  if (currentUserIndex.value < users.value.length - 1) {
-    currentUserIndex.value += 1;
-  } else {
-    console.log("Reached the last user.");
+
+  // Reset index if out of bounds
+  if (currentUserIndex.value >= users.value.length) {
+    currentUserIndex.value = 0;
   }
 };
 
@@ -255,7 +259,7 @@ const updateSeenArray = async (userId, seenUserId) => {
     await updateDoc(doc(db, "users", userId), {
       seen: arrayUnion(seenUserId),
     });
-    console.log(`Updated seen array for user ${userId} with ${seenUserId}`);
+   
   } catch (error) {
     console.error("Error updating seen array:", error);
   }
@@ -269,6 +273,7 @@ const passUser = async () => {
   const passedUserId = users.value[currentUserIndex.value].id;
 
   await updateSeenArray(myUserId, passedUserId);
+  animationDirection.value = 'slide-left';
   nextUser();
 };
 
@@ -288,15 +293,15 @@ const likeUser = async () => {
       likes: arrayUnion({ userId: myUserId, message: null }),
       likeCount: increment(1)
     });
+    animationDirection.value = 'slide-right';
 
-    console.log(`Liked user ${likedUserId} with message: null`);
+ 
   } catch (error) {
     console.error("Error liking user:", error);
   }
 
   nextUser();
 };
-
 
 // Function to handle "Like & Send Message" button click
 const likeAndSendMessage = async () => {
@@ -319,7 +324,7 @@ const likeAndSendMessage = async () => {
       likes: arrayUnion({ userId: myUserId, message: messageText.value }),
     });
 
-    console.log(`Liked user ${likedUserId} with message: ${messageText.value}`);
+
   } catch (error) {
     console.error("Error liking user with message:", error);
   }
@@ -329,7 +334,6 @@ const likeAndSendMessage = async () => {
   nextUser();
 };
 
-
 //Logic for age calculation
 const calculateAge = (dob) => {
   if (!dob) return 'Unknown';
@@ -338,9 +342,56 @@ const calculateAge = (dob) => {
   return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
 };
 
+
+
+
+
+const handleAnimationEnd = () => {
+  // Clear animation class
+  animationDirection.value = null;
+  // move to next user after animation
+};
 </script>
 
 <style scoped>
+
+
+
+
+
+/* Slide animations */
+@keyframes slideRight {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(200%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideLeft {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-200%);
+    opacity: 0;
+  }
+}
+
+.slide-right {
+  animation: slideRight 0.5s ease forwards;
+}
+
+.slide-left {
+  animation: slideLeft 0.5s ease forwards;
+}
+
+
+
 
 /* Message Popup Styling */
 .message-popup {
@@ -575,5 +626,25 @@ textarea {
   border-radius: 5px;
 }
 /*End of Right side items styling*/
+
+
+.no-more-users {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #fffbee;
+  text-align: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.bee-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+}
 
 </style>
