@@ -274,7 +274,7 @@ const passUser = async () => {
 
   await updateSeenArray(myUserId, passedUserId);
   animationDirection.value = 'slide-left';
-  nextUser();
+  
 };
 
 // Function to handle "Like" button click
@@ -300,7 +300,7 @@ const likeUser = async () => {
     console.error("Error liking user:", error);
   }
 
-  nextUser();
+  
 };
 
 // Function to handle "Like & Send Message" button click
@@ -350,6 +350,7 @@ const handleAnimationEnd = () => {
   // Clear animation class
   animationDirection.value = null;
   // move to next user after animation
+  nextUser();
 };
 </script>
 
@@ -383,11 +384,11 @@ const handleAnimationEnd = () => {
 }
 
 .slide-right {
-  animation: slideRight 0.5s ease forwards;
+  animation: slideRight 1.5s ease forwards;
 }
 
 .slide-left {
-  animation: slideLeft 0.5s ease forwards;
+  animation: slideLeft 1.5s ease forwards;
 }
 
 
