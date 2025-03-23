@@ -3,6 +3,9 @@
     <!-- Display One User at a Time -->
     <div v-if="users.length > 0 && currentUserIndex < users.length" class="profile-card" :class="animationDirection"
   @animationend="handleAnimationEnd">
+  <!-- Heart & Cross Animations -->
+<div class="overlay-icon heart" v-if="showHeart">❤️</div>
+<div class="overlay-icon cross" v-if="showCross">❌</div>
       <div class="profile-picture">
         <img :src="users[currentUserIndex].images && users[currentUserIndex].images.length > 0 
           ? users[currentUserIndex].images[0] 
@@ -163,6 +166,8 @@ const selectedReligion = ref("None");
 const selectedSchool = ref("");
 const selectedIndustry = ref("");
 const selectedGender = ref("Female");
+const showHeart = ref(false);
+const showCross = ref(false);
 
 const users = ref([]);
 const interestOptions = ["Basketball", "Reading", "Gymming", "Music", "Travel", "Gaming", "Cooking", "Photography"];
@@ -238,13 +243,21 @@ const showMessagePopup = ref(false);
 const messageText = ref("");
 
 // Function to move to the next user
+const preloadNextUserImage = () => {
+  const nextUser = users.value[currentUserIndex.value + 1];
+  if (nextUser && nextUser.images && nextUser.images[0]) {
+    const img = new Image();
+    img.src = nextUser.images[0];
+  }
+};
 const nextUser = () => {
   // Remove the current user from the list
   users.value.splice(currentUserIndex.value, 1);
-
+  preloadNextUserImage();
   if (users.value.length === 0) {
     noMoreUsers.value = true;
     return;
+    
   }
 
   // Reset index if out of bounds
@@ -274,7 +287,7 @@ const passUser = async () => {
 
   await updateSeenArray(myUserId, passedUserId);
   animationDirection.value = 'slide-left';
-  
+  showCross.value = true;
 };
 
 // Function to handle "Like" button click
@@ -287,6 +300,7 @@ const likeUser = async () => {
   try {
     // Update the logged-in user's seen array
     await updateSeenArray(myUserId, likedUserId);
+    showHeart.value = true;
 
     // Update the liked user's "likes" array
     await updateDoc(doc(db, "users", likedUserId), {
@@ -349,6 +363,8 @@ const calculateAge = (dob) => {
 const handleAnimationEnd = () => {
   // Clear animation class
   animationDirection.value = null;
+  showHeart.value = false;
+  showCross.value = false;
   // move to next user after animation
   nextUser();
 };
@@ -358,37 +374,69 @@ const handleAnimationEnd = () => {
 
 
 
+.overlay-icon {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  font-size: 5rem;
+  transform: translateX(-50%);
+  z-index: 10;
+  opacity: 0;
+  animation: fadePop 0.5s ease-in-out forwards;
+}
 
+@keyframes fadePop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+.heart {
+  color: red;
+}
+
+.cross {
+  color: #333;
+}
 
 /* Slide animations */
 @keyframes slideRight {
   0% {
-    transform: translateX(0);
+    transform: translateX(0) rotate(0deg) scale(1);
     opacity: 1;
   }
   100% {
-    transform: translateX(200%);
+    transform: translateX(200%) rotate(15deg) scale(0.9);
     opacity: 0;
   }
 }
 
 @keyframes slideLeft {
   0% {
-    transform: translateX(0);
+    transform: translateX(0) rotate(0deg) scale(1);
     opacity: 1;
   }
   100% {
-    transform: translateX(-200%);
+    transform: translateX(-200%) rotate(-15deg) scale(0.9);
     opacity: 0;
   }
 }
 
 .slide-right {
-  animation: slideRight 1.5s ease forwards;
+  animation: slideRight 1.5s ease-out forwards;
 }
 
 .slide-left {
-  animation: slideLeft 1.5s ease forwards;
+  animation: slideLeft 1.5s ease-out forwards;
 }
 
 
