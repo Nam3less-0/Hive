@@ -394,6 +394,7 @@ onMounted(async () => {
   gap: 20px;
   justify-content: center;
   margin-top: 10px;
+  margin-right: 50px;
 }
 
 .social-icons img {
@@ -425,7 +426,7 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  pointer-events: none;
+  pointer-events: all;
 }
 
 .modal-content {
