@@ -261,6 +261,7 @@ button {
   cursor: pointer;
   transition: background 0.3s ease;
   box-sizing: border-box;
+  margin-bottom: 40px;
 }
 
 button:hover {

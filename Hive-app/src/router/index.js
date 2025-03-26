@@ -13,8 +13,8 @@ import Messages from "@/views/Messages.vue";
 import MyAccount from "@/views/MyAccount.vue";
 import MyBuzzes from "@/views/MyBuzzes.vue";
 import MainLayout from "@/views/MainLayout.vue";
-import Notifications from '@/views/Notifications.vue';
-import Privacy from '@/views/Privacy.vue';
+import Notifications from "@/views/Notifications.vue";
+import Privacy from "@/views/Privacy.vue";
 import LoadingPage from "@/views/LoadingPage.vue";
 import { auth } from "@/firebase";
 
@@ -31,7 +31,6 @@ const routes = [
       { path: 'myaccount', name: 'MyAccount', component: MyAccount },
       { path: 'notifications', name: 'Notifications', component: Notifications },
       { path: 'privacy', name: 'Privacy', component: Privacy },
-      
     ],
   },
   { path: '/login', name: 'Login', component: Login },
@@ -47,18 +46,18 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 });
 
 router.beforeEach((to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const currentUser = auth.currentUser;
-
-  if (requiresAuth && !currentUser) {
-    next({ name: "Login" });
-  } else {
-    next();
-  }
+  auth.onAuthStateChanged((user) => {
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+    if (requiresAuth && !user) {
+      next({ name: "Login" });
+    } else {
+      next();
+    }
+  });
 });
 
 export default router;
