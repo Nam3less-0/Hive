@@ -69,16 +69,43 @@
     </div>
 
   </div>
- <!-- Filter Popup -->
- <div v-if="showFilter" class="filter-popup">
-    <div class="filter-content">
-      <h2>FILTER <button @click="showFilter = false" class="close-btn">✖️</button></h2>
-      <ul>
-        <li><strong>Interests</strong>
-          <select v-model="selectedInterests" multiple>
-            <option v-for="interest in interestOptions" :key="interest" :value="interest">{{ interest }}</option>
-          </select>
-        </li>
+<!-- Filter Popup -->
+<div v-if="showFilter" class="filter-popup">
+  <div class="filter-content">
+    <h2>
+      FILTER 
+      <button @click="showFilter = false" class="close-btn">✖️</button>
+    </h2>
+    <ul>
+      <li>
+  <strong>Interests</strong>
+  <div class="interests-container">
+    <div
+      v-for="interest in interestOptions"
+      :key="interest"
+      class="interest-option"
+    >
+      <label>
+        <input
+          type="checkbox"
+          :value="interest"
+          v-model="selectedInterests"
+        />
+        {{ interest }}
+      </label>
+    </div>
+  </div>
+  <div class="custom-interest">
+    <input
+      type="text"
+      v-model="newInterest"
+      placeholder="Add your own interest"
+      @keyup.enter="addCustomInterest"
+    />
+    <button @click="addCustomInterest">Add</button>
+  </div>
+</li>
+
         <li><strong>Age Range</strong>
           <div class="age-slider">
             <input type="range" v-model="selectedAgeMin" min="18" max="50" @input="adjustAgeRange" />
@@ -414,6 +441,34 @@ textarea {
   padding: 20px;
   text-align: center;
   border: 1px solid black;
+}
+.interests-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 100px;
+  overflow-y: auto;
+  margin: 8px 0;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: beige
+}
+
+.interest-option {
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.custom-interest {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.custom-interest input {
+  flex: 1;
+  font-size: 0.75rem;
 }
 
 .age-slider {
