@@ -163,6 +163,7 @@ button:hover {
   max-width: 25vw;
   margin-top: 20px;
   font-size: 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .links a {
