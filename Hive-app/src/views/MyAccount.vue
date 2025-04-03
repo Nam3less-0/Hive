@@ -979,7 +979,7 @@ onMounted(() => {
   gap: 15px;
 }
 
-.save-btn, .reset-btn, .delete-btn {
+.save-btn, .reset-btn, .delete-btn, .save-profile-btn {
   background-color: #ffe96b;
   padding: 10px 18px;
   border-radius: 8px;
@@ -1109,20 +1109,8 @@ h2 {
   margin-top: 20px;
 }
 
-.save-profile-btn {
-  background-color: #4CAF50;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
-}
-
 .save-profile-btn:hover {
-  background-color: #45a049;
+  background-color: #f2d324;
 }
 
 /* Wrapper */

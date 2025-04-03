@@ -1,11 +1,32 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { auth } from '@/firebase'
-import HoneycombImg from '@/assets/image.png' // 👈 Correct import from assets
+import { auth, db } from '@/firebase'
+import { doc, getDoc } from 'firebase/firestore'
+import HoneycombImg from '@/assets/image.png'
 
 const router = useRouter()
 const showLogoutConfirm = ref(false)
+const userName = ref('') // 👈 reactive name
+
+
+
+// Fetch user info on mount
+onMounted(async () => {
+  const user = auth.currentUser
+  if (user) {
+    const uid = user.uid
+    const userDocRef = doc(db, 'users', uid)
+    const userSnap = await getDoc(userDocRef)
+    if (userSnap.exists()) {
+      userName.value = userSnap.data().firstName + " " + userSnap.data().lastName;
+    } else {
+      userName.value = 'User'
+    }
+  } else {
+    userName.value = 'User'
+  }
+})
 
 function confirmLogout() {
   showLogoutConfirm.value = true
@@ -22,7 +43,7 @@ function logout() {
 <template>
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="greeting">Hi, Santtosh Mohan!</div>
+      <div class="greeting">Hi, {{ userName }}!</div>
       <div class="profile-label">Your Profile</div>
     </div>
     <ul>
