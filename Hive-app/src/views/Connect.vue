@@ -203,7 +203,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { db, auth } from '@/firebase';
-import { collection, getDocs, increment, doc, getDoc, updateDoc, arrayUnion  } from 'firebase/firestore';
+import { collection, getDocs, increment, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import placeholderProfile from '@/assets/placeholder-profile.jpg';
 import NoMoreUsersPopup from '@/components/NoMoreUsersPopup.vue';
 
