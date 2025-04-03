@@ -37,6 +37,18 @@
         <button type="submit">Register</button>
       </form>
 
+      <!-- Google Sign-Up -->
+      <div class="button-container">
+        <button @click="handleGoogleRegister" class="google-btn" >
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+          alt="Google logo" class="google-icon" />
+          Sign up with Google
+        </button>
+      </div>
+
+
+      <p v-if="userMessage" class="alert">{{ userMessage }}</p>
+
       <div class="links">
         <router-link to="/login">Already have an account? Sign in</router-link>
       </div>
@@ -45,9 +57,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/firebase';
+import { ref, onMounted } from 'vue';
+import { createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { auth, signInWithGoogleForRegister, logOut } from '@/firebase';
 import Branding from '@/components/Branding.vue';
 import { useRouter } from 'vue-router';
 
@@ -85,6 +97,32 @@ const handleRegister = async () => {
     alert(error.message);
   }
 };
+
+const user = ref(null)
+
+onMounted(() => {
+  onAuthStateChanged(auth, (firebaseUser) => {
+    user.value = firebaseUser
+  })
+})
+
+const userMessage = ref('');
+
+const handleGoogleRegister = async () => {
+  const { user, exists } = await signInWithGoogleForRegister();
+
+  if (user && !exists) {
+    router.push({ name: 'NewUserPage1' }); // Redirect to onboarding
+  } else if (exists && !user) {
+    userMessage.value = "An account already exists with this Google email.";
+  } else {
+    userMessage.value = "Google registration failed. Please try again.";
+  }
+};
+
+
+
+
 </script>
 
 <style scoped>
@@ -163,6 +201,7 @@ button:hover {
   max-width: 25vw;
   margin-top: 20px;
   font-size: 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .links a {
@@ -173,4 +212,44 @@ button:hover {
 .links a:hover {
   text-decoration: underline;
 }
+
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center text and icon */
+  gap: 10px;
+  width: 100%; /* Ensures it takes full width */
+  max-width: 300px; /* Matches Log In and Sign Up buttons */
+  padding: 10px;
+  background-color: #4285F4;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.google-btn:hover {
+  background-color: #357ae8;
+}
+
+.google-icon {
+  width: 18px; /* Adjust icon size */
+  height: 18px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 300px; /* Match login and register button */
+}
+
+.alert {
+  color: red;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
 </style> 

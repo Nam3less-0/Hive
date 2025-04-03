@@ -17,7 +17,7 @@
         <p><strong>Height:</strong> {{ users[currentUserIndex]?.height || 'N/A' }}</p>
         <p><strong>Age:</strong> {{ calculateAge(users[currentUserIndex]?.dateOfBirth) }}</p>
         <p><strong>Bio:</strong> {{ users[currentUserIndex]?.bio || 'No bio available' }}</p>
-        <button class="message-btn" @click="showMessagePopup = true">Write a message 💬</button>
+        <button class="message-btn" @click="showMessagePopup = true">Write a message here 💬</button>
         <p class="user-progress">Viewing user {{ currentUserIndex + 1 }} of {{ users.length }}</p>
       </div>
     </div>
@@ -152,8 +152,10 @@ import { collection, getDocs, increment } from 'firebase/firestore';
 import placeholderProfile from '@/assets/placeholder-profile.jpg';
 import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import NoMoreUsersPopup from '@/components/NoMoreUsersPopup.vue';
+
 import NoMoreUsers from "@/components/NoMoreUsers.vue";
 
+import { fetchGlobalInterests, encodeInterests, cosineSimilarity } from '@/utils/matchmaker';
 
 //Logic for filter button
 const showFilter = ref(false);
@@ -220,6 +222,10 @@ onMounted(async () => {
       const loggedInUserData = userDocSnap.data();
       const seenArray = loggedInUserData.seen || []; // Ensure seen array exists
 
+      // Fetch Global Interests and get Users Interest Vector
+      const globalInterests = await fetchGlobalInterests();
+      const loggedInUserVector = encodeInterests(loggedInUserData.interests || [], globalInterests);
+
       console.log("Seen Users:", seenArray);
 
       // Fetch all users from Firestore
@@ -227,9 +233,18 @@ onMounted(async () => {
       const querySnapshot = await getDocs(userCollection);
       console.log("All users fetched from Firestore:", querySnapshot.docs.map(doc => doc.data()));
       // Filter out the logged-in user AND users in the seen array
-      users.value = querySnapshot.docs
+      const otherUsers = querySnapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
         .filter(user => user.id !== loggedInUser.uid && !seenArray.includes(user.id));
+
+      // Sort users in order of similarity
+      const sortedUsers = otherUsers.map(user => {
+        const vector = encodeInterests(user.interests || [], globalInterests);
+        const similarity = cosineSimilarity(loggedInUserVector, vector);
+        return { ...user, similarity };
+      }).sort((a, b) => b.similarity - a.similarity);
+
+      users.value = sortedUsers;
 
       console.log("Filtered users (not in seen array):", users.value);
     });
