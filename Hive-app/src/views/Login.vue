@@ -16,19 +16,23 @@
         <label>Password</label>
         <input v-model="password" type="password" placeholder="Enter your password" required />
 
-        <button type="submit">Log In</button>
+        <button type="submit" class="auth-button primary">
+          <img src="https://fonts.gstatic.com/s/i/materialiconsoutlined/mail/v15/24px.svg" class="icon" />
+            Log In with Email
+        </button>
+
       </form>
 
       <!-- Google Sign In Button -->
       <div class="button-container">
-        <button @click="handleGoogleSignIn" class="google-btn">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
-          alt="Google logo" class="google-icon" />
+        <button @click="handleGoogleSignIn" class="auth-button google">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+            alt="Google logo" class="google-icon" />
           Log in with Google
         </button>
       </div>
-      <p v-if="userMessage" class="alert">{{ userMessage }}</p>
 
+      <p v-if="userMessage" class="alert">{{ userMessage }}</p>
 
       <div class="links">
         <a @click="goToReset">Forgot password?</a>
@@ -62,11 +66,7 @@ const password = ref('');
 const handleLogin = async () => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
-    const user = userCredential.user
-     /*if (!user.emailVerified) {
-      alert("Email not verified.");
-      return;
-    }*/
+    const user = userCredential.user;
 
     const userDoc = await getDoc(doc(db, "users", user.uid));
     if (!userDoc.exists()) {
@@ -76,22 +76,20 @@ const handleLogin = async () => {
     }
 
     console.log('User signed in:', userCredential.user);
-    router.push({name: "LoadingPage"})
-    // You can redirect the user or perform additional actions here
+    router.push({ name: "LoadingPage" });
   } catch (error) {
     console.error('Error signing in:', error.message);
-    alert('Error signing in: ' + error.message)
-    // Optionally, handle error feedback for the user here
+    alert('Error signing in: ' + error.message);
   }
 };
 
-const user = ref(null)
+const user = ref(null);
 
 onMounted(() => {
   onAuthStateChanged(auth, (firebaseUser) => {
-    user.value = firebaseUser
-  })
-})
+    user.value = firebaseUser;
+  });
+});
 
 const userMessage = ref('');
 
@@ -105,10 +103,9 @@ const handleGoogleSignIn = async () => {
   }
 };
 
-
 const handleLogOut = async () => {
-  await logOut()
-}
+  await logOut();
+};
 </script>
 
 <style scoped>
@@ -133,7 +130,6 @@ const handleLogOut = async () => {
   background: white;
   height: 100vh;
   box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .logo-small img {
@@ -146,14 +142,12 @@ form {
   flex-direction: column;
   width: 100%;
   max-width: 25vw;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 label {
   font-weight: bold;
-  color: rgb(156, 156, 156);
+  color: black;
   margin-top: 10px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 input {
@@ -164,27 +158,55 @@ input {
   border-radius: 8px;
   background: #f9f9f9;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-button {
+.auth-button {
   width: 100%;
-  margin-top: 20px;
   padding: 12px;
-  background: black;
-  color: white;
-  border: none;
+  margin-top: 20px;
   border-radius: 8px;
-  font-size: 18px;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  border: none;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: background 0.3s ease;
 }
 
-button:hover {
-  background: #333;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.auth-button.primary {
+  background:  white;
+  color: black;
+  border: 1px solid #ccc; 
+}
+
+.auth-button.primary:hover {
+  background:  #ffe96b;
+  color: white;
+}
+
+.auth-button.google {
+  background-color: white;
+  color: black;
+  border: 1px solid #ccc; 
+}
+
+.auth-button.google:hover {
+  background-color: #ffe96b;
+  color: white;
+}
+
+.google-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.button-container {
+  width: 100%;
+  max-width: 25vw;
 }
 
 .links {
@@ -205,44 +227,9 @@ button:hover {
   text-decoration: underline;
 }
 
-.google-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center; /* Center text and icon */
-  gap: 10px;
-  width: 100%; /* Match width of the Login button */
-  max-width: 300px; /* Set max width to match login button */
-  padding: 10px;
-  background-color: #4285F4;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.google-btn:hover {
-  background-color: #357ae8;
-}
-
-.google-icon {
-  width: 18px; /* Adjust icon size */
-  height: 18px;
-}
-
-.button-container {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  max-width: 300px; /* Match login and register button */
-}
-
-
 .alert {
   color: red;
   margin-top: 10px;
   font-weight: bold;
 }
-
 </style>

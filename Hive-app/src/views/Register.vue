@@ -34,18 +34,20 @@
           required
         />
 
-        <button type="submit">Register</button>
+        <button type="submit" class="auth-button primary">
+          <img src="https://fonts.gstatic.com/s/i/materialiconsoutlined/mail/v15/24px.svg" class="icon" />
+          Register with Email
+        </button>
       </form>
 
       <!-- Google Sign-Up -->
       <div class="button-container">
-        <button @click="handleGoogleRegister" class="google-btn" >
+        <button @click="handleGoogleRegister" class="auth-button google">
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
-          alt="Google logo" class="google-icon" />
-          Sign up with Google
+            alt="Google logo" class="google-icon" />
+          Register with Google
         </button>
       </div>
-
 
       <p v-if="userMessage" class="alert">{{ userMessage }}</p>
 
@@ -69,42 +71,32 @@ const confirmPassword = ref('');
 const router = useRouter();
 
 const handleRegister = async () => {
-  // Password length check
   if (password.value.length < 6) {
-    console.error('Password must be at least 6 characters long');
     alert('Password must be at least 6 characters long');
     return;
   }
 
-  // Confirm password match check
   if (password.value !== confirmPassword.value) {
-    console.error('Passwords do not match');
     alert('Passwords do not match');
     return;
   }
 
   try {
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      email.value,
-      password.value
-    );
+    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
     console.log('User registered:', userCredential.user);
-    // Redirect the user to Home (or another page) after registration.
     router.push({ name: 'NewUserPage1' });
   } catch (error) {
-    console.error('Error registering:', error.message);
     alert(error.message);
   }
 };
 
-const user = ref(null)
+const user = ref(null);
 
 onMounted(() => {
   onAuthStateChanged(auth, (firebaseUser) => {
-    user.value = firebaseUser
-  })
-})
+    user.value = firebaseUser;
+  });
+});
 
 const userMessage = ref('');
 
@@ -112,17 +104,13 @@ const handleGoogleRegister = async () => {
   const { user, exists } = await signInWithGoogleForRegister();
 
   if (user && !exists) {
-    router.push({ name: 'NewUserPage1' }); // Redirect to onboarding
+    router.push({ name: 'NewUserPage1' });
   } else if (exists && !user) {
     userMessage.value = "An account already exists with this Google email.";
   } else {
     userMessage.value = "Google registration failed. Please try again.";
   }
 };
-
-
-
-
 </script>
 
 <style scoped>
@@ -131,6 +119,7 @@ const handleGoogleRegister = async () => {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .login-form {
@@ -158,12 +147,14 @@ form {
   flex-direction: column;
   width: 100%;
   max-width: 25vw;
+  font-family: inherit;
 }
 
 label {
   font-weight: bold;
-  color: rgb(156, 156, 156);
+  color: black;
   margin-top: 10px;
+  font-family: inherit;
 }
 
 input {
@@ -174,33 +165,69 @@ input {
   border-radius: 8px;
   background: #f9f9f9;
   box-sizing: border-box;
+  font-family: inherit;
+  font-size: 14px;
 }
 
-button {
-  margin-top: 20px;
-  padding: 12px;
+.auth-button {
   width: 100%;
-  background: black;
-  color: white;
-  border: none;
+  padding: 12px;
+  margin-top: 20px;
   border-radius: 8px;
-  font-size: 18px;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  border: none;
   box-sizing: border-box;
+  transition: background 0.3s ease;
 }
 
-button:hover {
-  background: #333;
+.auth-button.primary {
+  background: white;
+  color: black;
+  border: 1px solid #ccc;
+}
+
+.auth-button.primary:hover {
+  background: #ffe96b;
+  color: white;
+}
+
+.auth-button.google {
+  background-color: white;
+  color: black;
+  border: 1px solid #ccc;
+}
+
+.auth-button.google:hover {
+  background-color: #ffe96b;
+  color: white;
+}
+
+.google-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.button-container {
+  width: 100%;
+  max-width: 25vw;
 }
 
 .links {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 6px;
   width: 100%;
   max-width: 25vw;
   margin-top: 20px;
   font-size: 14px;
+  font-family: inherit;
 }
 
 .links a {
@@ -212,43 +239,12 @@ button:hover {
   text-decoration: underline;
 }
 
-.google-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center; /* Center text and icon */
-  gap: 10px;
-  width: 100%; /* Ensures it takes full width */
-  max-width: 300px; /* Matches Log In and Sign Up buttons */
-  padding: 10px;
-  background-color: #4285F4;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.google-btn:hover {
-  background-color: #357ae8;
-}
-
-.google-icon {
-  width: 18px; /* Adjust icon size */
-  height: 18px;
-}
-
-.button-container {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  max-width: 300px; /* Match login and register button */
-}
-
 .alert {
   color: red;
   margin-top: 10px;
   font-weight: bold;
+  font-family: inherit;
 }
+</style>
 
-</style> 
+
