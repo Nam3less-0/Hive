@@ -25,46 +25,68 @@
       <div class="center-column">
         <!-- Profile Card -->
         <div v-if="users.length > 0 && currentUserIndex < users.length" class="profile-card" 
-             :class="animationDirection" @animationend="handleAnimationEnd">
-          <!-- Heart & Cross Animations -->
+          :class="animationDirection" @animationend="handleAnimationEnd">
+        <!-- Heart & Cross Animations -->
           <div class="overlay-icon heart" v-if="showHeart">❤️</div>
           <div class="overlay-icon cross" v-if="showCross">❌</div>
-          
-          <!-- Conditionally Render Main or Detail Card -->
+  
+          <!-- Main Profile Card -->
           <div v-if="!showDetails" class="profile-main" @click="toggleDetails">
             <div class="profile-picture-container">
               <img class="profile-image" :src="users[currentUserIndex].images && users[currentUserIndex].images.length > 0 
                 ? users[currentUserIndex].images[0] 
                 : placeholderProfile" 
                 alt="User Profile Picture" />
-    
-              <!-- Status Icons like in the image -->
+
+              <!-- Online Status Indicator -->
+              <div class="online-icon" v-if="Math.random() > 0.5">Online</div>
+
+              <!-- Status Icons -->
               <div class="profile-status-icons">
                 <div class="status-icon favorite-icon">⭐</div>
               </div>
-    
+
               <!-- User Name Overlay on Image -->
               <div class="profile-name-overlay">
                 <h2>{{ users[currentUserIndex].firstName }} {{ users[currentUserIndex].lastName }}, {{ calculateAge(users[currentUserIndex]?.dateOfBirth) }}</h2>
               </div>
             </div>
-  
+
             <!-- Profile Details Below Image -->
             <div class="profile-details">
-            <p><strong>{{ users[currentUserIndex]?.industry || 'Professional' }}</strong></p>
-    
-              <!-- Tags like in the image -->
-            <div class="user-tags">
-              <span class="user-tag" v-if="users[currentUserIndex]?.height">{{ users[currentUserIndex].height }} cm</span>
-              <span class="user-tag" v-if="users[currentUserIndex]?.school">{{ users[currentUserIndex].school }}</span>
-            </div>
-    
-            <p>{{ users[currentUserIndex]?.bio || 'No bio available' }}</p>
-    
-            <button class="message-btn" @click.stop="showMessagePopup = true">Write a message here 💬</button>
-            <p class="user-progress">Viewing user {{ currentUserIndex + 1 }} of {{ users.length }}</p>
+              <span class="profession-label" v-if="users[currentUserIndex]?.industry">{{ users[currentUserIndex].industry }}</span>
+              <span class="profession-label" v-else>Professional</span>
+
+              <!-- Tags -->
+              <div class="user-tags">
+                <span class="user-tag" v-if="users[currentUserIndex]?.height">{{ users[currentUserIndex].height }} cm</span>
+                <span class="user-tag" v-if="users[currentUserIndex]?.school">{{ users[currentUserIndex].school }}</span>
+                <span class="user-tag" v-if="users[currentUserIndex]?.interests && users[currentUserIndex].interests.length > 0">
+                  {{ users[currentUserIndex].interests[0] }}
+                </span>
+             </div>
+
+              <p class="user-bio">{{ users[currentUserIndex]?.bio || 'No bio available' }}</p>
+
+              <!-- Message Button -->
+              <button class="message-btn" @click.stop="showMessagePopup = true">
+                <span class="message-icon">💬</span> 
+                Send a message
+              </button>
+      
+              <!-- Progress Indicator -->
+              <div class="user-progress">
+                Profile {{ currentUserIndex + 1 }} of {{ users.length }}
+                <div class="progress-dots">
+                  <span class="progress-dot" 
+                        v-for="n in 5" 
+                        :key="n" 
+                        :class="{ active: (currentUserIndex % 5) + 1 >= n }"></span>
+                </div>
+              </div>
             </div>
           </div>
+
           
           <div v-else class="detail-card">
             <div class="detail-header">
@@ -185,7 +207,7 @@
 
         <!-- Interests -->
         <li>
-          <strong>Interests</strong>
+          <span class="filter-label">Interests</span>
           <div class="interests-container">
             <div v-for="interest in interestOptions" :key="interest" class="interest-option">
               <label>
@@ -198,77 +220,95 @@
 
         <!-- Age Range -->
         <li>
-          <strong>Age Range</strong>
-          <div class="age-slider">
-            <input type="range" v-model="selectedAgeMin" min="18" max="50" @input="adjustAgeRange" />
-            <input type="range" v-model="selectedAgeMax" min="18" max="50" @input="adjustAgeRange" />
+          <span class="filter-label">Age Range</span>
+          <div class="slider-container">
+            <div class="age-slider">
+              <input type="range" v-model="selectedAgeMin" min="18" max="50" @input="adjustAgeRange" />
+              <input type="range" v-model="selectedAgeMax" min="18" max="50" @input="adjustAgeRange" />
+            </div>
+            <span class="range-values">{{ selectedAgeMin }} - {{ selectedAgeMax }} years</span>
           </div>
-          <span>{{ selectedAgeMin }} - {{ selectedAgeMax }} years</span>
         </li>
 
         <!-- Height -->
         <li>
-          <strong>Height</strong>
-          <div class="height-slider">
-            <input type="range" v-model="selectedHeightMin" min="140" max="210" />
-            <input type="range" v-model="selectedHeightMax" min="140" max="210" />
+          <span class="filter-label">Height</span>
+          <div class="slider-container">
+            <div class="height-slider">
+              <input type="range" v-model="selectedHeightMin" min="140" max="210" />
+              <input type="range" v-model="selectedHeightMax" min="140" max="210" />
+            </div>
+            <span class="range-values">{{ selectedHeightMin }} - {{ selectedHeightMax }} cm</span>
           </div>
-          <span>{{ selectedHeightMin }} - {{ selectedHeightMax }} cm</span>
         </li>
 
-        <!-- Other filters (Race, Religion, School, Industry, Gender) -->
+        <!-- Race -->
         <li>
-          <strong>Race</strong>
-          <select v-model="selectedRace">
-            <option value="">No preference</option>
-            <option value="Chinese">Chinese</option>
-            <option value="Malay">Malay</option>
-            <option value="Indian">Indian</option>
-            <option value="Eurasian">Eurasian</option>
-            <option value="Others">Others</option>
-          </select>
+          <span class="filter-label">Race</span>
+          <div class="select-container">
+            <select v-model="selectedRace">
+              <option value="">No preference</option>
+              <option value="Chinese">Chinese</option>
+              <option value="Malay">Malay</option>
+              <option value="Indian">Indian</option>
+              <option value="Eurasian">Eurasian</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
         </li>
 
+        <!-- Religion -->
         <li>
-          <strong>Religion</strong>
-          <select v-model="selectedReligion">
-            <option value="">No preference</option>
-            <option value="Christian">Christian</option>
-            <option value="Muslim">Muslim</option>
-            <option value="Hindu">Hindu</option>
-            <option value="Buddhist">Buddhist</option>
-            <option value="Taoist">Taoist</option>
-            <option value="others">Others</option>
-          </select>
+          <span class="filter-label">Religion</span>
+         <div class="select-container">
+            <select v-model="selectedReligion">
+              <option value="">No preference</option>
+              <option value="Christian">Christian</option>
+              <option value="Muslim">Muslim</option>
+              <option value="Hindu">Hindu</option>
+              <option value="Buddhist">Buddhist</option>
+              <option value="Taoist">Taoist</option>
+              <option value="others">Others</option>
+            </select>
+          </div>
         </li>
 
+        <!-- School -->
         <li>
-          <strong>School</strong>
-          <select v-model="selectedSchool">
-            <option value="">No preference</option>
-            <option v-for="option in schoolOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
+          <span class="filter-label">School</span>
+          <div class="select-container">
+            <select v-model="selectedSchool">
+              <option value="">No preference</option>
+              <option v-for="option in schoolOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
         </li>
 
+        <!-- Industry -->
         <li>
-          <strong>Industry</strong>
-          <select v-model="selectedIndustry">
-            <option value="">No preference</option>
-            <option v-for="option in industryOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
+          <span class="filter-label">Industry</span>
+          <div class="select-container">
+            <select v-model="selectedIndustry">
+              <option value="">No preference</option>
+              <option v-for="option in industryOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
         </li>
 
+        <!-- Gender -->
         <li>
-          <strong>Gender</strong>
-          <select v-model="selectedGender">
-            <option value="">No preference</option>
-            <option value="M">Male</option>
-            <option value="F">Female</option>
-          </select>
+          <span class="filter-label">Gender</span>
+          <div class="select-container">
+            <select v-model="selectedGender">
+              <option value="">No preference</option>
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+            </select>
+          </div>
         </li>
 
         <!-- Buttons -->
@@ -278,6 +318,8 @@
         </div>
       </div>
     </div>
+
+
 
     <!-- Message Popup -->
     <div v-if="showMessagePopup" class="message-popup">
@@ -724,12 +766,37 @@ const handleAnimationEnd = () => {
 }
 
 /* Profile Card Styling */
+.profile-card {
+  background-color: white;
+  border-radius: 20px;
+  width: 60%;
+  max-width: 500px;
+  height: calc(100vw * 1.5);
+  max-height: 90%;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.profile-main {
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Image Container */
 .profile-picture-container {
   position: relative;
   width: 100%;
-  height: 50%; /* Takes up half of the card */
+  height: 58%;
   overflow: hidden;
-  border-radius: 15px 15px 0 0;
   flex-shrink: 0;
 }
 
@@ -737,15 +804,66 @@ const handleAnimationEnd = () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.5s ease;
 }
 
+.profile-main:hover .profile-image {
+  transform: scale(1.03);
+}
+
+/* Profile Status and Actions */
+.profile-status-icons {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+}
+
+.status-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+
+.status-icon:hover {
+  transform: scale(1.1);
+}
+
+.favorite-icon {
+  color: #FFD400;
+}
+
+.online-icon {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background-color: #4CAF50;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  z-index: 5;
+}
+
+/* Profile Name Overlay */
 .profile-name-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-  padding: 15px 10px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  padding: 25px 15px 15px;
   text-align: left;
 }
 
@@ -754,117 +872,229 @@ const handleAnimationEnd = () => {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   margin: 0;
   font-size: clamp(1.25rem, 4vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
-.profile-status-icons {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 5;
+/* Profile Details Section */
+.profile-details {
+  flex: 1;
+  padding: 1.25rem;
+  text-align: left;
+  overflow-y: auto;
   display: flex;
-  gap: 5px;
+  flex-direction: column;
+  background-color: white;
+  position: relative;
 }
 
-.status-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(255, 255, 255, 0.8);
-  font-size: 16px;
+.profile-details::-webkit-scrollbar {
+  width: 5px;
 }
 
-.favorite-icon {
-  color: #FFD700;
+.profile-details::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 10px;
 }
 
+.profession-label {
+  display: inline-block;
+  background-color: #f8f2d8;
+  color: #333;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  border-left: 3px solid #FFD400;
+}
+
+/* Tags */
 .user-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 8px 0;
+  margin-bottom: 15px;
 }
 
 .user-tag {
-  background-color: #f0f0f0;
+  background-color: #f5f5f5;
   border-radius: 15px;
-  padding: 5px 10px;
-  font-size: 0.8rem;
+  padding: 6px 12px;
+  font-size: 0.85rem;
   color: #555;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s ease;
 }
 
-.profile-card {
-  background-color: white;
-  border-radius: 15px;
-  width: 60%;
-  max-width: 500px;
-  height: calc(100vw * 1.5);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  position: relative;
-  overflow: hidden;
-  max-height: 90%;
-  display: flex;
-  flex-direction: column;
+.user-tag:hover {
+  background-color: #FFD400;
+  color: #333;
+  border-color: #FFD400;
+  transform: translateY(-2px);
 }
 
-.profile-main {
-  cursor: pointer;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow-y: auto;
-}
-
-.profile-picture {
-  flex-shrink: 0;
-  margin-bottom: 1rem;
-}
-
-.profile-picture img {
-  width: clamp(100px, 50%, 200px);
-  height: auto;
-  aspect-ratio: 1/1;
-  border-radius: 15px;
-  object-fit: cover;
-}
-
-.profile-details {
+/* Bio */
+.user-bio {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #555;
+  margin-bottom: 15px;
   flex: 1;
-  overflow-y: auto;
-  padding: 1rem 0.75rem;
-  text-align: left;
-}
-.profile-details h2 {
-  margin-bottom: 0.75rem;
-  font-size: clamp(1.25rem, 4vw, 1.5rem);
+  position: relative;
+  padding-left: 12px;
+  border-left: 2px solid #f0f0f0;
 }
 
-.profile-details p {
-  margin: 0.5rem 0;
-  font-size: clamp(0.85rem, 2.5vw, 1rem);
-}
-
+/* Message Button */
 .message-btn {
-  background-color: #ffd400;
-  border: 1px solid black;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: clamp(0.85rem, 2.5vw, 1rem);
-  margin-top: 1rem;
+  background-color: #FFD400;
+  border: none;
+  padding: 12px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: auto;
   cursor: pointer;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 10px rgba(255, 212, 0, 0.3);
+  transition: all 0.2s ease;
 }
 
 .message-btn:hover {
-  background-color: darkorange;
+  background-color: #f5cb00;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(255, 212, 0, 0.4);
 }
 
+.message-icon {
+  font-size: 1.2rem;
+}
+
+/* Progress Indicator */
 .user-progress {
-  margin-top: 0.5rem;
-  font-size: clamp(0.75rem, 2vw, 0.85rem);
-  color: #666;
+  text-align: center;
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.progress-dots {
+  display: flex;
+  gap: 4px;
+  margin-left: 5px;
+}
+
+.progress-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #ddd;
+}
+
+.progress-dot.active {
+  background-color: #FFD400;
+  transform: scale(1.2);
+}
+
+/* Heart & Cross Animations */
+.overlay-icon {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  font-size: 6rem;
+  transform: translateX(-50%);
+  z-index: 10;
+  opacity: 0;
+  animation: fadePop 0.6s ease-in-out forwards;
+  filter: drop-shadow(0 0 20px rgba(0,0,0,0.3));
+}
+
+@keyframes fadePop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+.heart {
+  color: #ff4757;
+}
+
+.cross {
+  color: #747d8c;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .profile-card {
+    width: 85%;
+  }
+  
+  .profile-picture-container {
+    height: 50%;
+  }
+  
+  .status-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+  
+  .profile-name-overlay h2 {
+    font-size: 1.2rem;
+  }
+  
+  .profile-details {
+    padding: 1rem;
+  }
+}
+
+/* Card Animations */
+@keyframes slideRight {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(200%) rotate(20deg);
+    opacity: 0;
+  }
+}
+
+@keyframes slideLeft {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-200%) rotate(-20deg);
+    opacity: 0;
+  }
+}
+
+.slide-right {
+  animation: slideRight 0.8s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+.slide-left {
+  animation: slideLeft 0.8s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
 }
 
 /* Detail Card Styling */
@@ -1155,98 +1385,261 @@ const handleAnimationEnd = () => {
 /* Filter Popup Styling */
 .filter-popup {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(90%, 400px);
-  max-height: 80vh;
-  padding: 1.25rem;
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   z-index: 100;
-  overflow-y: auto;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .filter-content {
   position: relative;
+  background-color: white;
+  border-radius: 20px;
+  width: min(90%, 450px);
+  max-height: 85vh;
+  padding: 1.5rem;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+  overflow-y: auto;
+  animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.filter-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filter-content::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 10px;
 }
 
 .filter-content h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-  font-size: clamp(1.25rem, 4vw, 1.5rem);
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f5f5f5;
+}
+
+.filter-content .close-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #888;
+  transition: color 0.2s;
+}
+
+.filter-content .close-btn:hover {
+  color: #333;
 }
 
 .filter-content li {
   list-style: none;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.filter-content li strong {
-  font-size: clamp(0.9rem, 2.5vw, 1rem);
+.filter-content li:last-child {
+  border-bottom: none;
 }
 
+.filter-label {
+  display: block;
+  background-color: #f8f2d8;
+  color: #333;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+  border-left: 3px solid #FFD400;
+  width: fit-content;
+}
+
+/* Interests Container */
 .interests-container {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  max-height: 100px;
+  max-height: 120px;
   overflow-y: auto;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
+  padding: 0.75rem;
+  border: 1px solid #eee;
   border-radius: 8px;
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
+  background-color: #f9f9f9;
+}
+
+.interests-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.interests-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 10px;
 }
 
 .interest-option {
-  font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.interest-option label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.interest-option label:hover {
+  background-color: rgba(255, 212, 0, 0.1);
+}
+
+.interest-option input[type="checkbox"] {
+  accent-color: #FFD400;
+  width: 16px;
+  height: 16px;
+}
+
+/* Sliders */
+.slider-container {
+  margin-top: 1rem;
 }
 
 .age-slider, .height-slider {
   display: flex;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  gap: 1rem;
+  margin-top: 0.75rem;
 }
 
 input[type="range"] {
   width: 45%;
+  accent-color: #FFD400;
+  height: 6px;
+}
+
+.range-values {
+  display: inline-block;
+  background-color: #f5f5f5;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+/* Selects */
+.select-container {
+  margin-top: 0.75rem;
 }
 
 select {
   width: 100%;
-  padding: 0.5rem;
-  border-radius: 5px;
-  border: 1px solid #ddd;
-  margin-top: 0.5rem;
-  font-size: clamp(0.85rem, 2.5vw, 0.9rem);
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  font-size: 0.95rem;
+  color: #444;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1em;
+  padding-right: 2.5rem;
 }
 
+select:focus {
+  outline: none;
+  border-color: #FFD400;
+  box-shadow: 0 0 0 2px rgba(255, 212, 0, 0.2);
+}
+
+/* Buttons */
 .filter-buttons {
   display: flex;
   justify-content: space-between;
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
+  gap: 1rem;
 }
 
 .apply-btn, .reset-btn {
-  padding: 0.75rem 1.25rem;
-  border-radius: 8px;
-  border: 1px solid black;
+  padding: 0.85rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
   cursor: pointer;
-  font-size: clamp(0.85rem, 2.5vw, 0.9rem);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  flex: 1;
+  text-align: center;
+  border: none;
 }
 
 .apply-btn {
-  background: #ffd400;
+  background-color: #FFD400;
+  color: #333;
+  box-shadow: 0 4px 10px rgba(255, 212, 0, 0.3);
+}
+
+.apply-btn:hover {
+  background-color: #f5cb00;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(255, 212, 0, 0.4);
 }
 
 .reset-btn {
-  background: #f0f0f0;
+  background-color: #f0f0f0;
+  color: #555;
+}
+
+.reset-btn:hover {
+  background-color: #e5e5e5;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .filter-content {
+    padding: 1.25rem;
+    width: 95%;
+  }
+  
+  .filter-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .filter-content h2 {
+    font-size: 1.3rem;
+  }
 }
 
 /* Message Popup */
