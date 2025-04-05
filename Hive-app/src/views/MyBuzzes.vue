@@ -216,7 +216,7 @@ async function passUser(likedUserID) {
 
 </script>
   
-  <style scoped>
+<style scoped>
 
 .background-grid-wrapper {
   position: fixed;
