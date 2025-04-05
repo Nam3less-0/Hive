@@ -133,6 +133,54 @@ const getRandomAnimationStyle = () => {
   };
 };
 
+const openContactModal = () => {
+  showContactModal.value = true;
+  showTermsModal.value = false;
+  showPrivacyPolicyModal.value = false;
+  showFAQModal.value = false;
+};
+
+const closeContactModal = () => {
+  showContactModal.value = false;
+};
+
+const openTermsModal = () => {
+  showContactModal.value = false;
+  showTermsModal.value = true;
+  showPrivacyPolicyModal.value = false;
+  showFAQModal.value = false;
+};
+
+const closeTermsModal = () => {
+  showTermsModal.value = false;
+};
+
+const openPrivacyPolicyModal = () => {
+  showContactModal.value = false;
+  showTermsModal.value = false;
+  showPrivacyPolicyModal.value = true;
+  showFAQModal.value = false;
+};
+
+const closePrivacyPolicyModal = () => {
+  showPrivacyPolicyModal.value = false;
+};
+
+const openFAQModal = () => {
+  showContactModal.value = false;
+  showTermsModal.value = false;
+  showPrivacyPolicyModal.value = false;
+  showFAQModal.value = true;
+};
+
+const closeFAQModal = () => {
+  showFAQModal.value = false;
+};
+
+const goToMyBuzzes = () => {
+  router.push({ name: 'MyBuzzes' });
+};
+
 const fetchLikeCount = async () => {
   try {
     const userRef = doc(db, "users", userID);
@@ -156,7 +204,6 @@ const fetchLongestStreak = async () => {
     
     for (const docSnap of matchDocs.docs) {
       const data = docSnap.data();
-      maxStreak = data.streakCount;
       if (data.streakCount > maxStreak) {
         const otherUserId = data.userIds.find(id => id !== userID);
         if (!otherUserId) continue;
@@ -173,6 +220,7 @@ const fetchLongestStreak = async () => {
             name: userData.firstName || "Unknown", 
             profilePic: userData.images?.[0] || "@/assets/placeholder-profile.jpg"
           };
+          maxStreak = data.streakCount;
         }
       }
     }
@@ -188,42 +236,6 @@ onMounted(async () => {
   await fetchLikeCount();
   await fetchLongestStreak();
 });
-
-const openContactModal = () => {
-  showContactModal.value = true;
-};
-
-const closeContactModal = () => {
-  showContactModal.value = false;
-};
-
-const openTermsModal = () => {
-  showTermsModal.value = true;
-};
-
-const closeTermsModal = () => {
-  showTermsModal.value = false;
-};
-
-const openPrivacyPolicyModal = () => {
-  showPrivacyPolicyModal.value = true;
-};
-
-const closePrivacyPolicyModal = () => {
-  showPrivacyPolicyModal.value = false;
-};
-
-const openFAQModal = () => {
-  showFAQModal.value = true;
-};
-
-const closeFAQModal = () => {
-  showFAQModal.value = false;
-};
-
-const goToMyBuzzes = () => {
-  router.push({ name: 'MyBuzzes' });
-};
 
 </script>
 
