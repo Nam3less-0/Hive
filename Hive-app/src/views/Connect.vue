@@ -1,7 +1,11 @@
 <template>
   <div class="connect-container">
     <!-- Display One User at a Time -->
-    <div v-if="users.length > 0 && currentUserIndex < users.length" class="profile-card">
+    <div v-if="users.length > 0 && currentUserIndex < users.length" class="profile-card" :class="animationDirection"
+  @animationend="handleAnimationEnd">
+  <!-- Heart & Cross Animations -->
+<div class="overlay-icon heart" v-if="showHeart">❤️</div>
+<div class="overlay-icon cross" v-if="showCross">❌</div>
       <div class="profile-picture">
         <img :src="users[currentUserIndex].images && users[currentUserIndex].images.length > 0 
           ? users[currentUserIndex].images[0] 
@@ -19,12 +23,10 @@
     </div>
 
     <!-- No More Users --> 
-    <div v-else class="no-more-users">
-      <h2>No more users available</h2>
-    </div>
+    <NoMoreUsers v-else />
 
     <!-- Right Section -->
-    <div class="interaction-area">
+    <div v-if="users.length > 0 && currentUserIndex < users.length" class="interaction-area">
       <div class="actions">
         <button class="pass-btn" @click="passUser">✖️ Pass</button>
         <button class="like-btn" @click="likeUser">❤️ Like</button>
@@ -69,60 +71,116 @@
     </div>
 
   </div>
- <!-- Filter Popup -->
- <div v-if="showFilter" class="filter-popup">
-    <div class="filter-content">
-      <h2>FILTER <button @click="showFilter = false" class="close-btn">✖️</button></h2>
-      <ul>
-        <li><strong>Interests</strong>
-          <select v-model="selectedInterests" multiple>
-            <option v-for="interest in interestOptions" :key="interest" :value="interest">{{ interest }}</option>
-          </select>
-        </li>
-        <li><strong>Age Range</strong>
-          <div class="age-slider">
-            <input type="range" v-model="selectedAgeMin" min="18" max="50" @input="adjustAgeRange" />
-            <input type="range" v-model="selectedAgeMax" min="18" max="50" @input="adjustAgeRange" />
-          </div>
-          <span>{{ selectedAgeMin }} - {{ selectedAgeMax }} years</span>
-        </li>
-        <li><strong>Height</strong>
-          <input type="number" v-model="selectedHeight" min="140" max="210" /> cm
-        </li>
-        <li><strong>Race</strong>
-          <select v-model="selectedRace">
-            <option value="Chinese">Chinese</option>
-            <option value="Malay">Malay</option>
-            <option value="Indian">Indian</option>
-            <option value="Others">Others</option>
-          </select>
-        </li>
-        <li><strong>Religion</strong>
-          <select v-model="selectedReligion">
-            <option value="None">None</option>
-            <option value="Christianity">Christianity</option>
-            <option value="Islam">Islam</option>
-            <option value="Hinduism">Hinduism</option>
-            <option value="Buddhism">Buddhism</option>
-          </select>
-        </li>
-        <li><strong>School</strong>
-          <input type="text" v-model="selectedSchool" />
-        </li>
-        <li><strong>Industry</strong>
-          <input type="text" v-model="selectedIndustry" />
-        </li>
-        <li><strong>Gender</strong>
-          <select v-model="selectedGender">
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
-        </li>
-      </ul>
-      <button @click="applyFilters">Apply Filters</button>
+
+<!-- Filter Popup -->
+<div v-if="showFilter" class="filter-popup">
+  <div class="filter-content">
+    <h2>
+      Find the Right Buzz ~ 🐝
+      <button @click="showFilter = false" class="close-btn">✖️</button>
+    </h2>
+
+    <!-- Interests -->
+    <li>
+      <strong>Interests</strong>
+      <div class="interests-container">
+        <div v-for="interest in interestOptions" :key="interest" class="interest-option">
+          <label>
+            <input type="checkbox" :value="interest" v-model="selectedInterests" />
+            {{ interest }}
+          </label>
+        </div>
+      </div>
+    </li>
+
+    <!-- Age Range -->
+    <li>
+      <strong>Age Range</strong>
+      <div class="age-slider">
+        <input type="range" v-model="selectedAgeMin" min="18" max="50" @input="adjustAgeRange" />
+        <input type="range" v-model="selectedAgeMax" min="18" max="50" @input="adjustAgeRange" />
+      </div>
+      <span>{{ selectedAgeMin }} - {{ selectedAgeMax }} years</span>
+    </li>
+
+    <!-- Height -->
+    <li>
+      <strong>Height</strong>
+      <div class="height-slider">
+        <input type="range" v-model="selectedHeightMin" min="140" max="210" />
+        <input type="range" v-model="selectedHeightMax" min="140" max="210" />
+      </div>
+      <span>{{ selectedHeightMin }} - {{ selectedHeightMax }} cm</span>
+    </li>
+
+    <!-- Race -->
+    <li>
+      <strong>Race</strong>
+      <select v-model="selectedRace">
+        <option value="">No preference</option>
+        <option value="Chinese">Chinese</option>
+        <option value="Malay">Malay</option>
+        <option value="Indian">Indian</option>
+        <option value="Eurasian">Eurasian</option>
+        <option value="Others">Others</option>
+      </select>
+    </li>
+
+    <!-- Religion -->
+    <li>
+      <strong>Religion</strong>
+      <select v-model="selectedReligion">
+        <option value="">No preference</option>
+        <option value="Christian">Christian</option>
+        <option value="Muslim">Muslim</option>
+        <option value="Hindu">Hindu</option>
+        <option value="Buddhist">Buddhist</option>
+        <option value="Taoist">Taoist</option>
+        <option value="others">Others</option>
+      </select>
+    </li>
+
+    <!-- School -->
+    <li>
+      <strong>School</strong>
+      <select v-model="selectedSchool">
+        <option value="">No preference</option>
+        <option v-for="option in schoolOptions" :key="option.value" :value="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </li>
+
+    <!-- Industry -->
+    <li>
+      <strong>Industry</strong>
+      <select v-model="selectedIndustry">
+        <option value="">No preference</option>
+        <option v-for="option in industryOptions" :key="option.value" :value="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </li>
+
+
+    <!-- Gender -->
+    <li>
+      <strong>Gender</strong>
+      <select v-model="selectedGender">
+        <option value="">No preference</option>
+        <option value="M">Male</option>
+        <option value="F">Female</option>
+      </select>
+    </li>
+
+    <!-- Buttons -->
+    <div class="filter-buttons">
+      <button class="apply-btn" @click="applyFilters">Apply Filters</button>
+      <button class="reset-btn" @click="resetFilters">Reset Filters</button>
     </div>
   </div>
+</div>
+
 
   <!-- Message Popup -->
   <div v-if="showMessagePopup" class="message-popup">
@@ -139,60 +197,155 @@
     </div>
   </div>
 
-  <NoMoreUsersPopup v-if="noMoreUsersPopup" @close="noMoreUsersPopup = false" />
+
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { db, auth } from '@/firebase';
-import { collection, getDocs, increment } from 'firebase/firestore';
+import { collection, getDocs, increment, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import placeholderProfile from '@/assets/placeholder-profile.jpg';
-import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import NoMoreUsersPopup from '@/components/NoMoreUsersPopup.vue';
+
+
+import NoMoreUsers from "@/components/NoMoreUsers.vue";
+
 import { fetchGlobalInterests, encodeInterests, cosineSimilarity } from '@/utils/matchmaker';
 
 //Logic for filter button
+const originalUsers = ref([]); // all users before filtering
 const showFilter = ref(false);
 const selectedInterests = ref([]);
 const selectedAgeMin = ref(18);
 const selectedAgeMax = ref(50);
-const selectedHeight = ref(168);
-const selectedRace = ref("Chinese");
-const selectedReligion = ref("None");
+const selectedHeightMin = ref(150);
+const selectedHeightMax = ref(190);
+const selectedRace = ref("");
+const selectedReligion = ref("");
 const selectedSchool = ref("");
 const selectedIndustry = ref("");
-const selectedGender = ref("Female");
+const selectedGender = ref("");
 
+// Label Display
+const selectedSchoolLabel = ref("Select School");
+const selectedIndustryLabel = ref("Select Industry");
+
+// Dropdown State
+const dropdownOpen = ref({
+  school: false,
+  industry: false
+});
+
+const showHeart = ref(false);
+const showCross = ref(false);
+
+
+// Options
+const interestOptions = ref([]);
+const schoolOptions = ref([
+  { value: "NUS", label: "National University of Singapore (NUS)" },
+  { value: "NTU", label: "Nanyang Technological University (NTU)" },
+  { value: "SMU", label: "Singapore Management University (SMU)" },
+  { value: "SUTD", label: "Singapore University of Technology and Design (SUTD)" },
+  { value: "SUSS", label: "Singapore University of Social Sciences (SUSS)" }
+]);
+
+const industryOptions = ref([
+  { value: "Technology", label: "Technology" },
+  { value: "Finance", label: "Finance" },
+  { value: "Healthcare", label: "Healthcare" },
+  { value: "Education", label: "Education" },
+  { value: "Engineering", label: "Engineering" },
+  { value: "Retail", label: "Retail" },
+  { value: "Hospitality", label: "Hospitality" },
+  { value: "Government", label: "Government" }
+]);
+
+// Users and Pagination
 const users = ref([]);
-const interestOptions = ["Basketball", "Reading", "Gymming", "Music", "Travel", "Gaming", "Cooking", "Photography"];
 const currentUserIndex = ref(0);
 const currentUser = ref(null);
-const noMoreUsersPopup = ref(false);
+const noMoreUsers = ref(false);
+const animationDirection = ref(null);
 
+// Dropdown Handlers
+const toggleDropdown = (type) => {
+  dropdownOpen.value[type] = !dropdownOpen.value[type];
+  console.log('Toggled', type, dropdownOpen.value[type]);
+};
+
+const selectOption = (type, option) => {
+  if (type === 'school') {
+    selectedSchool.value = option.value;
+    selectedSchoolLabel.value = option.label;
+  } else if (type === 'industry') {
+    selectedIndustry.value = option.value;
+    selectedIndustryLabel.value = option.label;
+  }
+  dropdownOpen.value[type] = false;
+};
+
+// Validation
 const adjustAgeRange = () => {
   if (selectedAgeMin.value > selectedAgeMax.value) {
     [selectedAgeMin.value, selectedAgeMax.value] = [selectedAgeMax.value, selectedAgeMin.value];
   }
 };
+// Reset filters to default
+const resetFilters = () => {
+  selectedInterests.value = [];
+  selectedAgeMin.value = 18;
+  selectedAgeMax.value = 50;
+  selectedHeightMin.value = 140;
+  selectedHeightMax.value = 210;
+  selectedRace.value = "";
+  selectedReligion.value = "";
+  selectedSchool.value = "";
+  selectedIndustry.value = "";
+  selectedGender.value = "";
 
+  selectedSchoolLabel.value = "Select School";
+  selectedIndustryLabel.value = "Select Industry";
+};
+
+// Apply Filters
 const applyFilters = () => {
-  console.log("Filters Applied:", {
-    selectedInterests: selectedInterests.value,
-    selectedAgeMin: selectedAgeMin.value,
-    selectedAgeMax: selectedAgeMax.value,
-    selectedHeight: selectedHeight.value,
-    selectedRace: selectedRace.value,
-    selectedReligion: selectedReligion.value,
-    selectedSchool: selectedSchool.value,
-    selectedIndustry: selectedIndustry.value,
-    selectedGender: selectedGender.value
+  adjustAgeRange();
+
+  users.value = originalUsers.value.filter(user => {
+    const age = calculateAge(user.dateOfBirth);
+    const height = parseInt(user.height);
+
+    return (
+      (!selectedInterests.value.length || selectedInterests.value.some(interest => user.interests?.includes(interest))) &&
+      (!isNaN(age) && age >= selectedAgeMin.value && age <= selectedAgeMax.value) &&
+      (!isNaN(height) && height >= selectedHeightMin.value && height <= selectedHeightMax.value) &&
+      (!selectedRace.value || user.race === selectedRace.value) &&
+      (!selectedReligion.value || user.religion === selectedReligion.value) &&
+      (!selectedSchool.value || user.school === selectedSchool.value) &&
+      (!selectedIndustry.value || user.industry === selectedIndustry.value) &&
+      (!selectedGender.value || user.gender === selectedGender.value)
+    );
   });
+
+  currentUserIndex.value = 0;
   showFilter.value = false;
 };
 
+
+
 onMounted(async () => {
   try {
+    const interestsSnapshot = await getDocs(collection(db, "interests"));
+    const fetched = [];
+    interestsSnapshot.forEach((docSnap) => {
+      if (docSnap.exists()) {
+        fetched.push(docSnap.data().name); // <-- assuming each doc has { name: "Photography" } etc.
+      }
+    });
+    interestOptions.value = fetched;
+    console.log("Fetched interests:", fetched);
+
     auth.onAuthStateChanged(async (loggedInUser) => {
       if (!loggedInUser) {
         console.error("No authenticated user found.");
@@ -224,6 +377,10 @@ onMounted(async () => {
       const userCollection = collection(db, "users");
       const querySnapshot = await getDocs(userCollection);
       console.log("All users fetched from Firestore:", querySnapshot.docs.map(doc => doc.data()));
+      originalUsers.value = querySnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(user => user.id !== loggedInUser.uid && !seenArray.includes(user.id));
+
       // Filter out the logged-in user AND users in the seen array
       const otherUsers = querySnapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
@@ -243,23 +400,46 @@ onMounted(async () => {
   } catch (error) {
     console.error("Error fetching users:", error);
   }
-});
 
+  const schoolsSnapshot = await getDocs(collection(db, 'schools'));
+  schoolOptions.value = schoolsSnapshot.docs.map(doc => ({
+    value: doc.id,
+    label: doc.data().name
+  }));
+
+  const industriesSnapshot = await getDocs(collection(db, 'industries'));
+  industryOptions.value = industriesSnapshot.docs.map(doc => ({
+    value: doc.id,
+    label: doc.data().name
+  }));
+
+});
 
 //Logic for Message Button
 const showMessagePopup = ref(false);
 const messageText = ref("");
 
 // Function to move to the next user
-const nextUser = () => {
-  if (users.value.length === 0 || currentUserIndex.value >= users.value.length - 1) {
-    noMoreUsersPopup.value = true;
-    return;
+const preloadNextUserImage = () => {
+  const nextUser = users.value[currentUserIndex.value + 1];
+  if (nextUser && nextUser.images && nextUser.images[0]) {
+    const img = new Image();
+    img.src = nextUser.images[0];
   }
-  if (currentUserIndex.value < users.value.length - 1) {
-    currentUserIndex.value += 1;
-  } else {
-    console.log("Reached the last user.");
+};
+const nextUser = () => {
+  // Remove the current user from the list
+  users.value.splice(currentUserIndex.value, 1);
+  preloadNextUserImage();
+  if (users.value.length === 0) {
+    noMoreUsers.value = true;
+    return;
+    
+  }
+
+  // Reset index if out of bounds
+  if (currentUserIndex.value >= users.value.length) {
+    currentUserIndex.value = 0;
   }
 };
 
@@ -269,7 +449,7 @@ const updateSeenArray = async (userId, seenUserId) => {
     await updateDoc(doc(db, "users", userId), {
       seen: arrayUnion(seenUserId),
     });
-    console.log(`Updated seen array for user ${userId} with ${seenUserId}`);
+   
   } catch (error) {
     console.error("Error updating seen array:", error);
   }
@@ -283,7 +463,8 @@ const passUser = async () => {
   const passedUserId = users.value[currentUserIndex.value].id;
 
   await updateSeenArray(myUserId, passedUserId);
-  nextUser();
+  animationDirection.value = 'slide-left';
+  showCross.value = true;
 };
 
 // Function to handle "Like" button click
@@ -296,21 +477,22 @@ const likeUser = async () => {
   try {
     // Update the logged-in user's seen array
     await updateSeenArray(myUserId, likedUserId);
+    showHeart.value = true;
 
     // Update the liked user's "likes" array
     await updateDoc(doc(db, "users", likedUserId), {
       likes: arrayUnion({ userId: myUserId, message: null }),
       likeCount: increment(1)
     });
+    animationDirection.value = 'slide-right';
 
-    console.log(`Liked user ${likedUserId} with message: null`);
+ 
   } catch (error) {
     console.error("Error liking user:", error);
   }
 
-  nextUser();
+  
 };
-
 
 // Function to handle "Like & Send Message" button click
 const likeAndSendMessage = async () => {
@@ -333,7 +515,7 @@ const likeAndSendMessage = async () => {
       likes: arrayUnion({ userId: myUserId, message: messageText.value }),
     });
 
-    console.log(`Liked user ${likedUserId} with message: ${messageText.value}`);
+
   } catch (error) {
     console.error("Error liking user with message:", error);
   }
@@ -343,7 +525,6 @@ const likeAndSendMessage = async () => {
   nextUser();
 };
 
-
 //Logic for age calculation
 const calculateAge = (dob) => {
   if (!dob) return 'Unknown';
@@ -352,9 +533,91 @@ const calculateAge = (dob) => {
   return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
 };
 
+
+
+
+
+const handleAnimationEnd = () => {
+  // Clear animation class
+  animationDirection.value = null;
+  showHeart.value = false;
+  showCross.value = false;
+  // move to next user after animation
+  nextUser();
+};
 </script>
 
 <style scoped>
+
+
+
+.overlay-icon {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  font-size: 5rem;
+  transform: translateX(-50%);
+  z-index: 10;
+  opacity: 0;
+  animation: fadePop 0.5s ease-in-out forwards;
+}
+
+@keyframes fadePop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+.heart {
+  color: red;
+}
+
+.cross {
+  color: #333;
+}
+
+/* Slide animations */
+@keyframes slideRight {
+  0% {
+    transform: translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(200%) rotate(15deg) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes slideLeft {
+  0% {
+    transform: translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-200%) rotate(-15deg) scale(0.9);
+    opacity: 0;
+  }
+}
+
+.slide-right {
+  animation: slideRight 1.5s ease-out forwards;
+}
+
+.slide-left {
+  animation: slideLeft 1.5s ease-out forwards;
+}
+
+
+
 
 /* Message Popup Styling */
 .message-popup {
@@ -419,21 +682,23 @@ textarea {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  width: 100%;
+  height: 85%;
+  max-width: 400px;
+  padding: 20px;
   background: url('@/assets/honeycomb-bg.png') no-repeat center center;
   background-size: cover;
-  width: 80%;
-  max-width: 400px;
   border-radius: 15px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  padding: 20px;
-  text-align: center;
   border: 1px solid black;
+  overflow: visible;
+  z-index: 9999;
 }
 
-.age-slider {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
+.filter-content {
+  position: relative;
+  z-index: 10; /* Important for dropdowns inside */
+  text-align: center;
 }
 
 .filter-content h2 {
@@ -454,17 +719,113 @@ textarea {
 .filter-content ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .filter-content li {
   display: flex;
   justify-content: space-between;
-  padding: 10px;
-  border-bottom: 1px solid black;
-  cursor: pointer;
   align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid black;
+  gap: 10px;
+  position: relative;
 }
-/* End of Filter Popup Styling */ 
+
+/* Interests Styling */
+.interests-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 100px;
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: beige;
+  flex: 1;
+}
+
+.interest-option {
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.custom-interest {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.custom-interest input {
+  flex: 1;
+  font-size: 0.75rem;
+}
+
+select {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 0.95rem;
+  border: 1px solid #e0b300; /* honey border */
+  border-radius: 6px;
+  background-color: #fffbe6; /* soft honey background */
+  color: #333;
+  font-family: inherit;
+  box-sizing: border-box;
+  appearance: none;
+
+  /* optional honey drop arrow */
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23e0b300' height='20' width='20' viewBox='0 0 24 24'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+}
+
+/* Add spacing between selects if needed */
+li select {
+  margin-top: 4px;
+}
+/* Sliders */
+.age-slider,
+.height-slider {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex: 1;
+}
+
+input[type="range"] {
+  flex: 1;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.apply-btn,
+.reset-btn {
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  background: white;
+  color: black;
+  border: 2px solid black;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.apply-btn:hover,
+.reset-btn:hover {
+  background: #ffec99; /* soft honey hover */
+  border-color: #e0b300;
+}
+
+/* End of Filter Popup Styling */
+
 
 /* Left Profile Card Styling */
 .connect-container {
@@ -589,5 +950,25 @@ textarea {
   border-radius: 5px;
 }
 /*End of Right side items styling*/
+
+
+.no-more-users {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #fffbee;
+  text-align: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.bee-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+}
 
 </style>
