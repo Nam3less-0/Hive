@@ -1,9 +1,7 @@
 <template>
   <div class="login-container">
-    <!-- Reusable Branding Component -->
     <Branding />
 
-    <!-- Right Section: Login Form -->
     <div class="login-form">
       <div class="logo-small">
         <img src="@/assets/hive-small.png" alt="Hive Small Logo" />
@@ -28,7 +26,7 @@
         <button @click="handleGoogleSignIn" class="auth-button google">
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
             alt="Google logo" class="google-icon" />
-          Log in with Google
+          Log In with Google
         </button>
       </div>
 
@@ -78,9 +76,28 @@ const handleLogin = async () => {
     console.log('User signed in:', userCredential.user);
     router.push({ name: "LoadingPage" });
   } catch (error) {
-    console.error('Error signing in:', error.message);
-    alert('Error signing in: ' + error.message);
+  switch (error.code) {
+    case "auth/user-not-found":
+    case "auth/invalid-credential":
+      userMessage.value = "No account found for this Email. Please register first.";
+      break;
+    case "auth/wrong-password":
+      userMessage.value = "Invalid password. Please try again.";
+      break;
+    case "auth/invalid-email":
+      userMessage.value = "Invalid email address format.";
+      break;
+    case "auth/user-disabled":
+      userMessage.value = "This account has been disabled.";
+      break;
+    case "auth/too-many-requests":
+      userMessage.value = "Too many login attempts. Please try again later.";
+      break;
+    default:
+      userMessage.value = "An unexpected error occurred. Please try again.";
   }
+}
+
 };
 
 const user = ref(null);

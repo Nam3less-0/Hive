@@ -1,9 +1,6 @@
 <template>
   <div class="login-container">
-    <!-- Reusable Branding Component -->
     <Branding />
-
-    <!-- Right Section: Register Form -->
     <div class="login-form">
       <div class="logo-small">
         <img src="@/assets/hive-small.png" alt="Hive Small Logo" />
@@ -71,13 +68,10 @@ const confirmPassword = ref('');
 const router = useRouter();
 
 const handleRegister = async () => {
-  if (password.value.length < 6) {
-    alert('Password must be at least 6 characters long');
-    return;
-  }
+  userMessage.value = '';
 
   if (password.value !== confirmPassword.value) {
-    alert('Passwords do not match');
+    userMessage.value = "Passwords do not match.";
     return;
   }
 
@@ -86,7 +80,28 @@ const handleRegister = async () => {
     console.log('User registered:', userCredential.user);
     router.push({ name: 'NewUserPage1' });
   } catch (error) {
-    alert(error.message);
+    switch (error.code) {
+      case "auth/email-already-in-use":
+        userMessage.value = "An account already exists with this email.";
+        break;
+      case "auth/invalid-email":
+        userMessage.value = "Invalid email address format.";
+        break;
+      case "auth/weak-password":
+        userMessage.value = "Password must be at least 6 characters long.";
+        break;
+      case "auth/operation-not-allowed":
+        userMessage.value = "Email/password accounts are not enabled.";
+        break;
+      case "auth/network-request-failed":
+        userMessage.value = "Network error. Please check your connection.";
+        break;
+      case "auth/internal-error":
+        userMessage.value = "Something went wrong. Please try again later.";
+        break;
+      default:
+        userMessage.value = "An unexpected error occurred. Please try again.";
+    }
   }
 };
 
