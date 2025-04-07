@@ -210,6 +210,15 @@ input {
 .auth-button.primary:hover {
   background: #ffe96b;
   color: white;
+
+.links {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 25vw;
+  margin-top: 20px;
+  font-size: 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .auth-button.google {

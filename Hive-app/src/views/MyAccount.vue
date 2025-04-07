@@ -61,7 +61,7 @@
 
   <div class="interest-selection">
     <input v-model="newInterest" placeholder="Type your own interest" class="input-field" />
-    <button class="add-interests-btn" @click="addInterest(newInterest)">＋</button>
+    <button class="add-interests-btn" @click="addInterest(newInterest, true)">＋</button>
   </div>
 </section>
       
@@ -287,7 +287,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { auth, db } from '@/firebase';
-import { collection, doc, getDoc, updateDoc, deleteDoc, getDocs } from 'firebase/firestore';
+import { collection, doc, getDoc, updateDoc, deleteDoc, getDocs, setDoc } from 'firebase/firestore';
 import { updatePassword, reauthenticateWithCredential, EmailAuthProvider, sendPasswordResetEmail, deleteUser } from 'firebase/auth';
 import Sidebar from '@/components/Sidebar.vue'
 import { onAuthStateChanged } from 'firebase/auth';
@@ -311,6 +311,7 @@ const predefinedInterests = ref([]);
 const showNotification = ref(false);
 const notificationMessage = ref("");
 const notificationType = ref("success");
+
 
 
 // **Trigger File Input Click**
@@ -621,7 +622,7 @@ async function deleteAccount() {
   }
 }
 
-async function addInterest(interest) {
+async function addInterest(interest, isNew = false) {
   try {
     if (!interest) return triggerNotification("Please select an interest!", "error");
 
@@ -644,9 +645,16 @@ async function addInterest(interest) {
       // Update Firestore
       await updateDoc(userDocRef, { interests: updatedInterests });
 
+      // If this is a new interest, add to interests collection
+      if (isNew) {
+        const interestDocRef = doc(collection(db, 'interests'), interest);
+        await setDoc(interestDocRef, { name: interest });
+      }
+
       // Update UI
       userData.value.interests = updatedInterests;
       selectedInterest.value = ""; // Reset selection
+      newInterest.value = ""; // reset the input field
 
       triggerNotification("Interest added successfully!", "success");
     }
@@ -971,7 +979,7 @@ onMounted(() => {
   gap: 15px;
 }
 
-.save-btn, .reset-btn, .delete-btn {
+.save-btn, .reset-btn, .delete-btn, .save-profile-btn {
   background-color: #ffe96b;
   padding: 10px 18px;
   border-radius: 8px;
@@ -1101,20 +1109,8 @@ h2 {
   margin-top: 20px;
 }
 
-.save-profile-btn {
-  background-color: #4CAF50;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
-}
-
 .save-profile-btn:hover {
-  background-color: #45a049;
+  background-color: #f2d324;
 }
 
 /* Wrapper */
