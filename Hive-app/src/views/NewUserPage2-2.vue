@@ -1,7 +1,7 @@
 <template>
   <div class="user-container">
     <div class="info-form">
-      <h2>Tell us more about yourself</h2>
+      <h3>Tell us more about yourself</h3>
 
       <!-- Smoking Picker -->
       <div class="text-field custom-picker">
@@ -224,11 +224,9 @@ const handleNext = async () => {
   text-align: center;
 }
 
-.info-form h2 {
+.info-form h3 {
   margin-top: 0;
   margin-bottom: 20px;
-  color: black;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Custom Picker Styles */
@@ -237,8 +235,6 @@ const handleNext = async () => {
   position: relative;
   width: 100%;
   max-width: 400px;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 13px;
 }
 
 .custom-picker label {
@@ -246,10 +242,6 @@ const handleNext = async () => {
   margin-bottom: 5px;
   font-weight: 500;
   text-align: left;
-  color: black;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: bold;
-  font-size: 15px;
 }
 
 .custom-dropdown {
@@ -260,8 +252,7 @@ const handleNext = async () => {
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
-  background-color: #f9f9f9;
-  color: #7a7a7a;
+  background-color: #fff;
 }
 
 .dropdown-icon {
@@ -298,8 +289,8 @@ const handleNext = async () => {
 button {
   align-self: center;
   padding: 12px;
-  background: #ffe96b;
-  color: black;
+  background: black;
+  color: white;
   border: none;
   border-radius: 8px;
   font-size: 18px;
@@ -312,6 +303,6 @@ button {
 }
 
 button:hover {
-  color: white;
+  background: #333;
 }
 </style>
