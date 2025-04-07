@@ -2,13 +2,13 @@
   <div class="page-container">
     <!-- Left Section: Description & Bio Form -->
     <div class="description-form">
-      <h3>Write a short description of yourself</h3>
+      <h3>Write a short description of yourself.</h3>
       <textarea
         v-model="description"
         placeholder="Short description..."
       ></textarea>
 
-      <h3>Write your bio</h3>
+      <h3>Write your bio:</h3>
       <textarea
         v-model="bio"
         placeholder="Bio..."
@@ -76,7 +76,6 @@ const saveProfile = async () => {
 .description-form h3 {
   margin-top: 0;
   margin-bottom: 10px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .description-form textarea {
@@ -87,15 +86,14 @@ const saveProfile = async () => {
   border-radius: 8px;
   border: 1px solid #ccc;
   background: #f9f9f9;
-  font-family: Arial, Helvetica, sans-serif;
 }
 
 .description-form button {
   align-self: flex-start;
   width: 100%;
   padding: 12px;
-  background: #ffe96b;
-  color: black;
+  background: black;
+  color: white;
   border: none;
   border-radius: 8px;
   font-size: 18px;
@@ -105,6 +103,6 @@ const saveProfile = async () => {
 }
 
 .description-form button:hover {
-  color: white;
+  background: #333;
 }
 </style>

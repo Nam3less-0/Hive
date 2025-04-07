@@ -11,7 +11,7 @@
     <transition name="fade">
       <div v-if="showForm" class="interests-form">
         <div class="form-content">
-          <label id = "interests-title">What are your Interests?</label>
+          <h3>What are your Interests?</h3>
           <!-- Search Bar -->
           <input
             v-model="searchTerm"
@@ -248,9 +248,8 @@ const handleNext = async () => {
   height: 80vh;
   font-size: 1.5rem;
   font-weight: bold;
-  color: black;
+  color: #555;
   width: 50vw;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Fade Transition */
@@ -282,12 +281,9 @@ const handleNext = async () => {
   box-sizing: border-box;
 }
 
-#interests-title {
+h3 {
   margin-top: 0;
   margin-bottom: 10px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: black;
-  font-weight: bold;
 }
 
 .search-bar {
@@ -297,7 +293,6 @@ const handleNext = async () => {
   border-radius: 8px;
   border: 1px solid #ccc;
   box-sizing: border-box;
-  background-color: #f9f9f9;
 }
 
 .interests-list {
@@ -308,16 +303,15 @@ const handleNext = async () => {
 }
 
 .interest-item {
-  background-color: #ffe96b;
+  background-color: #eee;
   padding: 8px 12px;
   border-radius: 20px;
   cursor: pointer;
   user-select: none;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .interest-item:hover {
-  color: white;
+  background-color: #ddd;
 }
 
 .interest-item.selected {
@@ -334,25 +328,18 @@ const handleNext = async () => {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Custom Picker Styles */
 .text-field {
   margin-bottom: 15px;
   position: relative;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 13px;
 }
 
 .custom-picker label {
   display: block;
   margin-bottom: 5px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: bold;
-  color: black;
-  font-size: 15px;
-
+  font-weight: 500;
 }
 
 .custom-dropdown {
@@ -363,8 +350,7 @@ const handleNext = async () => {
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
-  background-color: #f9f9f9;
-  color: #7a7a7a;
+  background-color: #fff;
 }
 
 .dropdown-icon {
@@ -387,13 +373,11 @@ const handleNext = async () => {
   width: 100%;
   max-height: 150px;
   overflow-y: auto;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .dropdown-option {
   padding: 8px 12px;
   cursor: pointer;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .dropdown-option:hover {
@@ -401,11 +385,10 @@ const handleNext = async () => {
 }
 
 button {
-  margin: 0 auto;
   align-self: flex-start;
   padding: 12px;
-  background: #ffe96b;
-  color: black;
+  background: black;
+  color: white;
   border: none;
   border-radius: 8px;
   font-size: 18px;
@@ -416,6 +399,6 @@ button {
 }
 
 button:hover {
-  color: white;
+  background: #333;
 }
 </style>
