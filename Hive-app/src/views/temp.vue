@@ -16,9 +16,16 @@
 
     <!-- Three Column Layout -->
     <div class="columns">
+
       <!-- Left Column: Pass Button -->
       <div class="left-column">
-        <button class="pass-btn" @click="passUser">✖️ Pass</button>
+        <div class="action-button pass-btn" @click="passUser">
+          <div class="button-circle">
+            <span>✖️</span>
+          </div>
+          <span class="button-label">Pass</span>
+          <span class="button-hint">Swipe left to skip</span>
+        </div>
       </div>
 
       <!-- Center Column -->
@@ -193,7 +200,13 @@
 
       <!-- Right Column: Like Button -->
       <div class="right-column">
-        <button class="like-btn" @click="likeUser">❤️ Like</button>
+        <div class="action-button like-btn" @click="likeUser">
+          <div class="button-circle pulse-animation">
+            <span>❤️</span>
+          </div>
+          <span class="button-label">Like</span>
+          <span class="button-hint">Swipe right to like</span>
+        </div>
       </div>
     </div>
 
@@ -359,7 +372,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { db, auth } from '@/firebase';
 import { collection, getDocs, increment, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import placeholderProfile from '@/assets/placeholder-profile.jpg';
@@ -439,6 +452,31 @@ const calculateAge = (dob) => {
   return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
 };
 
+// Simple image preloading function
+const preloadImage = (src) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+};
+
+// Function to preload the next profile image
+const preloadNextProfile = async () => {
+  if (users.value.length <= currentUserIndex.value + 1) return; // No more profiles to preload
+  
+  const nextUser = users.value[currentUserIndex.value + 1];
+  if (nextUser && nextUser.images && nextUser.images.length > 0) {
+    try {
+      await preloadImage(nextUser.images[0]);
+      console.log('Next profile image preloaded');
+    } catch (error) {
+      console.error('Failed to preload next profile image', error);
+    }
+  }
+};
+
 // Load data on mount
 onMounted(async () => {
   try {
@@ -512,6 +550,9 @@ onMounted(async () => {
       value: doc.id,
       label: doc.data().name
     }));
+    if (users.value.length > currentUserIndex.value + 1) {
+      preloadNextProfile();
+    }
   } catch (error) {
     console.error("Error fetching data:", error);
   }
@@ -570,10 +611,15 @@ const preloadNextUserImage = () => {
 };
 
 const nextUser = () => {
+  // Check if there are users to display
+  if (users.value.length === 0) {
+    noMoreUsers.value = true;
+    return;
+  }
+
   // Remove the current user from the list
   users.value.splice(currentUserIndex.value, 1);
-  preloadNextUserImage();
-  
+
   if (users.value.length === 0) {
     noMoreUsers.value = true;
     return;
@@ -603,9 +649,16 @@ const passUser = async () => {
   const myUserId = currentUser.value.uid;
   const passedUserId = users.value[currentUserIndex.value].id;
 
-  await updateSeenArray(myUserId, passedUserId);
-  animationDirection.value = 'slide-left';
-  showCross.value = true;
+  try {
+    await updateSeenArray(myUserId, passedUserId);
+    animationDirection.value = 'slide-left';
+    showCross.value = true;
+    
+    // Start preloading while animation is happening
+    preloadNextProfile();
+  } catch (error) {
+    console.error("Error passing user:", error);
+  }
 };
 
 // Handle like user
@@ -626,6 +679,9 @@ const likeUser = async () => {
       likeCount: increment(1)
     });
     animationDirection.value = 'slide-right';
+    
+    // Start preloading while animation is happening
+    preloadNextProfile();
   } catch (error) {
     console.error("Error liking user:", error);
   }
@@ -667,7 +723,12 @@ const handleAnimationEnd = () => {
   showHeart.value = false;
   showCross.value = false;
   // move to next user after animation
+  const previousIndex = currentUserIndex.value;
   nextUser();
+
+  if (previousIndex !== currentUserIndex.value) {
+    preloadNextProfile();
+  }
 };
 </script>
 
@@ -735,7 +796,8 @@ const handleAnimationEnd = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 1rem;
+  padding: 0 1.5rem;
+  position: relative;
 }
 
 .center-column {
@@ -771,7 +833,7 @@ const handleAnimationEnd = () => {
   border-radius: 20px;
   width: 60%;
   max-width: 500px;
-  height: calc(100vw * 1.5);
+  height: calc(100vw * 5);
   max-height: 90%;
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
   position: relative;
@@ -780,6 +842,7 @@ const handleAnimationEnd = () => {
   flex-direction: column;
   transition: all 0.3s ease;
   border: 1px solid rgba(0,0,0,0.05);
+  aspect-ratio: 1 / 2;
 }
 
 .profile-main {
@@ -1353,33 +1416,192 @@ const handleAnimationEnd = () => {
   }
 }
 
-/* Pass and Like Buttons */
-.pass-btn, .like-btn {
-  padding: clamp(0.75rem, 3vw, 1rem) clamp(1rem, 4vw, 2rem);
-  border-radius: 50px;
-  border: 1px solid black;
-  font-size: clamp(1rem, 3vw, 1.25rem);
+/* Button Base Styles */
+.action-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
   cursor: pointer;
-  transition: transform 0.2s;
-  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  width: 160px;
+  max-width: 90%;
 }
 
-.pass-btn {
-  background: #f0f0f0;
+.button-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.pass-btn:hover {
-  background: #e0e0e0;
+.button-circle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.button-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.button-hint {
+  font-size: 0.85rem;
+  color: #888;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  position: absolute;
+  bottom: -25px;
+  text-align: center;
+  width: 100%;
+}
+
+/* Pass Button Specific */
+.pass-btn .button-circle {
+  background-color: white;
+  border: 2px solid #f0f0f0;
+  color: #777;
+}
+
+.pass-btn:hover .button-circle {
+  transform: scale(1.05) rotate(-5deg);
+  background-color: #f5f5f5;
+  color: #555;
+  border-color: #e0e0e0;
+}
+
+.pass-btn:active .button-circle {
+  transform: scale(0.95);
+}
+
+.pass-btn .button-label {
+  color: #777;
+}
+
+.pass-btn:hover .button-label {
+  color: #555;
   transform: scale(1.05);
 }
 
-.like-btn {
-  background: lightyellow;
+.pass-btn:hover .button-hint {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.like-btn:hover {
-  background: #FFD400;
+.pass-btn:hover .button-circle::before {
+  opacity: 0.6;
+}
+
+/* Like Button Specific */
+.like-btn .button-circle {
+  background-color: #FFD400;
+  border: 2px solid #FFD400;
+  color: #333;
+}
+
+.like-btn:hover .button-circle {
+  transform: scale(1.1) rotate(5deg);
+  background-color: #ff6b6b;
+  border-color: #ff6b6b;
+  color: white;
+  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+}
+
+.like-btn:active .button-circle {
+  transform: scale(0.95);
+}
+
+.like-btn .button-label {
+  color: #333;
+}
+
+.like-btn:hover .button-label {
+  color: #ff6b6b;
   transform: scale(1.05);
+}
+
+.like-btn:hover .button-hint {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.like-btn:hover .button-circle::before {
+  opacity: 0.6;
+}
+
+/* Button Animations */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.pulse-animation {
+  animation: pulse 1.5s infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .left-column, .right-column {
+    padding: 0 1rem;
+  }
+  
+  .button-circle {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+  
+  .button-label {
+    font-size: 1rem;
+  }
+  
+  .button-hint {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-button {
+    width: auto;
+  }
+  
+  .button-circle {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+  }
+  
+  .button-label {
+    font-size: 0.9rem;
+  }
 }
 
 /* Filter Popup Styling */
@@ -1831,24 +2053,6 @@ textarea:focus {
   color: #aab7c4;
 }
 
-.emoji-picker {
-  display: flex;
-  align-items: center;
-}
-
-.emoji-btn {
-  background: none;
-  border: none;
-  font-size: 1.1rem;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.emoji-btn:hover {
-  background-color: #eaeaea;
-}
 
 /* Animation Effects */
 .overlay-icon {
