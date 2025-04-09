@@ -210,6 +210,7 @@ input {
 .auth-button.primary:hover {
   background: #ffe96b;
   color: white;
+}
 
 .links {
   display: flex;
