@@ -51,14 +51,14 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const currentUser = auth.currentUser;
-
-  if (requiresAuth && !currentUser) {
-    next({ name: "Login" });
-  } else {
-    next();
-  }
+  auth.onAuthStateChanged((user) => {
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+    if (requiresAuth && !user) {
+      next({ name: "Login" });
+    } else {
+      next();
+    }
+  });
 });
 
 export default router;
