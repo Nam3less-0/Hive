@@ -224,6 +224,7 @@ const handleNext = async () => {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Name fields in the same row */
@@ -231,6 +232,7 @@ const handleNext = async () => {
   display: flex;
   gap: 10px;
   box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Input and select styling */
@@ -242,19 +244,21 @@ select {
   border-radius: 8px;
   background: #f9f9f9;
   box-sizing: border-box;
+  color: #7a7a7a;
 }
 
 /* Label styling */
 label {
   font-weight: bold;
-  color: rgb(156, 156, 156);
+  color: black;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Next button styling */
 button {
   padding: 12px;
-  background: black;
-  color: white;
+  background: #ffe96b;
+  color: black;
   border: none;
   border-radius: 8px;
   font-size: 18px;
@@ -264,6 +268,6 @@ button {
 }
 
 button:hover {
-  background: #333;
+  color: white;
 }
 </style>
