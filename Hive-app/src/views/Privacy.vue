@@ -199,4 +199,9 @@ h2, h3 {
   color: #888;
   font-size: 0.85rem;
 }
+h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
 </style>
