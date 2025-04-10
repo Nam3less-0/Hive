@@ -190,9 +190,9 @@ button {
   box-sizing: border-box;
 }
 
-button:hover {
-  background: #333;
-}
+.auth-button.primary:hover {
+  background: #ffe96b;
+  color: white;
 
 .links {
   display: flex;
