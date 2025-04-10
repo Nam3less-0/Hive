@@ -1,54 +1,60 @@
 <template>
-    <div class="chat-list-container">
-      <h2 class="chat-list-title">Messages</h2>
-  
-      <!-- Search Bar -->
-      <div class="chat-search-container">
-        <input
-          type="text"
-          class="chat-search-input"
-          placeholder="Search people or message"
-          v-model="searchTerm"
-        />
-      </div>
-  
-      <!-- Chat List -->
-      <ul class="chat-list">
-        <li
-  v-for="chat in filteredChats"
-  :key="chat.id"
-  class="chat-list-item"
-  @click="handleChatSelected(chat)"
->
-  <img
-    :src="chat.avatar"
-    :alt="`${chat.name}'s avatar`"
-    class="chat-avatar"
-  />
-  <div class="chat-details">
-    <div class="chat-header">
-      <span class="chat-name">
-        {{ chat.name }}
-        <span v-if="chat.streakCount > 0" class="streak-badge" :class="{'streak-animate': chat.animateStreak}">
-          🔥 {{ chat.streakCount }}
-        </span>
-      </span>
-      <span class="chat-handle">{{ chat.handle }}</span>
+  <div class="chat-list-container">
+    <h2 class="chat-list-title">
+      <span class="bee-icon">🐝</span> Matches <span class="bee-icon">🐝</span>
+    </h2>
+
+    <!-- Search Bar -->
+    <div class="chat-search-container">
+      <input
+        type="text"
+        class="chat-search-input"
+        placeholder="Search for a buzz buddy..."
+        v-model="searchTerm"
+      />
+      <span class="search-icon">🔍</span>
     </div>
-    <div class="chat-last-message">
-      {{ getLatestMessage(chat).text }}
-    </div>
+
+    <!-- Chat List -->
+    <ul class="chat-list">
+      <li
+        v-for="chat in filteredChats"
+        :key="chat.id"
+        class="chat-list-item"
+        @click="handleChatSelected(chat)"
+      >
+        <div class="avatar-container">
+          <img
+            :src="chat.avatar"
+            :alt="`${chat.name}'s avatar`"
+            class="chat-avatar"
+          />
+          <div class="hex-outline"></div>
+        </div>
+        <div class="chat-details">
+          <div class="chat-header">
+            <span class="chat-name">
+              {{ chat.name }}
+              <span v-if="chat.streakCount > 0" class="streak-badge" :class="{'streak-animate': chat.animateStreak}">
+                🔥 {{ chat.streakCount }}
+              </span>
+            </span>
+            <span class="chat-handle">{{ chat.handle }}</span>
+          </div>
+          <div class="chat-last-message">
+            {{ getLatestMessage(chat).text }}
+          </div>
+        </div>
+        <div class="chat-date">
+          {{ formatTimestamp(getLatestMessage(chat).timestamp) }}
+        </div>
+      </li>
+    </ul>
   </div>
-  <div class="chat-date">
-    {{ formatTimestamp(getLatestMessage(chat).timestamp) }}
-  </div>
-</li>
-      </ul>
-    </div>
-  </template>
+</template>
   
 <script>
-import { db , auth } from "@/firebase"; // Adjust the import based on your Firebase setup
+import { db, auth } from "@/firebase"; // Adjust the import based on your Firebase setup
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 
 export default {
@@ -62,8 +68,12 @@ export default {
   },
   computed: {
     filteredChats() {
+      // First filter out blocked matches
+      const nonBlockedChats = this.chats.filter(chat => !chat.blocked);
+      
+      // Then apply search filter
       const lowerSearch = this.searchTerm.toLowerCase();
-      const filtered = this.chats.filter((chat) => {
+      const filtered = nonBlockedChats.filter((chat) => {
         const latestMessage = this.getLatestMessage(chat);
         return (
           chat.name.toLowerCase().includes(lowerSearch) ||
@@ -80,51 +90,51 @@ export default {
   },
   methods: {
     async fetchChats() {
-  const currentUser = auth.currentUser;
-  if (!currentUser) return;
-  
-  const matchesQuery = query(
-    collection(db, "matches"),
-    where("userIds", "array-contains", currentUser.uid)
-  );
-  const matchesSnapshot = await getDocs(matchesQuery);
+      const currentUser = auth.currentUser;
+      if (!currentUser) return;
+      
+      const matchesQuery = query(
+        collection(db, "matches"),
+        where("userIds", "array-contains", currentUser.uid)
+      );
+      const matchesSnapshot = await getDocs(matchesQuery);
 
-  const chatPromises = matchesSnapshot.docs.map(async (matchDoc) => {
-    const matchData = matchDoc.data();
-    const matchedUserId = matchData.userIds.find(id => id !== currentUser.uid);
-    
-    if (!matchedUserId) return null;
-    
-    const userDoc = await getDoc(doc(db, "users", matchedUserId));
-    if (!userDoc.exists()) return null;
-    
-    const userData = userDoc.data();
+      const chatPromises = matchesSnapshot.docs.map(async (matchDoc) => {
+        const matchData = matchDoc.data();
+        const matchedUserId = matchData.userIds.find(id => id !== currentUser.uid);
+        
+        if (!matchedUserId) return null;
+        
+        const userDoc = await getDoc(doc(db, "users", matchedUserId));
+        if (!userDoc.exists()) return null;
+        
+        const userData = userDoc.data();
 
-    // Find existing chat entry
-    const existingChat = this.chats.find(chat => chat.id === matchDoc.id);
-    const previousStreak = existingChat ? existingChat.streakCount : 0;
-    const newStreak = matchData.streakCount || 0;
+        // Find existing chat entry
+        const existingChat = this.chats.find(chat => chat.id === matchDoc.id);
+        const previousStreak = existingChat ? existingChat.streakCount : 0;
+        const newStreak = matchData.streakCount || 0;
 
-    return {
-      id: matchDoc.id,
-      name: `${userData.firstName} ${userData.lastName}`,
-      handle: `@${userData.firstName.toLowerCase()}`,
-      avatar: userData.images?.[0] || "https://via.placeholder.com/150", 
-      messages: matchData.messages || [],
-      streakCount: newStreak,
-      animateStreak: newStreak > previousStreak, // Animate only if streak increases
-    };
-  });
+        return {
+          id: matchDoc.id,
+          name: `${userData.firstName} ${userData.lastName}`,
+          handle: `@${userData.firstName.toLowerCase()}`,
+          avatar: userData.images?.[0] || "https://via.placeholder.com/150", 
+          messages: matchData.messages || [],
+          streakCount: newStreak,
+          animateStreak: newStreak > previousStreak, // Animate only if streak increases
+          blocked: matchData.blocked || false, // Add blocked property
+        };
+      });
 
-  this.chats = (await Promise.all(chatPromises)).filter(chat => chat !== null);
-  console.log("Matches retrieved from Firebase:", matchesSnapshot.docs.map(doc => doc.id));
+      this.chats = (await Promise.all(chatPromises)).filter(chat => chat !== null);
+      console.log("Matches retrieved from Firebase:", matchesSnapshot.docs.map(doc => doc.id));
 
-  // Remove animation class after delay to allow re-triggering
-  setTimeout(() => {
-    this.chats.forEach(chat => chat.animateStreak = false);
-  }, 1000);
-},
-
+      // Remove animation class after delay to allow re-triggering
+      setTimeout(() => {
+        this.chats.forEach(chat => chat.animateStreak = false);
+      }, 1000);
+    },
     getLatestMessage(chat) {
       if (!chat.messages || chat.messages.length === 0) {
         return { text: "", timestamp: "" };
@@ -177,105 +187,184 @@ export default {
 };
 </script>
 
-
 <style scoped>
-/* Ensure box-sizing is set to border-box for more predictable layouts */
+/* Bee Theme Colors */
+:root {
+  --honeycomb-yellow: #FFC107;
+  --honeycomb-dark: #FFB000;
+  --honeycomb-light: #FFECB3;
+  --bee-black: #212121;
+  --bee-white: #FFFFFF;
+  --honey-brown: #8D6E63;
+}
+
+/* General Styling */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-.streak-badge {
-  background: linear-gradient(45deg, rgba(255, 67, 217, 0.8), rgba(168, 67, 255, 0.8));
-  background-size: 200% 200%;
-  color: white;
-  font-size: 0.8rem;
-  padding: 2px 6px;
-  border-radius: 12px;
-  margin-left: 8px;
-  font-weight: bold;
-  display: inline-block;
-  animation: fireMove 2s infinite ease-in-out;
-}
-
-/* Keyframes to animate the background gradient like fire */
-@keyframes fireMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes firePulse {
-  0% { transform: scale(1); filter: brightness(1); }
-  50% { transform: scale(1.3); filter: brightness(1.5); }
-  100% { transform: scale(1); filter: brightness(1); }
-}
-
-.streak-animate {
-  animation: firePulse 1s ease-in-out;
-}
-
-/* Responsive container: full width with a max-width on larger screens */
 .chat-list-container {
   flex: 1;
-  height: 100vh; /* Ensure it extends fully */
-  background-color: rgb(239, 228, 193);
-  padding: 1rem;
+  height: 100vh;
+  background-color: var(--honeycomb-light);
+  background-image: repeating-linear-gradient(
+    120deg,
+    rgba(255, 193, 7, 0.1),
+    rgba(255, 193, 7, 0.1) 20px,
+    rgba(255, 236, 179, 0.2) 20px,
+    rgba(255, 236, 179, 0.2) 40px
+  );
+  padding: 1.5rem;
   border-radius: 8px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
 }
 
+/* Large honeycomb watermark */
+.chat-list-container::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300px;
+  height: 300px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath fill='%23FFC107' fill-opacity='0.1' d='M35,20.5L55,5l20,15.5V50.5L55,66L35,50.5V20.5z M85,20.5L105,5l20,15.5V50.5L105,66L85,50.5V20.5z M60,40.5L80,25l20,15.5V70.5L80,86L60,70.5V40.5z M10,40.5L30,25l20,15.5V70.5L30,86L10,70.5V40.5z M35,60.5L55,45l20,15.5V90.5L55,106L35,90.5V60.5z M85,60.5L105,45l20,15.5V90.5L105,106L85,90.5V60.5z'/%3E%3C/svg%3E");
+  transform: translate(-50%, -50%) rotate(15deg) scale(3);
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 0;
+}
 
+/* Title */
 .chat-list-title {
-  margin: 0 0 1rem 0;
-  font-size: 1.5rem;
-  color: #000;
+  margin: 0 0 1.5rem 0;
+  font-size: 1.8rem;
+  color: var(--bee-black);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 1;
 }
 
+.bee-icon {
+  font-size: 1.5rem;
+  display: inline-block;
+  animation: flyBee 2s infinite alternate ease-in-out;
+}
+
+@keyframes flyBee {
+  0% { transform: translateY(0) rotate(5deg); }
+  100% { transform: translateY(-5px) rotate(-5deg); }
+}
+
+/* Search Bar */
 .chat-search-container {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 .chat-search-input {
   width: 100%;
-  padding: 0.5rem;
-  border: none;
-  border-radius: 4px;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  border: 2px solid var(--honeycomb-dark);
+  border-radius: 20px;
   font-size: 1rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bee-white);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
 }
 
+.chat-search-input:focus {
+  outline: none;
+  border-color: var(--honey-brown);
+  box-shadow: 0 2px 8px rgba(141, 110, 99, 0.3);
+}
+
+.search-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+}
+
+/* Chat List */
 .chat-list {
   list-style: none;
   margin: 0;
   padding: 0;
+  overflow-y: auto;
+  position: relative;
+  z-index: 1;
 }
 
 .chat-list-item {
   display: flex;
   align-items: center;
-  background-color: transparent;
-  margin-bottom: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.8rem;
+  padding: 0.8rem;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  position: relative;
+  border-left: 5px solid var(--honeycomb-yellow);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .chat-list-item:hover {
-  background-color: #f2f2f2;
+  background-color: var(--bee-white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Hexagon avatar container */
+.avatar-container {
+  position: relative;
+  width: 55px;
+  height: 55px;
+  margin-right: 1rem;
 }
 
 .chat-avatar {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  margin-right: 0.75rem;
   object-fit: cover;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid var(--honeycomb-yellow);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  z-index: 1;
+}
+
+.hex-outline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath fill='none' stroke='%23FFC107' stroke-width='2' d='M30,5 L53.3,20 L53.3,50 L30,65 L6.7,50 L6.7,20 L30,5z'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  animation: rotateSlow 20s linear infinite;
+}
+
+@keyframes rotateSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .chat-details {
@@ -286,73 +375,107 @@ export default {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.4rem;
 }
 
 .chat-name {
   font-weight: bold;
-  font-size: 1rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1.1rem;
+  color: var(--bee-black);
 }
 
 .chat-handle {
   font-size: 0.875rem;
-  color: #666;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--honey-brown);
 }
 
 .chat-last-message {
   font-size: 0.9rem;
-  color: #333;
+  color: #555;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 200px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .chat-date {
   font-size: 0.75rem;
-  color: black;
+  color: var(--honey-brown);
   margin-left: 0.5rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--honeycomb-light);
+  padding: 0.3rem 0.6rem;
+  border-radius: 10px;
+}
+
+/* Streak styles */
+.streak-badge {
+  background: linear-gradient(45deg, var(--honeycomb-yellow), var(--honeycomb-dark));
+  color: var(--bee-black);
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+  font-weight: bold;
+  display: inline-block;
+  position: relative;
+  animation: honeyglow 3s infinite alternate;
+}
+
+@keyframes honeyglow {
+  0% { box-shadow: 0 0 5px rgba(255, 193, 7, 0.5); }
+  100% { box-shadow: 0 0 15px rgba(255, 193, 7, 0.8); }
+}
+
+.streak-animate {
+  animation: honeyburst 1s ease-in-out;
+}
+
+@keyframes honeyburst {
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.3); filter: brightness(1.5); }
+  100% { transform: scale(1); filter: brightness(1); }
 }
 
 /* Optional media query for smaller screens */
-@media (max-width: 400px) {
+@media (max-width: 480px) {
   .chat-list-container {
-    padding: 0.5rem;
+    padding: 1rem;
+  }
+
+  .chat-list-title {
+    font-size: 1.5rem;
   }
 
   .chat-list-item {
-    padding: 0.5rem 0.25rem;
+    padding: 0.6rem;
+  }
+
+  .avatar-container {
+    width: 45px;
+    height: 45px;
+    margin-right: 0.75rem;
   }
 
   .chat-avatar {
     width: 40px;
     height: 40px;
-    margin-right: 0.5rem;
   }
 
   .chat-name {
-    font-size: 0.95rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 1rem;
   }
 
   .chat-handle {
-    font-size: 0.8rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 0.75rem;
   }
 
   .chat-last-message {
     font-size: 0.8rem;
-    max-width: 120px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 150px;
   }
 
   .chat-date {
     font-size: 0.7rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 }
 </style>

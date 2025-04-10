@@ -218,5 +218,11 @@ onMounted(fetchNotificationSettings);
   .save-btn:hover {
     opacity: 0.9;
   }
+
+  h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
   </style>
   

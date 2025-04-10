@@ -16,6 +16,7 @@ import MainLayout from "@/views/MainLayout.vue";
 import Notifications from '@/views/Notifications.vue';
 import Privacy from '@/views/Privacy.vue';
 import LoadingPage from "@/views/LoadingPage.vue";
+import temp from "@/views/temp.vue";
 import { auth } from "@/firebase";
 
 const routes = [
@@ -31,6 +32,7 @@ const routes = [
       { path: 'myaccount', name: 'MyAccount', component: MyAccount },
       { path: 'notifications', name: 'Notifications', component: Notifications },
       { path: 'privacy', name: 'Privacy', component: Privacy },
+      { path: 'temp', name: 'temp', component: temp },
       
     ],
   },

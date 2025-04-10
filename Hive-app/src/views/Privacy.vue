@@ -23,9 +23,27 @@
       </section>
     </main>
   </div>
+  <div v-if="showNotification" class="notification-toast" :class="notificationType">
+  {{ notificationMessage }}
+  <div class="progress-bar"></div>
+</div>
 </template>
 
 <script setup>
+
+const showNotification = ref(false);
+const notificationMessage = ref("");
+const notificationType = ref("success");
+
+const triggerNotification = (message, type = "success") => {
+  notificationMessage.value = message;
+  notificationType.value = type;
+  showNotification.value = true;
+
+  setTimeout(() => {
+    showNotification.value = false;
+  }, 2000);
+};
 import { ref, onMounted } from 'vue';
 import { db, auth } from '@/firebase';
 import { collection, getDocs, doc, getDoc, updateDoc, query, where } from 'firebase/firestore';
@@ -119,7 +137,7 @@ async function unblockUser(blockedUserId) {
     // Update UI
     blockedProfiles.value = blockedProfiles.value.filter(profile => profile.id !== blockedUserId);
 
-    alert("User unblocked successfully!");
+    triggerNotification("User unblocked successfully!", "success");
   } catch (error) {
     console.error("Error unblocking user:", error);
   }
@@ -198,5 +216,48 @@ h2, h3 {
 .blocked-date {
   color: #888;
   font-size: 0.85rem;
+}
+h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+.notification-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.notification-toast.success .progress-bar {
+  background-color: rgba(0, 255, 51, 0.7);
+}
+
+.notification-toast.error .progress-bar {
+  background-color: rgb(237, 0, 0);
+}
+
+.progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  animation: progressShrink 2s linear forwards;
+}
+
+@keyframes progressShrink {
+  from { width: 100%; }
+  to { width: 0%; }
 }
 </style>

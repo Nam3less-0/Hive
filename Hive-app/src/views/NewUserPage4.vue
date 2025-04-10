@@ -158,12 +158,10 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 5px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 25px;
   }
   
-  .header h3 {
-    font-size: 1.5rem;
-    margin: 0;
-  }
   
   .counter {
     font-size: 1rem;
@@ -181,17 +179,18 @@
     padding: 10px 20px;
     margin-bottom: 20px;
     cursor: pointer;
-    background-color: #ffcc00;
-    color: #fff;
+    background-color: #ffe96b;
+    color: black;
     border: none;
     border-radius: 5px;
     font-size: 1rem;
     text-align: center;
     transition: background-color 0.3s ease;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   
   .custom-file-upload:hover {
-    background-color: #ffdf5d;
+    color: white;
   }
   
   input[type="file"] {
@@ -245,19 +244,21 @@
     margin-bottom: 20px;
     text-align: center;
     font-size: 0.9rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   
   .finish-button {
     align-self: center;
     padding: 12px 20px;
-    background: black;
-    color: #fff;
-    border: none;
+    background: #f9f9f9;
+    color: black;
+    border: 1px solid #ccc; 
     border-radius: 8px;
     font-size: 1.2rem;
     cursor: pointer;
     transition: background 0.3s ease;
     width: 100%;
+    font-size: 15px;
   }
   
   .finish-button:disabled {
@@ -266,7 +267,7 @@
   }
   
   .finish-button:hover:enabled {
-    background: #ffcc00;
+    background: green;
   }
   </style>
   
