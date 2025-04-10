@@ -1,0 +1,151 @@
+<template>
+    <div class="match-chart-container">
+      <canvas ref="matchChartCanvas"></canvas>
+    </div>
+  </template>
+  
+  <script>
+  import { ref, onMounted } from 'vue';
+  import { Chart, registerables } from 'chart.js';
+  import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+  import { getApp } from 'firebase/app';
+  
+  Chart.register(...registerables);
+  
+  export default {
+    name: 'MatchChart',
+    setup() {
+      const matchChartCanvas = ref(null);
+      const db = getFirestore(getApp());
+  
+      const getPast7Days = () => {
+        const days = [];
+        const today = new Date();
+        for (let i = 6; i >= 0; i--) {
+          const date = new Date(today);
+          date.setDate(today.getDate() - i);
+          const label = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+          days.push({ label, date, count: 0 });
+        }
+        return days;
+      };
+  
+      const fetchMatchData = async () => {
+        const past7Days = getPast7Days();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 6);
+        startDate.setHours(0, 0, 0, 0);
+  
+        const endDate = new Date();
+        endDate.setHours(23, 59, 59, 999);
+  
+        const matchesRef = collection(db, 'matches');
+        const q = query(matchesRef, where('matchedAt', '>=', startDate), where('matchedAt', '<=', endDate));
+        const querySnapshot = await getDocs(q);
+  
+        querySnapshot.forEach(doc => {
+          const matchedAt = doc.data().matchedAt.toDate ? doc.data().matchedAt.toDate() : new Date(doc.data().matchedAt);
+          matchedAt.setHours(0, 0, 0, 0);
+  
+          for (const day of past7Days) {
+            const dayDate = new Date(day.date);
+            dayDate.setHours(0, 0, 0, 0);
+            if (matchedAt.getTime() === dayDate.getTime()) {
+              day.count++;
+            }
+          }
+        });
+  
+        return {
+          labels: past7Days.map(day => day.label),
+          data: past7Days.map(day => day.count)
+        };
+      };
+  
+      const renderChart = async () => {
+        const matchData = await fetchMatchData();
+  
+        new Chart(matchChartCanvas.value, {
+          type: 'line',
+          data: {
+            labels: matchData.labels,
+            datasets: [{
+              label: 'Matches (last 7 days)',
+              data: matchData.data,
+              fill: false,
+              tension: 0.3,
+              borderColor: '#facc15', // yellow tone
+              backgroundColor: '#facc15',
+              pointBackgroundColor: '#facc15',
+              pointBorderColor: '#000',
+              pointRadius: 5
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true }
+            },
+            scales: {
+                y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1,
+                    precision: 0, // Ensures whole numbers only
+                    callback: function(value) {
+                    return Number.isInteger(value) ? value : null;
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Number of Matches'
+                }
+                },
+                x: {
+                title: {
+                    display: true,
+                    text: 'Date'
+                }
+                }
+            }
+            }
+        });
+      };
+  
+      onMounted(() => {
+        renderChart();
+      });
+  
+      return { matchChartCanvas };
+    }
+  };
+  </script>
+  
+  <style scoped>
+  .match-chart-container {
+    background-color: #fff8e1;
+    border: 2px solid #fbc02d;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    padding: 20px;
+    font-size: 1.6rem;
+    margin: 20px auto;
+    max-width: 600px;
+    pointer-events: none;
+  }
+  
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+  
+  .chart-title {
+    font-weight: bold;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin-bottom: 12px;
+    font-size: 1.6rem;
+    color: #333;
+  }
+  </style>
+  
+  
