@@ -3,39 +3,50 @@
     <div class="background-grid">
       <div v-for="n in 500" :key="n" class="grid-cell" :style="getRandomAnimationStyle()"></div>
     </div>
-  <div class="home-container">
-    
-    <div class="content-wrapper">
-      <!-- Right Section: Info (Likes and Streak) -->
-      <div class="right-section">
-        <div class="likes-box">
-          <img src="@/assets/info-sign.png" alt="info" class="info" />
-          <div class="other-likes">
-            <h3>Welcome Back!</h3>
-            <p>You have {{ likeCount }} new {{ likeCount === 1 ? 'like' : 'likes' }}!</p>
-            <button class="view-likes" @click="goToMyBuzzes">
-              View Likes
-            </button>
-          </div>
-        </div>
 
-        <div class="streak-box">
-          <h2>Longest Streak:</h2>
-          <div class="streak-details" v-if="longestStreak.matchId">
-            <img
-              :src="longestStreak.profilePic || '@/assets/placeholder-profile.jpg'"
-              alt="profile"
-              class="streak-pic"
-            />
-            <div class="streak-text">
-              <p class="streak-name"><b>{{ longestStreak.name }}</b></p>
-              <p class="streak-days">{{ longestStreak.streakCount }} Days! 🔥</p>
+    <div class="home-container">
+      <div class="content-wrapper">
+        <!-- Flex container with two sections -->
+        <div class="main-content">
+          
+          <!-- Left Section: Likes and Streaks -->
+          <div class="left-section">
+            <div class="likes-box">
+              <img src="@/assets/info-sign.png" alt="info" class="info" />
+              <div class="other-likes">
+                <h3>Welcome Back!</h3>
+                <p>You have {{ likeCount }} new {{ likeCount === 1 ? 'like' : 'likes' }}!</p>
+                <button class="view-likes" @click="goToMyBuzzes">
+                  View Likes
+                </button>
+              </div>
+            </div>
+
+            <div class="streak-box">
+              <h2>Longest Streak:</h2>
+              <div class="streak-details" v-if="longestStreak.matchId">
+                <img
+                  :src="longestStreak.profilePic || '@/assets/placeholder-profile.jpg'"
+                  alt="profile"
+                  class="streak-pic"
+                />
+                <div class="streak-text">
+                  <p class="streak-name"><b>{{ longestStreak.name }}</b></p>
+                  <p class="streak-days">{{ longestStreak.streakCount }} Days! 🔥</p>
+                </div>
+              </div>
+              <p v-else>No streaks yet.</p>
             </div>
           </div>
-          <p v-else>No streaks yet.</p>
+
+          <!-- Right Section: Chart -->
+          <div class="right-section">
+            <MatchChart />
+          </div>
+
         </div>
       </div>
-    </div>
+
     
     <footer class="footer">
       <div class="footer-content">
@@ -110,6 +121,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth, db } from "@/firebase";
 import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import MatchChart from '@/components/MatchChart.vue';
 
 const router = useRouter();
 const likeCount = ref(0);
@@ -239,18 +251,41 @@ onMounted(async () => {
 
 </script>
 
-
 <style scoped>
+/* === GENERAL LAYOUT === */
 .page-wrapper {
   position: relative;
   z-index: 0;
 }
+
 .home-container {
   position: relative;
   z-index: 1;
   background: transparent;
 }
 
+.content-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.main-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  width: 100%;
+  max-width: 1200px;
+  align-items: flex-start;
+}
+
+.left-section,
+.right-section {
+  flex: 1;
+  min-width: 300px;
+}
+
+/* === BACKGROUND GRID === */
 .background-grid {
   position: fixed;
   top: 8vh;
@@ -267,54 +302,27 @@ onMounted(async () => {
 .grid-cell {
   background-color: #ffd400;
   border: 1px solid #fbc02d;
-  animation-name: sparkle;
-  animation-iteration-count: infinite;
-  animation-timing-function: ease-in-out;
+  animation: sparkle 5s infinite ease-in-out;
 }
 
 @keyframes sparkle {
-  0%, 100% {
-    background-color: #ffd400;
-  }
-  50% {
-    background-color: white;
-  }
+  0%, 100% { background-color: #ffd400; }
+  50% { background-color: white; }
 }
 
-
-/* Wrapper for left and right sections */
-.content-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  flex: 1;
-  padding: 20px;
-  gap: 20px;
-  justify-content: center;
-  align-items: flex-start;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-
-/* Right Section (Likes and Streak) */
-.right-section {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  width: 100%;
-  max-width: 500px;
-}
-
-/* Likes Box */
+/* === LIKES + STREAK BOXES === */
 .likes-box,
 .streak-box {
   background-color: #fff8e1;
   border: 2px solid #fbc02d;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   border-radius: 20px;
   padding: 20px;
   font-size: 1.6rem;
+  margin-bottom: 20px;
   pointer-events: none;
 }
+
 .info {
   width: 50px;
   height: auto;
@@ -344,6 +352,7 @@ onMounted(async () => {
   transform: scale(1.05);
 }
 
+/* === STREAK IMAGE BOX === */
 .streak-box {
   background-image: url('@/assets/streak-honeycomb.png');
   background-size: cover;
@@ -352,29 +361,42 @@ onMounted(async () => {
 }
 
 .streak-details {
-  margin-top: 15px;
-}
-
-
-.streak-details {
   display: flex;
   align-items: center;
-  margin-top: 10px;
+  margin-top: 15px;
 }
 
 .streak-pic {
   max-width: 10vw;
   max-height: 10vw;
-  height: auto;
-  width: auto;
   border-radius: 25px;
   margin-right: 10px;
+  width: auto;
+  height: auto;
 }
 
-/* Footer */
+/* === MATCH CHART === */
+.match-chart-container {
+  background-color: #fff8e1;
+  border: 2px solid #fbc02d;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  padding: 20px;
+  font-size: 1.6rem;
+  width: 100%;
+  max-width: 600px;
+  pointer-events: none;
+}
+
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* === FOOTER === */
 .footer {
   background-color: #ffd400;
-  padding: 10px 20px;
+  padding: 20px;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -387,7 +409,6 @@ onMounted(async () => {
   z-index: 2;
   height: 6vh;
 }
-
 
 .footer-content {
   display: flex;
@@ -406,7 +427,6 @@ onMounted(async () => {
   display: flex;
   gap: 20px;
   justify-content: center;
-  margin-top: 10px;
 }
 
 .social-icons img {
@@ -414,20 +434,7 @@ onMounted(async () => {
   height: auto;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .content-wrapper {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .left-section,
-  .right-section {
-    flex: 1 1 100%;
-  }
-}
-
-/* Modal */
+/* === MODALS === */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -442,7 +449,7 @@ onMounted(async () => {
 }
 
 .modal-content {
-  position: relative; /* Ensures close button is positioned inside */
+  position: relative;
   background: white;
   padding: 30px;
   border-radius: 10px;
@@ -452,7 +459,6 @@ onMounted(async () => {
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Fix: Close button is now properly positioned inside the modal */
 .close-button {
   position: absolute;
   top: 10px;
@@ -465,4 +471,20 @@ onMounted(async () => {
   color: black;
 }
 
+/* === RESPONSIVENESS === */
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .left-section,
+  .right-section {
+    width: 100%;
+  }
+
+  .match-chart-container {
+    max-width: 100%;
+  }
+}
 </style>
