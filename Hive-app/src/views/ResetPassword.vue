@@ -1,9 +1,7 @@
 <template>
   <div class="reset-container">
-    <!-- Reusable Branding Component (left side) -->
     <Branding />
 
-    <!-- Right Section: Reset Form -->
     <div class="reset-form">
       <div class="logo-small">
         <img src="@/assets/hive-small.png" alt="Hive Small Logo" />
@@ -13,11 +11,14 @@
         <label>Email</label>
         <input v-model="email" type="email" placeholder="Enter your email" required />
 
+        <!-- Button container with align-right reset -->
         <div class="button-group">
-          <!-- Cancel Button -->
-          <button type="button" @click="handleCancel">Cancel</button>
-          <!-- Submit / Reset Password Button -->
-          <button type="submit">Reset Password</button>
+          <button type="button" class="btn-cancel" @click="handleCancel">Cancel</button>
+          <button type="submit" class="btn-reset">Reset Password</button>
+        </div>
+
+        <div v-if="message" :class="['feedback', messageType]">
+          {{ message }}
         </div>
       </form>
     </div>
@@ -27,34 +28,38 @@
 <script setup>
 import { ref } from 'vue';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '@/firebase'; // <-- Adjust import path as needed
-import Branding from '@/components/Branding.vue'; // <-- Adjust import path as needed
+import { auth } from '@/firebase';
+import Branding from '@/components/Branding.vue';
 import { useRouter } from 'vue-router';
 
 const email = ref('');
+const message = ref('');
+const messageType = ref('');
 const router = useRouter();
 
-// Send password reset email via Firebase
 const handleReset = async () => {
+  message.value = '';
+
   try {
     await sendPasswordResetEmail(auth, email.value);
-    console.log('Reset email sent');
-    // ✅ Optionally, show a success message or redirect:
-    router.push('/'); // e.g., go back to login
   } catch (error) {
     console.error('Error sending reset email:', error.message);
-    // Optionally, show an error message to the user
   }
+
+  message.value = "If an account with that email exists, a password reset link has been sent.";
+
+  setTimeout(() => {
+    router.push('/');
+  }, 3000);
 };
 
-// Cancel button action (go back to login, or any other route)
+
 const handleCancel = () => {
   router.push('/');
 };
 </script>
 
 <style scoped>
-/* Container holds left branding and right form */
 .reset-container {
   display: flex;
   width: 100vw;
@@ -62,10 +67,9 @@ const handleCancel = () => {
   overflow: hidden;
 }
 
-/* Right side: Reset Form */
 .reset-form {
   flex-grow: 1;
-  width: 50vw !important;
+  width: 50vw;
   max-width: 50vw;
   min-width: 50vw;
   display: flex;
@@ -106,43 +110,67 @@ input {
   background: #f9f9f9;
 }
 
-/* Button Group (Cancel & Reset Password) */
+/* Button group — aligns Reset Password to the right */
 .button-group {
   display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
+  justify-content: space-between;  /* distribute left/right */
+  margin-top: 12px;
+  width: 100%;
+  max-width: 350px;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* General button styling */
-button {
-  padding: 12px;
+button[type="button"],
+button[type="submit"] {
+  padding: 12px 16px;
   border: none;
   border-radius: 8px;
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.3s ease;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Cancel button styling */
 button[type="button"] {
+  background: red;
+  color: black;
+  /* REMOVE margin-right or auto! */
+}
+
+button[type="submit"] {
+  background: #ffe96b;
+  color: black;
+  /* REMOVE margin-left or auto! */
+}
+
+
+.btn-cancel {
   background: red;
   color: black;
 }
 
-button[type="button"]:hover {
+.btn-cancel:hover {
   color: white;
 }
 
-/* Reset button styling */
-button[type="submit"] {
+.btn-reset {
   background: #ffe96b;
   color: black;
 }
 
-button[type="submit"]:hover {
+.btn-reset:hover {
   color: white;
 }
+
+.feedback {
+  color: red;
+  font-weight: bold;
+  font-size: 14px;
+  margin-top: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+}
 </style>
+
 
   
