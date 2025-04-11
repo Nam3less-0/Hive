@@ -29,10 +29,15 @@
       </div>
 
       <!-- Center Column -->
-      <div class="center-column">
+      <div class="center-column" :class="{ 'detail-mode': showDetails }">
         <!-- Profile Card -->
-        <div v-if="users.length > 0 && currentUserIndex < users.length" class="profile-card" 
-          :class="animationDirection" @animationend="handleAnimationEnd">
+        <div v-if="users.length > 0 && currentUserIndex < users.length" 
+          class="profile-card" 
+          :class="[
+          animationDirection, 
+          { 'detail-mode': showDetails }
+        ]" 
+        @animationend="handleAnimationEnd">
         <!-- Heart & Cross Animations -->
           <div class="overlay-icon heart" v-if="showHeart">❤️</div>
           <div class="overlay-icon cross" v-if="showCross">❌</div>
@@ -146,36 +151,119 @@
                 </div>
               </div>
 
-              <!-- Personal Info Section -->
+              
+
+              <!-- Personal Info Section - Redesigned -->
               <div>
                 <div class="section-header">
                   <div class="section-icon">👤</div>
                   <h3>Personal Details</h3>
                 </div>
-                <div class="about-grid">
-                  <div class="about-item">
-                    <div class="about-label">Age</div>
-                    <div class="about-value">{{ calculateAge(users[currentUserIndex]?.dateOfBirth) }} years</div>
+  
+                <!-- New categorized personal info layout -->
+                <div class="personal-info-container">
+                  <!-- Basics Category -->
+                  <div class="info-category">
+                    <div class="category-title">
+                      <span class="category-icon">📋</span>
+                      <h4>Basics</h4>
+                    </div>
+                    <div class="info-items">
+                      <div class="info-item">
+                        <div class="info-label">Age</div>
+                        <div class="info-value">{{ calculateAge(users[currentUserIndex]?.dateOfBirth) }} years</div>
+                      </div>
+                      <div class="info-item">
+                        <div class="info-label">Height</div>
+                        <div class="info-value">{{ users[currentUserIndex]?.height || 'N/A' }} cm</div>
+                      </div>
+                      <div class="info-item">
+                        <div class="info-label">Sexual Orientation</div>
+                        <div class="info-value">
+                          <span class="tag-chip">{{ users[currentUserIndex]?.sexualOrientation || 'Not specified' }}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div class="about-item">
-                    <div class="about-label">Height</div>
-                    <div class="about-value">{{ users[currentUserIndex]?.height || 'N/A' }} cm</div>
+    
+                  <!-- Background Category -->
+                  <div class="info-category">
+                    <div class="category-title">
+                      <span class="category-icon">🌍</span>
+                      <h4>Background</h4>
+                    </div>
+                    <div class="info-items">
+                      <div class="info-item">
+                        <div class="info-label">Race</div>
+                        <div class="info-value">{{ users[currentUserIndex]?.race || 'Not specified' }}</div>
+                      </div>
+                      <div class="info-item">
+                        <div class="info-label">Religion</div>
+                        <div class="info-value">{{ users[currentUserIndex]?.religion || 'Not specified' }}</div>
+                      </div>
+                    </div>
                   </div>
-                  <div class="about-item">
-                    <div class="about-label">Race</div>
-                    <div class="about-value">{{ users[currentUserIndex]?.race || 'Not specified' }}</div>
+    
+                  <!-- Lifestyle Category -->
+                  <div class="info-category">
+                    <div class="category-title">
+                      <span class="category-icon">🎯</span>
+                      <h4>Lifestyle</h4>
+                    </div>
+                    <div class="info-items">
+                      <div class="info-item">
+                        <div class="info-label">Drinking</div>
+                        <div class="info-value">
+                          <span class="lifestyle-indicator" :class="getDrinkingClass(users[currentUserIndex]?.drinking)">
+                            <span class="indicator-icon">{{ getDrinkingIcon(users[currentUserIndex]?.drinking) }}</span>
+                            {{ users[currentUserIndex]?.drinking || 'Not specified' }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="info-item">
+                        <div class="info-label">Smoking</div>
+                        <div class="info-value">
+                          <span class="lifestyle-indicator" :class="getSmokingClass(users[currentUserIndex]?.smoking)">
+                            <span class="indicator-icon">{{ getSmokingIcon(users[currentUserIndex]?.smoking) }}</span>
+                            {{ users[currentUserIndex]?.smoking || 'Not specified' }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div class="about-item">
-                    <div class="about-label">Religion</div>
-                    <div class="about-value">{{ users[currentUserIndex]?.religion || 'Not specified' }}</div>
+                  
+                  <!-- Professional Category -->
+                  <div class="info-category">
+                    <div class="category-title">
+                      <span class="category-icon">💼</span>
+                      <h4>Professional</h4>
+                    </div>
+                    <div class="info-items">
+                      <div class="info-item">
+                        <div class="info-label">School</div>
+                        <div class="info-value">{{ users[currentUserIndex]?.school || 'Not specified' }}</div>
+                      </div>
+                      <div class="info-item">
+                        <div class="info-label">Industry</div>
+                        <div class="info-value">{{ users[currentUserIndex]?.industry || 'Not specified' }}</div>
+                      </div>
+                    </div>
                   </div>
-                  <div class="about-item">
-                    <div class="about-label">School</div>
-                    <div class="about-value">{{ users[currentUserIndex]?.school || 'Not specified' }}</div>
-                  </div>
-                  <div class="about-item">
-                    <div class="about-label">Industry</div>
-                    <div class="about-value">{{ users[currentUserIndex]?.industry || 'Not specified' }}</div>
+                  
+                  <!-- Dating Intentions -->
+                  <div class="info-category highlight-category">
+                    <div class="category-title">
+                      <span class="category-icon">❤️</span>
+                      <h4>Dating Intentions</h4>
+                    </div>
+                    <div class="info-items">
+                      <div class="info-item purpose-item">
+                        <div class="info-label">Looking for</div>
+                        <div class="info-value purpose-value">
+                          {{ users[currentUserIndex]?.purpose || 'Not specified' }}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -439,6 +527,52 @@ const industryOptions = ref([
   { value: "Hospitality", label: "Hospitality" },
   { value: "Government", label: "Government" }
 ]);
+
+// Dynamic Icon Designs
+const getDrinkingIcon = (drinking) => {
+  if (!drinking) return '❓';
+  const drinkingLower = drinking.toLowerCase();
+  
+  if (drinkingLower.includes('never') || drinkingLower.includes('non-drinker')) return '🚫';
+  if (drinkingLower.includes('rarely') || drinkingLower.includes('occasionally')) return '🥤';
+  if (drinkingLower.includes('socially')) return '🍻';
+  if (drinkingLower.includes('regularly') || drinkingLower.includes('frequently')) return '🍷';
+  return '🥂';
+};
+
+const getDrinkingClass = (drinking) => {
+  if (!drinking) return '';
+  const drinkingLower = drinking.toLowerCase();
+  
+  if (drinkingLower.includes('never') || drinkingLower.includes('non-drinker')) return 'non-user';
+  if (drinkingLower.includes('rarely') || drinkingLower.includes('occasionally')) return 'light-user';
+  if (drinkingLower.includes('socially')) return 'social-user';
+  if (drinkingLower.includes('regularly') || drinkingLower.includes('frequently')) return 'regular-user';
+  return '';
+};
+
+const getSmokingIcon = (smoking) => {
+  if (!smoking) return '❓';
+  const smokingLower = smoking.toLowerCase();
+  
+  if (smokingLower.includes('never') || smokingLower.includes('non-smoker')) return '🚫';
+  if (smokingLower.includes('rarely') || smokingLower.includes('occasionally')) return '💨';
+  if (smokingLower.includes('socially')) return '🚬';
+  if (smokingLower.includes('regularly') || smokingLower.includes('frequently')) return '🔥';
+  return '🚬';
+};
+
+const getSmokingClass = (smoking) => {
+  if (!smoking) return '';
+  const smokingLower = smoking.toLowerCase();
+  
+  if (smokingLower.includes('never') || smokingLower.includes('non-smoker')) return 'non-user';
+  if (smokingLower.includes('rarely') || smokingLower.includes('occasionally')) return 'light-user';
+  if (smokingLower.includes('socially')) return 'social-user';
+  if (smokingLower.includes('regularly') || smokingLower.includes('frequently')) return 'regular-user';
+  return '';
+};
+
 
 // Messaging system
 const showMessagePopup = ref(false);
@@ -808,6 +942,9 @@ const handleAnimationEnd = () => {
   position: relative;
   padding: 1rem;
 }
+.center-column.detail-mode {
+  flex: 4;  /* Give more space to center column when showing details */
+}
 
 /* Filter Button */
 .filter-btn-top {
@@ -843,6 +980,12 @@ const handleAnimationEnd = () => {
   transition: all 0.3s ease;
   border: 1px solid rgba(0,0,0,0.05);
   aspect-ratio: 1 / 2;
+}
+
+.profile-card.detail-mode {
+  width: 80%;  /* Increased from 60% to 80% */
+  max-width: 700px;  /* Increased from 500px to 700px */
+  transition: width 0.3s ease, max-width 0.3s ease;
 }
 
 .profile-main {
@@ -1105,15 +1248,23 @@ const handleAnimationEnd = () => {
 }
 
 /* Responsive Adjustments */
+@media (max-width: 1200px) {
+  .profile-card.detail-mode {
+    width: 85%;
+    max-width: 650px;
+  }
+}
+
 @media (max-width: 768px) {
   .profile-card {
     width: 85%;
   }
   
-  .profile-picture-container {
-    height: 50%;
+  .profile-card.detail-mode {
+    width: 90%;
+    max-width: none;
   }
-  
+
   .status-icon {
     width: 32px;
     height: 32px;
@@ -2117,6 +2268,181 @@ textarea:focus {
 
 .slide-left {
   animation: slideLeft 1s ease-out forwards;
+}
+
+/* Main container replacing the about-grid */
+.personal-info-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+/* Category styling */
+.info-category {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.info-category:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Highlight the dating intentions category */
+.highlight-category {
+  background-color: #fff9e6;
+  border-left: 4px solid #FFD400;
+}
+
+/* Category title styling */
+.category-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.category-title h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+.category-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 240, 195, 0.6);
+  border-radius: 50%;
+  font-size: 0.9rem;
+}
+
+/* Items container */
+.info-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+/* Individual item styling */
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Purpose item takes full width */
+.purpose-item {
+  grid-column: 1 / -1;
+}
+
+.purpose-value {
+  font-size: 1.2rem;
+  color: #222;
+  padding: 0.5rem 0;
+}
+
+/* Tag chip styling */
+.tag-chip {
+  display: inline-block;
+  background-color: #f0f0f0;
+  padding: 0.3rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  color: #555;
+  border: 1px solid #e0e0e0;
+}
+
+/* Lifestyle indicators */
+.lifestyle-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  background-color: #f8f8f8;
+}
+
+.indicator-icon {
+  font-size: 1.1rem;
+}
+
+/* Different colors for lifestyle status */
+.non-user {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.light-user {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.social-user {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.regular-user {
+  background-color: #fbe9e7;
+  color: #c62828;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .info-items {
+    grid-template-columns: 1fr;
+  }
+  
+  .info-category {
+    padding: 1rem;
+  }
+}
+
+/* Make the info items one column on very narrow screens */
+@media (max-width: 400px) {
+  .info-items {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tablet optimization */
+@media (min-width: 768px) and (max-width: 991px) {
+  .info-items {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop optimization */
+@media (min-width: 992px) {
+  .info-category {
+    transition: all 0.3s ease;
+  }
 }
 
 /* Responsive Adjustments */
