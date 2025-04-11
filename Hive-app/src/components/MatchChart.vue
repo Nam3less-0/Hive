@@ -84,30 +84,62 @@
           options: {
             responsive: true,
             plugins: {
-                legend: { display: true }
+              legend: {
+                display: true,
+                labels: {
+                  font: {
+                    family: "'Segoe UI', 'Poppins', 'Helvetica Neue', sans-serif",
+                    size: 14
+                  },
+                  color: '#444'
+                }
+              }
             },
             scales: {
-                y: {
+              y: {
                 beginAtZero: true,
                 ticks: {
-                    stepSize: 1,
-                    precision: 0, // Ensures whole numbers only
-                    callback: function(value) {
+                  stepSize: 1,
+                  precision: 0,
+                  font: {
+                    family: "'Segoe UI', 'Poppins', 'Helvetica Neue', sans-serif",
+                    size: 12
+                  },
+                  color: '#333',
+                  callback: function(value) {
                     return Number.isInteger(value) ? value : null;
-                    }
+                  }
                 },
                 title: {
-                    display: true,
-                    text: 'Number of Matches'
+                  display: true,
+                  text: 'Number of Matches',
+                  font: {
+                    family: "'Segoe UI', 'Poppins', 'Helvetica Neue', sans-serif",
+                    size: 14
+                  },
+                  color: '#333'
                 }
+              },
+              x: {
+                ticks: {
+                  font: {
+                    family: "'Segoe UI', 'Poppins', 'Helvetica Neue', sans-serif",
+                    size: 12
+                  },
+                  color: '#333'
                 },
-                x: {
                 title: {
-                    display: true,
-                    text: 'Date'
+                  display: true,
+                  text: 'Date',
+                  font: {
+                    family: "'Segoe UI', 'Poppins', 'Helvetica Neue', sans-serif",
+                    size: 14
+                  },
+                  color: '#333'
                 }
-                }
+              }
             }
+
             }
         });
       };
@@ -123,6 +155,7 @@
   
   <style scoped>
   .match-chart-container {
+    font-family: 'Segoe UI', 'Poppins', 'Helvetica Neue', sans-serif;
     background-color: #fff8e1;
     border: 2px solid #fbc02d;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
