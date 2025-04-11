@@ -183,7 +183,7 @@
     color: black;
     border: none;
     border-radius: 5px;
-    font-size: 1rem;
+    font-size: 14px;
     text-align: center;
     transition: background-color 0.3s ease;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -230,7 +230,7 @@
     width: 25px;
     height: 25px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 20px;
     padding: 0;
   }
@@ -258,7 +258,7 @@
     cursor: pointer;
     transition: background 0.3s ease;
     width: 100%;
-    font-size: 15px;
+    font-size: 14px;
   }
   
   .finish-button:disabled {
