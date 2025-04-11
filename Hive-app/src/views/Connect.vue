@@ -215,8 +215,8 @@
                         <div class="info-label">Drinking</div>
                         <div class="info-value">
                           <span class="lifestyle-indicator" :class="getDrinkingClass(users[currentUserIndex]?.drinking)">
-                            <span class="indicator-icon">{{ getDrinkingIcon(users[currentUserIndex]?.drinking) }}</span>
-                            {{ users[currentUserIndex]?.drinking || 'Not specified' }}
+                            <span class="indicator-icon">{{ getDrinkingIcon(users[currentUserIndex]?.alcohol) }}</span>
+                            {{ users[currentUserIndex]?.alcohol || 'Not specified' }}
                           </span>
                         </div>
                       </div>
