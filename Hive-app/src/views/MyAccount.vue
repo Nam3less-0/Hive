@@ -770,12 +770,19 @@ onMounted(() => {
   border-radius: 10px;
   border: 1px solid #ddd;
   object-fit: cover;
+  transition: transform 0.3s ease;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.main-pic-wrapper:hover .main-pic {
+  transform: scale(1.03);
 }
 
 .profile-pic-section {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  
 }
 
 .secondary-pics {
@@ -793,14 +800,20 @@ onMounted(() => {
 .add-btn {
   width: 100px;
   height: 100px;
-  border: 1px dashed #ccc;
-  border-radius: 6px;
-  background-color: #f6f6f6;
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  background-color: #f9fafb;
   font-size: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
+  color: #9ca3af;
+  transition: background 0.2s ease;
+}
+.add-btn:hover {
+  background-color: #fff;
+  border-color: #facc15;
+  color: #facc15;
 }
 
 /* Interests Section */
@@ -821,14 +834,22 @@ onMounted(() => {
   border-width: 10px;
   border-color: rgb(62, 60, 60);
 }
+.interest-tag:hover {
+  background-color: #fef3c7;
+}
 
 .remove-btn {
   background: none;
   border: none;
-  color: #ff5b5b;
-  font-size: 1rem;
+  color: #ef4444;
+  font-size: 1.1rem;
+  margin-left: 10px;
   cursor: pointer;
-  margin-left: 8px;
+  transition: transform 0.2s;
+}
+
+.remove-btn:hover {
+  transform: scale(1.2);
 }
 
 .interest-selection {
@@ -875,30 +896,44 @@ onMounted(() => {
 }
 
 .add-interests-btn {
-  background: #ffd166;
+  background-color: #ffe96b;
   border: none;
   padding: 8px 12px;
   border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
   font-size: 1rem;
   cursor: pointer;
+  transition: background 0.2s ease;
+}
+.add-interests-btn:hover {
+  background-color: #facc15;
 }
 /* Description Section */
 .desc-input {
-  width: 90%; /* Expands to full container width */
-  min-height: 100px; /* Slightly taller for better readability */
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
+  width: 100%;
+  min-height: 120px;
+  padding: 16px 20px;
   font-size: 1rem;
-  resize: vertical; /* Allows resizing vertically */
-  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  resize: vertical;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.desc-input:focus {
+  background-color: #fffef7;
+  border-color: #facc15;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.2);
+  outline: none;
 }
 
 /* About Me Section */
 .about-me-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* Two columns */
-  gap: 1px; /* Spacing between items */
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
 }
 
 .form-group {
@@ -906,12 +941,29 @@ onMounted(() => {
   flex-direction: column;
 }
 
+
+
 .input-field {
   width: 200%;
   padding: 8px;
   border-radius: 6px;
   border: 1px solid #ddd;
   font-size: 1rem;
+}
+.input-field:focus {
+  border-color: #facc15;
+  outline: none;
+  background-color: #fffef7;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.2);
+}
+
+select.input-field {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg fill='black' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 36px;
 }
 
 /* My Account & Security Sections */
@@ -927,6 +979,7 @@ onMounted(() => {
   gap: 20px;
   width: 100%;
 }
+
 
 .form-group {
   display: flex;
@@ -979,13 +1032,45 @@ onMounted(() => {
   gap: 15px;
 }
 
-.save-btn, .reset-btn, .delete-btn, .save-profile-btn {
+.save-btn, .save-profile-btn {
   background-color: #ffe96b;
   padding: 10px 18px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
   font-weight: 500;
+}
+
+.delete-btn {
+  background-color: #f87171;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.delete-btn:hover {
+  background-color: #ef4444;
+}
+
+.reset-btn {
+  background-color: #ffe96b;
+  color: black;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.reset-btn:hover {
+  background-color: #facc15;
 }
 
 .save-btn:hover, .reset-btn:hover, .delete-btn:hover {
