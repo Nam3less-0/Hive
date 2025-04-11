@@ -98,7 +98,7 @@ const saveProfile = async () => {
   color: black;
   border: none;
   border-radius: 8px;
-  font-size: 18px;
+  font-size: 14px;
   cursor: pointer;
   transition: background 0.3s ease;
   box-sizing: border-box;
