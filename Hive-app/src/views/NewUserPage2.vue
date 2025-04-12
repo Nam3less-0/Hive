@@ -408,7 +408,7 @@ button {
   color: black;
   border: none;
   border-radius: 8px;
-  font-size: 18px;
+  font-size: 14px;
   width: 100%;
   cursor: pointer;
   transition: background 0.3s ease;

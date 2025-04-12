@@ -302,7 +302,7 @@ button {
   color: black;
   border: none;
   border-radius: 8px;
-  font-size: 18px;
+  font-size: 14px;
   width: 100%;
   max-width: 400px;
   cursor: pointer;
