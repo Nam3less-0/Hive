@@ -710,14 +710,36 @@ const resetFilters = () => {
   selectedSchool.value = "";
   selectedIndustry.value = "";
   selectedGender.value = "";
+
+  applyFilters();
 };
 
-const applyFilters = () => {
+const applyFilters = async () => {
   adjustAgeRange();
+
+  // Get the current user's seen array from Firestore
+  let seenArray = [];
+  if (currentUser.value) {
+    try {
+      const userDocRef = doc(db, "users", currentUser.value.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      
+      if (userDocSnap.exists()) {
+        seenArray = userDocSnap.data().seen || [];
+      }
+    } catch (error) {
+      console.error("Error fetching user's seen array:", error);
+    }
+  }
 
   users.value = originalUsers.value.filter(user => {
     const age = calculateAge(user.dateOfBirth);
     const height = parseInt(user.height);
+
+    // First check if user is in the seen array
+    if (seenArray.includes(user.id)) {
+      return false;
+    }
 
     return (
       (!selectedInterests.value.length || selectedInterests.value.some(interest => user.interests?.includes(interest))) &&
@@ -731,8 +753,14 @@ const applyFilters = () => {
     );
   });
 
+  // Reset current user index when filters are applied
   currentUserIndex.value = 0;
   showFilter.value = false;
+  
+  // Preload next profile if available
+  if (users.value.length > 1) {
+    preloadNextProfile();
+  }
 };
 
 // User interaction functions
