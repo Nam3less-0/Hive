@@ -277,11 +277,12 @@
         <button class="save-profile-btn" @click="saveProfile">Save Profile</button>
       </div>
     </main>
+    <div v-if="showNotification" class="notification-toast" :class="notificationType">
+  {{ notificationMessage }}
+  <div class="progress-bar"></div>
+</div>
   </div>
-  <div v-if="showNotification" class="notification-toast" :class="notificationType">
-      {{ notificationMessage }}
-      <div class="progress-bar"></div> 
-  </div>
+  
 </template>
 
 <script setup>
@@ -380,12 +381,11 @@ const setAsMainPic = async (newMainPic) => {
   }
 };
 
-const triggerNotification = (message, type) => {
+const triggerNotification = (message, type = "success") => {
   notificationMessage.value = message;
-  notificationType.value = type; // Set type ("success" or "error")
+  notificationType.value = type;
   showNotification.value = true;
 
-  // Auto-hide the notification after 3 seconds
   setTimeout(() => {
     showNotification.value = false;
   }, 2000);
@@ -404,31 +404,39 @@ const uploadImage = async (event) => {
       return;
     }
 
-    const filePath = `users/${user.uid}/profile-pictures/${file.name}`;
-    const fileRef = storageRef(storage, filePath);
-
-    // Upload file to Firebase Storage
-    await uploadBytes(fileRef, file);
-
-    // Get image URL
-    const downloadURL = await getDownloadURL(fileRef);
-
-    // Update Firestore with new image URL
     const userDocRef = doc(db, `users/${user.uid}`);
     const userDocSnap = await getDoc(userDocRef);
 
-    if (userDocSnap.exists()) {
-      let updatedImages = userDocSnap.data().images || [];
-      updatedImages.push(downloadURL); // Append new image
-
-      await updateDoc(userDocRef, { images: updatedImages });
-
-      // Update UI
-      if (updatedImages.length === 1) {
-        mainPic.value = updatedImages[0]; // First image becomes mainPic
+    // ✅ Prevent duplicate file uploads
+    const existingFilenames = (userDocSnap.data().images || []).map(url => {
+      try {
+        const parts = url.split('?')[0].split('/');
+        return parts[parts.length - 1];
+      } catch {
+        return '';
       }
-      secondaryPics.value = updatedImages.slice(1); // Remaining as secondary
+    });
+
+    if (existingFilenames.includes(file.name)) {
+      triggerNotification('This photo has already been uploaded.', 'error');
+      return;
     }
+
+    const filePath = `users/${user.uid}/profile-pictures/${file.name}`;
+    const fileRef = storageRef(storage, filePath);
+
+    await uploadBytes(fileRef, file);
+    const downloadURL = await getDownloadURL(fileRef);
+
+    let updatedImages = userDocSnap.data().images || [];
+    updatedImages.push(downloadURL);
+
+    await updateDoc(userDocRef, { images: updatedImages });
+
+    if (updatedImages.length === 1) {
+      mainPic.value = updatedImages[0];
+    }
+    secondaryPics.value = updatedImages.slice(1);
   } catch (error) {
     console.error('Error uploading image:', error);
     triggerNotification('Error uploading image: ' + error.message, "error");
@@ -736,28 +744,26 @@ onMounted(() => {
   opacity: 1;
   transition: opacity 0.5s ease-in-out;
   overflow: hidden;
+  z-index: 9999;
 }
 
 .notification-toast.success .progress-bar {
-  background-color: rgba(0, 255, 51, 0.696); /* ✅ Orange for success */
+  background-color: rgba(0, 255, 51, 0.7);
 }
 
-/* Error Notification */
 .notification-toast.error .progress-bar {
-  background-color: rgb(237, 0, 0); /* ✅ Green for errors */
+  background-color: rgb(237, 0, 0);
 }
 
-/* Orange progress bar */
 .progress-bar {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 100%; /* Full width initially */
-  height: 4px; /* Thin height */
+  width: 100%;
+  height: 4px;
   animation: progressShrink 2s linear forwards;
 }
 
-/* Animation: Shrink the progress bar */
 @keyframes progressShrink {
   from { width: 100%; }
   to { width: 0%; }
@@ -846,7 +852,14 @@ onMounted(() => {
   margin-left: 10px;
   cursor: pointer;
   transition: transform 0.2s;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s;
+  border-radius: 50%;
+
 }
+
+
 
 .remove-btn:hover {
   transform: scale(1.2);
