@@ -7,7 +7,7 @@
       </div>
 
       <!-- Main form with gap between rows -->
-      <form @submit.prevent="handleNext" class="form-content">
+      <form @submit.prevent="handleNext($event)" class="form-content">
         
         <!-- Name Fields (1st row) -->
         <div class="form-row">
@@ -37,6 +37,7 @@
               type="number"
               step="0.1"
               placeholder="Height"
+              required
             />
           </div>
           <div class="field">
@@ -67,6 +68,7 @@
             v-model="customRace"
             type="text"
             placeholder="Type your race"
+            required
           />
         </div>
 
@@ -89,6 +91,7 @@
             v-model="customReligion"
             type="text"
             placeholder="Type your religion"
+            required
           />
         </div>
 
@@ -98,7 +101,7 @@
           <input
             v-model="dateOfBirth"
             type="date"
-            placeholder="Date of Birth"
+            required
           />
         </div>
 
@@ -113,6 +116,7 @@
     <Branding />
   </div>
 </template>
+
 
 <script setup>
 import Branding from '@/components/Branding.vue';
@@ -134,13 +138,38 @@ const dateOfBirth = ref('');
 
 const router = useRouter();
 
-const handleNext = async () => {
+const handleNext = async (e) => {
+  const form = e.target.closest('form');
+  if (!form.checkValidity()) {
+    form.reportValidity(); // 🚨 Shows native validation messages
+    return;
+  }
+
+  const dob = new Date(dateOfBirth.value);
+  const today = new Date();
+
+  const age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  const dayDiff = today.getDate() - dob.getDate();
+  const isUnder18 = age < 18 || (age === 18 && (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)));
+
+  if (dob > today) {
+  alert("Please enter a valid date of birth.");
+  return;
+  }
+
+  if (isUnder18) {
+    alert("You must be at least 18 years old to to make an account.");
+    return;
+  }
+
   const user = auth.currentUser;
   if (!user) {
     console.error("No user is logged in");
     router.push({ name: "Login" });
     return;
   }
+
   const uid = user.uid;
   try {
     await setDoc(doc(db, 'users', uid), {
@@ -154,12 +183,14 @@ const handleNext = async () => {
       customReligion: religion.value === 'others' ? customReligion.value : '',
       dateOfBirth: dateOfBirth.value
     }, { merge: true });
+
     console.log('User info saved!');
     router.push({ name: 'NewUserPage2' });
   } catch (error) {
     console.error('Error saving user info:', error.message);
   }
 };
+
 </script>
 
 <style scoped>
