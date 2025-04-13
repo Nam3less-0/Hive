@@ -145,6 +145,24 @@ const handleNext = async (e) => {
     return;
   }
 
+  const dob = new Date(dateOfBirth.value);
+  const today = new Date();
+
+  const age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  const dayDiff = today.getDate() - dob.getDate();
+  const isUnder18 = age < 18 || (age === 18 && (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)));
+
+  if (dob > today) {
+  alert("Please enter a valid date of birth.");
+  return;
+  }
+
+  if (isUnder18) {
+    alert("You must be at least 18 years old to to make an account.");
+    return;
+  }
+
   const user = auth.currentUser;
   if (!user) {
     console.error("No user is logged in");
