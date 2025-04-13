@@ -7,12 +7,18 @@
         v-model="description"
         placeholder="Short description..."
       ></textarea>
+      <div v-if="showTooltip.description" class="tooltip-error">
+        Description is required
+      </div>
 
       <h3>Write your bio</h3>
       <textarea
         v-model="bio"
         placeholder="Bio..."
       ></textarea>
+      <div v-if="showTooltip.bio" class="tooltip-error">
+        Bio is required
+      </div>
 
       <button @click="saveProfile">Save and Continue</button>
     </div>
@@ -21,6 +27,7 @@
     <Branding />
   </div>
 </template>
+
 
 <script setup>
 import { ref } from 'vue';
@@ -32,14 +39,25 @@ import Branding from '@/components/Branding.vue';
 const router = useRouter();
 const description = ref('');
 const bio = ref('');
+const showTooltip = ref({
+  description: false,
+  bio: false
+});
 
 const saveProfile = async () => {
+  // Show tooltips if empty
+  showTooltip.value.description = description.value.trim() === '';
+  showTooltip.value.bio = bio.value.trim() === '';
+
+  if (showTooltip.value.description || showTooltip.value.bio) return;
+
   const user = auth.currentUser;
   if (!user) {
     console.error('No user is logged in');
     router.push({ name: 'Login' });
     return;
   }
+
   try {
     await setDoc(
       doc(db, 'users', user.uid),
@@ -47,13 +65,13 @@ const saveProfile = async () => {
       { merge: true }
     );
     console.log('Profile description & bio saved!');
-    // Navigate to NewUserPage4 for image uploads
     router.push({ name: 'NewUserPage4' });
   } catch (error) {
     console.error('Error saving profile:', error);
   }
 };
 </script>
+
 
 <style scoped>
 .page-container {
@@ -107,4 +125,19 @@ const saveProfile = async () => {
 .description-form button:hover {
   color: white;
 }
+
+.tooltip-error {
+  margin-top: 8px;
+  margin-bottom: 12px;
+  padding: 10px 16px;
+  background-color: #fff0f0;
+  border: 1px solid #ffc0c0;
+  border-radius: 8px;
+  color: red;
+  font-weight: bold;
+  font-size: 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: left;
+}
+
 </style>

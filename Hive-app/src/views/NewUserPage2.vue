@@ -470,17 +470,26 @@ button:hover {
 
 .dropdown-tooltip {
   color: red;
-  margin-top: 10px;
-  font-size: 16px;
+  margin-top: 6px;
+  font-size: 14px;
   font-weight: bold;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #fff0f0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ffc0c0;
 }
 
 .error-message {
   color: red;
-  margin-top: 10px;
+  margin-top: 6px;
+  font-size: 14px;
   font-weight: bold;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #fff0f0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ffc0c0;
 }
 
 </style>
