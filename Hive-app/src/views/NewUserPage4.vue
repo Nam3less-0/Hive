@@ -236,16 +236,19 @@
   }
   
   .warning-message {
-    background-color: #ffdddd;
-    color: #d8000c;
-    border: 1px solid #d8000c;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    text-align: center;
-    font-size: 0.9rem;
+    margin-top: 10px;
+    margin-bottom: 16px;
+    padding: 10px 16px;
+    background-color: #fff0f0;
+    border: 1px solid #ffc0c0;
+    border-radius: 8px;
+    color: red;
+    font-weight: bold;
+    font-size: 14px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: left;
   }
+
   
   .finish-button {
     align-self: center;

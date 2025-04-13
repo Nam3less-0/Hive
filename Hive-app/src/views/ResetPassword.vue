@@ -163,12 +163,15 @@ button[type="submit"] {
 }
 
 .feedback {
+  margin-top: 5px;
+  padding: 5px 12px;
+  background-color: #ffe6e6;
+  border: 1px solid #ff8080;
+  border-radius: 8px;
   color: red;
   font-weight: bold;
   font-size: 14px;
-  margin-top: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  text-align: center;
 }
 </style>
 

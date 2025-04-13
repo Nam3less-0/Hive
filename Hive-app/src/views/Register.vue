@@ -265,10 +265,15 @@ input {
 }
 
 .alert {
+  margin-top: 15px;
+  padding: 5px 12px;
+  background-color: #ffe6e6;
+  border: 1px solid #ff8080;
+  border-radius: 8px;
   color: red;
-  margin-top: 10px;
   font-weight: bold;
-  font-family: inherit;
+  font-size: 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 </style>
 
