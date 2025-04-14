@@ -7,52 +7,44 @@
       </div>
 
       <!-- Main form with gap between rows -->
-      <form @submit.prevent="handleNext" class="form-content">
+      <form @submit.prevent="handleNext($event)" class="form-content">
         
         <!-- Name Fields (1st row) -->
-        <div class="form-row">
-          <label>Name</label>
-          <div class="name-fields">
-            <input
-              v-model="firstName"
-              type="text"
-              placeholder="First Name"
-              required
-            />
-            <input
-              v-model="lastName"
-              type="text"
-              placeholder="Last Name"
-              required
-            />
+        <div class="form-row side-by-side">
+          <div class="field">
+            <label>First Name</label>
+            <input v-model="firstName" type="text" placeholder="First Name" />
+            <div v-if="showTooltip.firstName" class="tooltip-error">First name is required</div>
+          </div>
+          <div class="field">
+            <label>Last Name</label>
+            <input v-model="lastName" type="text" placeholder="Last Name" />
+            <div v-if="showTooltip.lastName" class="tooltip-error">Last name is required</div>
           </div>
         </div>
 
-        <!-- Height and Gender on the same row (2nd row) -->
+        <!-- Height and Gender (2nd row) -->
         <div class="form-row side-by-side">
           <div class="field">
             <label>Height (cm)</label>
-            <input
-              v-model="height"
-              type="number"
-              step="0.1"
-              placeholder="Height"
-            />
+            <input v-model="height" type="number" step="0.1" placeholder="Height" />
+            <p v-if="showTooltip.height" class="tooltip-error">Height is required</p>
           </div>
           <div class="field">
             <label>Gender</label>
-            <select v-model="gender" required>
+            <select v-model="gender">
               <option disabled value="">Select Gender</option>
               <option value="M">M</option>
               <option value="F">F</option>
             </select>
+            <p v-if="showTooltip.gender" class="tooltip-error">Gender is required</p>
           </div>
         </div>
 
-        <!-- Race Selector (3rd row) -->
+        <!-- Race (3rd row) -->
         <div class="form-row">
           <label>Race</label>
-          <select v-model="race" required>
+          <select v-model="race">
             <option disabled value="">Select Race</option>
             <option value="Chinese">Chinese</option>
             <option value="Malay">Malay</option>
@@ -60,20 +52,19 @@
             <option value="Eurasian">Eurasian</option>
             <option value="others">Others</option>
           </select>
-        </div>
-        <div class="form-row" v-if="race === 'others'">
-          <label>Please specify your race</label>
-          <input
-            v-model="customRace"
-            type="text"
-            placeholder="Type your race"
-          />
+          <p v-if="showTooltip.race" class="tooltip-error">Race is required</p>
         </div>
 
-        <!-- Religion Selector (4th row) -->
+        <div class="form-row" v-if="race === 'others'">
+          <label>Please specify your race</label>
+          <input v-model="customRace" type="text" placeholder="Type your race" />
+          <p v-if="showTooltip.customRace" class="tooltip-error">Custom race is required</p>
+        </div>
+
+        <!-- Religion -->
         <div class="form-row">
           <label>Religion</label>
-          <select v-model="religion" required>
+          <select v-model="religion">
             <option disabled value="">Select Religion</option>
             <option value="Christian">Christian</option>
             <option value="Buddhist">Buddhist</option>
@@ -82,27 +73,23 @@
             <option value="Hindu">Hindu</option>
             <option value="others">Others</option>
           </select>
+          <p v-if="showTooltip.religion" class="tooltip-error">Religion is required</p>
         </div>
+
         <div class="form-row" v-if="religion === 'others'">
           <label>Please specify your religion</label>
-          <input
-            v-model="customReligion"
-            type="text"
-            placeholder="Type your religion"
-          />
+          <input v-model="customReligion" type="text" placeholder="Type your religion" />
+          <p v-if="showTooltip.customReligion" class="tooltip-error">Custom religion is required</p>
         </div>
 
-        <!-- Date of Birth (5th row) -->
+        <!-- Date of Birth -->
         <div class="form-row">
           <label>Date Of Birth</label>
-          <input
-            v-model="dateOfBirth"
-            type="date"
-            placeholder="Date of Birth"
-          />
+          <input v-model="dateOfBirth" type="date" />
+          <p v-if="showTooltip.dateOfBirth" class="tooltip-error">Date of birth is required</p>
         </div>
 
-        <!-- Next Button (6th row) -->
+        <!-- Next Button -->
         <div class="form-row">
           <button type="submit">Next</button>
         </div>
@@ -121,7 +108,6 @@ import { useRouter } from 'vue-router';
 import { doc, setDoc } from 'firebase/firestore';
 import { db, auth } from '@/firebase';
 
-// Form data
 const firstName = ref('');
 const lastName = ref('');
 const height = ref('');
@@ -131,16 +117,59 @@ const customRace = ref('');
 const religion = ref('');
 const customReligion = ref('');
 const dateOfBirth = ref('');
-
 const router = useRouter();
 
-const handleNext = async () => {
+const showTooltip = ref({
+  firstName: false,
+  lastName: false,
+  height: false,
+  gender: false,
+  race: false,
+  customRace: false,
+  religion: false,
+  customReligion: false,
+  dateOfBirth: false,
+});
+
+const handleNext = async (e) => {
+  const t = showTooltip.value;
+  t.firstName = !firstName.value;
+  t.lastName = !lastName.value;
+  t.height = !height.value;
+  t.gender = !gender.value;
+  t.race = !race.value;
+  t.religion = !religion.value;
+  t.dateOfBirth = !dateOfBirth.value;
+  t.customRace = race.value === 'others' && !customRace.value;
+  t.customReligion = religion.value === 'others' && !customReligion.value;
+
+  const hasError = Object.values(t).some(Boolean);
+  if (hasError) return;
+
+  const dob = new Date(dateOfBirth.value);
+  const today = new Date();
+  const age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  const dayDiff = today.getDate() - dob.getDate();
+  const isUnder18 = age < 18 || (age === 18 && (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)));
+
+  if (dob > today) {
+    alert("Please enter a valid date of birth.");
+    return;
+  }
+
+  if (isUnder18) {
+    alert("You must be at least 18 years old to make an account.");
+    return;
+  }
+
   const user = auth.currentUser;
   if (!user) {
     console.error("No user is logged in");
     router.push({ name: "Login" });
     return;
   }
+
   const uid = user.uid;
   try {
     await setDoc(doc(db, 'users', uid), {
@@ -154,6 +183,7 @@ const handleNext = async () => {
       customReligion: religion.value === 'others' ? customReligion.value : '',
       dateOfBirth: dateOfBirth.value
     }, { merge: true });
+
     console.log('User info saved!');
     router.push({ name: 'NewUserPage2' });
   } catch (error) {
@@ -169,8 +199,6 @@ const handleNext = async () => {
   height: 100vh;
   overflow: hidden;
 }
-
-/* Right side: Form container */
 .user-form {
   width: 50vw;
   max-width: 50vw;
@@ -184,13 +212,10 @@ const handleNext = async () => {
   height: 90vh;
   box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
 }
-
 .logo-small img {
   width: 60px;
   margin-bottom: 20px;
 }
-
-/* Main form uses flex with gap for equal spacing between rows */
 .form-content {
   display: flex;
   flex-direction: column;
@@ -199,26 +224,18 @@ const handleNext = async () => {
   max-width: 25vw;
   box-sizing: border-box;
 }
-
-/* Each row is a vertical stack of label + input(s) */
 .form-row {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
-
-/* For side-by-side fields like height + gender */
 .side-by-side {
   display: flex;
   gap: 10px;
 }
-
 .form-row.side-by-side {
-  flex-direction: row; /* Ensures items in this row go left-to-right */
+  flex-direction: row;
 }
-
-
-/* Each sub-field (label + input) in the side-by-side row */
 .field {
   flex: 1;
   display: flex;
@@ -226,18 +243,13 @@ const handleNext = async () => {
   gap: 5px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
-/* Name fields in the same row */
 .name-fields {
   display: flex;
   gap: 10px;
   box-sizing: border-box;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
-/* Input and select styling */
-input,
-select {
+input, select {
   width: 100%;
   padding: 12px;
   border: 1px solid #ccc;
@@ -246,28 +258,35 @@ select {
   box-sizing: border-box;
   color: #7a7a7a;
 }
-
-/* Label styling */
 label {
   font-weight: bold;
   color: black;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
-/* Next button styling */
 button {
   padding: 12px;
   background: #ffe96b;
   color: black;
   border: none;
   border-radius: 8px;
-  font-size: 18px;
+  font-size: 14px;
   cursor: pointer;
   transition: background 0.3s ease;
   box-sizing: border-box;
 }
-
 button:hover {
   color: white;
 }
+.tooltip-error {
+  color: red;
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #fff0f0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ffc0c0;
+}
 </style>
+

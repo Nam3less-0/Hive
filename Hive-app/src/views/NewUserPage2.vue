@@ -32,6 +32,12 @@
           </div>
         </div>
 
+        <div v-if="showInterestTooltip" class="dropdown-tooltip">
+          Please select at least one interest.
+        </div>
+
+        <!-- Tooltip if no interest is selected -->
+
         <!-- Studying & Working Checkboxes -->
         <div class="checkboxes">
           <label>
@@ -46,8 +52,15 @@
         <div v-if="isStudying" class="text-field custom-picker">
           <label>What school are you from?</label>
           <div class="custom-dropdown" @click="toggleDropdown('school')">
-            <span>{{ selectedSchoolLabel }}</span>
-            <i class="dropdown-icon"></i>
+           <span>{{ selectedSchoolLabel }}</span>
+           <i class="dropdown-icon"></i>
+          </div>
+          <!-- Tooltip -->
+          <div
+            v-if="showDropdownTooltip.school"
+            class="dropdown-tooltip"
+          >
+            Please select your school
           </div>
           <div v-if="dropdownOpen.school" class="dropdown-options">
             <div
@@ -68,6 +81,13 @@
             <span>{{ selectedIndustryLabel }}</span>
             <i class="dropdown-icon"></i>
           </div>
+          <!-- Tooltip -->
+          <div
+            v-if="showDropdownTooltip.industry"
+            class="dropdown-tooltip"
+          >
+            Please select your industry
+          </div>
           <div v-if="dropdownOpen.industry" class="dropdown-options">
             <div
               v-for="option in industryOptions"
@@ -79,6 +99,11 @@
             </div>
           </div>
         </div>
+
+        <p v-if="errorOccupation" class="error-message">
+          Please select at least one: Studying or Working.
+        </p>
+
 
         <!-- Next Button -->
         <button @click="handleNext">Next</button>
@@ -106,6 +131,7 @@ const isWorking = ref(false);
 const school = ref('');
 const industry = ref('');
 const router = useRouter();
+const showInterestTooltip = ref(false);
 
 // Splash and form display state
 const showSplash = ref(true);
@@ -162,6 +188,11 @@ const dropdownOpen = reactive({
   industry: false
 });
 
+const showDropdownTooltip = ref({
+  school: false,
+  industry: false
+});
+
 const schoolOptions = ref([
   { value: "NUS", label: "National University of Singapore (NUS)" },
   { value: "NTU", label: "Nanyang Technological University (NTU)" },
@@ -205,7 +236,23 @@ const selectedIndustryLabel = computed(() => {
 });
 
 // ========== HANDLE NEXT ========== //
+const errorOccupation = ref(false); // Define this at the top of <script setup>
+
 const handleNext = async () => {
+  errorOccupation.value = !(isStudying.value || isWorking.value);
+  showDropdownTooltip.value.school = isStudying.value && !school.value;
+  showDropdownTooltip.value.industry = isWorking.value && !industry.value;
+
+  showInterestTooltip.value = selectedInterests.value.length === 0;
+  const isValid =
+  !errorOccupation.value &&
+  selectedInterests.value.length > 0 &&
+  (!isStudying.value || !!school.value) &&
+  (!isWorking.value || !!industry.value);
+
+
+  if (!isValid) return;
+
   const user = auth.currentUser;
   if (!user) {
     console.error('No user is logged in');
@@ -229,6 +276,8 @@ const handleNext = async () => {
     console.error('Error saving interests data:', error);
   }
 };
+
+
 </script>
 
 <style scoped>
@@ -408,7 +457,7 @@ button {
   color: black;
   border: none;
   border-radius: 8px;
-  font-size: 18px;
+  font-size: 14px;
   width: 100%;
   cursor: pointer;
   transition: background 0.3s ease;
@@ -418,4 +467,29 @@ button {
 button:hover {
   color: white;
 }
+
+.dropdown-tooltip {
+  color: red;
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #fff0f0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ffc0c0;
+}
+
+.error-message {
+  color: red;
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #fff0f0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ffc0c0;
+}
+
 </style>

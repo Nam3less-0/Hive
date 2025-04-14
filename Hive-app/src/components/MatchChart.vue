@@ -9,7 +9,12 @@
   import { Chart, registerables } from 'chart.js';
   import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
   import { getApp } from 'firebase/app';
-  
+  import { getAuth } from 'firebase/auth';
+
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
+  const currentUserId = currentUser?.uid;
+
   Chart.register(...registerables);
   
   export default {
@@ -44,9 +49,14 @@
         const querySnapshot = await getDocs(q);
   
         querySnapshot.forEach(doc => {
-          const matchedAt = doc.data().matchedAt.toDate ? doc.data().matchedAt.toDate() : new Date(doc.data().matchedAt);
+          const data = doc.data();
+          const userIds = data.userIds || [];
+
+          if (!userIds.includes(currentUserId)) return; // filter only relevant matches
+
+          const matchedAt = data.matchedAt?.toDate?.() || new Date(data.matchedAt);
           matchedAt.setHours(0, 0, 0, 0);
-  
+
           for (const day of past7Days) {
             const dayDate = new Date(day.date);
             dayDate.setHours(0, 0, 0, 0);
@@ -55,6 +65,7 @@
             }
           }
         });
+
   
         return {
           labels: past7Days.map(day => day.label),

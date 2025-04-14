@@ -55,7 +55,16 @@
   
 <script>
 import { db, auth } from "@/firebase"; // Adjust the import based on your Firebase setup
-import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import { 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  doc, 
+  getDoc, 
+  onSnapshot,
+  collectionGroup
+} from "firebase/firestore";
 
 export default {
   name: "ChatList",
@@ -63,7 +72,9 @@ export default {
   data() {
     return {
       searchTerm: "",
-      chats: []
+      chats: [],
+      unsubscribeMatchesListener: null, // Store listener to cleanup later
+      cachedUserData: {} // Cache user data to avoid redundant fetches
     };
   },
   computed: {
@@ -86,54 +97,90 @@ export default {
         const timeB = new Date(this.getLatestMessage(b).timestamp);
         return timeB - timeA;
       });
+    },
+    currentUserId() {
+      return auth.currentUser ? auth.currentUser.uid : null;
     }
   },
   methods: {
-    async fetchChats() {
-      const currentUser = auth.currentUser;
-      if (!currentUser) return;
+    setupRealtimeMatchesListener() {
+      if (!this.currentUserId) return;
       
+      // Create a query for matches containing the current user
       const matchesQuery = query(
         collection(db, "matches"),
-        where("userIds", "array-contains", currentUser.uid)
+        where("userIds", "array-contains", this.currentUserId)
       );
-      const matchesSnapshot = await getDocs(matchesQuery);
-
-      const chatPromises = matchesSnapshot.docs.map(async (matchDoc) => {
-        const matchData = matchDoc.data();
-        const matchedUserId = matchData.userIds.find(id => id !== currentUser.uid);
+      
+      // Set up real-time listener
+      this.unsubscribeMatchesListener = onSnapshot(matchesQuery, async (snapshot) => {
+        console.log("Firebase matches update detected!");
         
-        if (!matchedUserId) return null;
+        // Process added and modified matches
+        const updates = [];
         
-        const userDoc = await getDoc(doc(db, "users", matchedUserId));
-        if (!userDoc.exists()) return null;
+        for (const change of snapshot.docChanges()) {
+          const matchDoc = change.doc;
+          const matchData = matchDoc.data();
+          
+          // Find the other user ID
+          const matchedUserId = matchData.userIds.find(id => id !== this.currentUserId);
+          if (!matchedUserId) continue;
+          
+          // Get user data (from cache if available)
+          let userData;
+          if (this.cachedUserData[matchedUserId]) {
+            userData = this.cachedUserData[matchedUserId];
+          } else {
+            const userDoc = await getDoc(doc(db, "users", matchedUserId));
+            if (!userDoc.exists()) continue;
+            userData = userDoc.data();
+            this.cachedUserData[matchedUserId] = userData; // Cache the user data
+          }
+          
+          // Find existing chat entry
+          const existingChatIndex = this.chats.findIndex(chat => chat.id === matchDoc.id);
+          const existingChat = existingChatIndex >= 0 ? this.chats[existingChatIndex] : null;
+          const previousStreak = existingChat ? existingChat.streakCount : 0;
+          const newStreak = matchData.streakCount || 0;
+          
+          const chatData = {
+            id: matchDoc.id,
+            name: `${userData.firstName} ${userData.lastName}`,
+            handle: `@${userData.firstName.toLowerCase()}`,
+            avatar: userData.images?.[0] || "https://via.placeholder.com/150", 
+            messages: matchData.messages || [],
+            streakCount: newStreak,
+            animateStreak: newStreak > previousStreak,
+            blocked: matchData.blocked || false,
+          };
+          
+          if (change.type === 'removed') {
+            // Remove chat if it exists
+            if (existingChatIndex >= 0) {
+              this.chats.splice(existingChatIndex, 1);
+            }
+          } else {
+            // Add or update chat
+            if (existingChatIndex >= 0) {
+              this.chats.splice(existingChatIndex, 1, chatData);
+            } else {
+              this.chats.push(chatData);
+            }
+          }
+        }
         
-        const userData = userDoc.data();
-
-        // Find existing chat entry
-        const existingChat = this.chats.find(chat => chat.id === matchDoc.id);
-        const previousStreak = existingChat ? existingChat.streakCount : 0;
-        const newStreak = matchData.streakCount || 0;
-
-        return {
-          id: matchDoc.id,
-          name: `${userData.firstName} ${userData.lastName}`,
-          handle: `@${userData.firstName.toLowerCase()}`,
-          avatar: userData.images?.[0] || "https://via.placeholder.com/150", 
-          messages: matchData.messages || [],
-          streakCount: newStreak,
-          animateStreak: newStreak > previousStreak, // Animate only if streak increases
-          blocked: matchData.blocked || false, // Add blocked property
-        };
+        // Reset animations after a delay
+        setTimeout(() => {
+          this.chats.forEach(chat => {
+            if (chat.animateStreak) {
+              chat.animateStreak = false;
+            }
+          });
+        }, 1000);
+      }, (error) => {
+        console.error("Error listening to matches:", error);
       });
-
-      this.chats = (await Promise.all(chatPromises)).filter(chat => chat !== null);
-      console.log("Matches retrieved from Firebase:", matchesSnapshot.docs.map(doc => doc.id));
-
-      // Remove animation class after delay to allow re-triggering
-      setTimeout(() => {
-        this.chats.forEach(chat => chat.animateStreak = false);
-      }, 1000);
     },
     getLatestMessage(chat) {
       if (!chat.messages || chat.messages.length === 0) {
@@ -181,8 +228,28 @@ export default {
       this.$emit("chat-selected", chat);
     }
   },
-  async mounted() {
-    await this.fetchChats();
+  created() {
+    // Set up the real-time listener when component is created
+    this.setupRealtimeMatchesListener();
+  },
+  unmounted() {
+    // Clean up the listener when component is destroyed
+    if (this.unsubscribeMatchesListener) {
+      this.unsubscribeMatchesListener();
+    }
+  },
+  watch: {
+    // Re-establish the listener if the current user changes
+    currentUserId(newId, oldId) {
+      if (newId !== oldId) {
+        // Clean up old listener
+        if (this.unsubscribeMatchesListener) {
+          this.unsubscribeMatchesListener();
+        }
+        // Set up new listener
+        this.setupRealtimeMatchesListener();
+      }
+    }
   }
 };
 </script>
