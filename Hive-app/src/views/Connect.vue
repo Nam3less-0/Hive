@@ -462,7 +462,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import { db, auth } from '@/firebase';
-import { collection, getDocs, increment, doc, getDoc, updateDoc, arrayUnion, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, increment, doc, getDoc, updateDoc, arrayUnion, Timestamp, serverTimestamp } from 'firebase/firestore';
 import placeholderProfile from '@/assets/placeholder-profile.jpg';
 import NoMoreUsers from "@/components/NoMoreUsers.vue";
 
@@ -672,18 +672,6 @@ onMounted(async () => {
       users.value = sortedUsers;
     });
 
-    // Fetch schools and industries
-    const schoolsSnapshot = await getDocs(collection(db, 'schools'));
-    schoolOptions.value = schoolsSnapshot.docs.map(doc => ({
-      value: doc.id,
-      label: doc.data().name
-    }));
-
-    const industriesSnapshot = await getDocs(collection(db, 'industries'));
-    industryOptions.value = industriesSnapshot.docs.map(doc => ({
-      value: doc.id,
-      label: doc.data().name
-    }));
     if (users.value.length > currentUserIndex.value + 1) {
       preloadNextProfile();
     }
@@ -835,11 +823,16 @@ const likeUser = async () => {
     await updateSeenArray(myUserId, likedUserId);
     showHeart.value = true;
 
+    // Create a timestamp on the client side instead of using serverTimestamp with arrayUnion
+    const timestamp = new Date();
+    
     // Update the liked user's "likes" array
     await updateDoc(doc(db, "users", likedUserId), {
       likes: arrayUnion({ userId: myUserId, message: null, timestamp: serverTimestamp() }),
       likeCount: increment(1)
     });
+    
+    console.log("successfully sent like");
     animationDirection.value = 'slide-right';
     
     // Start preloading while animation is happening
@@ -865,9 +858,17 @@ const likeAndSendMessage = async () => {
     // Update the logged-in user's seen array
     await updateSeenArray(myUserId, likedUserId);
 
+    // Create a timestamp on the client side
+    const timestamp = new Date();
+
     // Update the liked user's "likes" array with the message
     await updateDoc(doc(db, "users", likedUserId), {
-      likes: arrayUnion({ userId: myUserId, message: messageText.value }),
+      likes: arrayUnion({ 
+        userId: myUserId, 
+        message: messageText.value, 
+        timestamp 
+      }),
+      likeCount: increment(1)
     });
   } catch (error) {
     console.error("Error liking user with message:", error);
