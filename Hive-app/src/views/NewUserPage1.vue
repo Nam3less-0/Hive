@@ -1,38 +1,35 @@
 <template>
   <div class="user-container">
-    <!-- Right Section: New User Form -->
     <div class="user-form">
       <div class="logo-small">
         <img src="@/assets/hive-small.png" alt="Hive Small Logo" />
       </div>
 
-      <!-- Main form with gap between rows -->
       <form @submit.prevent="handleNext($event)" class="form-content">
-        
-        <!-- Name Fields (1st row) -->
+        <!-- Name Fields -->
         <div class="form-row side-by-side">
           <div class="field">
             <label>First Name</label>
-            <input v-model="firstName" type="text" placeholder="First Name" />
+            <input v-model="firstName" type="text" placeholder="First Name" @input="clearTooltip('firstName')" />
             <div v-if="showTooltip.firstName" class="tooltip-error">First name is required</div>
           </div>
           <div class="field">
             <label>Last Name</label>
-            <input v-model="lastName" type="text" placeholder="Last Name" />
+            <input v-model="lastName" type="text" placeholder="Last Name" @input="clearTooltip('lastName')" />
             <div v-if="showTooltip.lastName" class="tooltip-error">Last name is required</div>
           </div>
         </div>
 
-        <!-- Height and Gender (2nd row) -->
+        <!-- Height and Gender -->
         <div class="form-row side-by-side">
           <div class="field">
             <label>Height (cm)</label>
-            <input v-model="height" type="number" step="0.1" placeholder="Height" />
+            <input v-model="height" type="number" step="0.1" placeholder="Height" @input="clearTooltip('height')" />
             <p v-if="showTooltip.height" class="tooltip-error">Height is required</p>
           </div>
           <div class="field">
             <label>Gender</label>
-            <select v-model="gender">
+            <select v-model="gender" @change="clearTooltip('gender')">
               <option disabled value="">Select Gender</option>
               <option value="M">M</option>
               <option value="F">F</option>
@@ -41,10 +38,10 @@
           </div>
         </div>
 
-        <!-- Race (3rd row) -->
+        <!-- Race -->
         <div class="form-row">
           <label>Race</label>
-          <select v-model="race">
+          <select v-model="race" @change="clearTooltip('race')">
             <option disabled value="">Select Race</option>
             <option value="Chinese">Chinese</option>
             <option value="Malay">Malay</option>
@@ -57,14 +54,14 @@
 
         <div class="form-row" v-if="race === 'others'">
           <label>Please specify your race</label>
-          <input v-model="customRace" type="text" placeholder="Type your race" />
+          <input v-model="customRace" type="text" placeholder="Type your race" @input="clearTooltip('customRace')" />
           <p v-if="showTooltip.customRace" class="tooltip-error">Custom race is required</p>
         </div>
 
         <!-- Religion -->
         <div class="form-row">
           <label>Religion</label>
-          <select v-model="religion">
+          <select v-model="religion" @change="clearTooltip('religion')">
             <option disabled value="">Select Religion</option>
             <option value="Christian">Christian</option>
             <option value="Buddhist">Buddhist</option>
@@ -78,22 +75,21 @@
 
         <div class="form-row" v-if="religion === 'others'">
           <label>Please specify your religion</label>
-          <input v-model="customReligion" type="text" placeholder="Type your religion" />
+          <input v-model="customReligion" type="text" placeholder="Type your religion" @input="clearTooltip('customReligion')" />
           <p v-if="showTooltip.customReligion" class="tooltip-error">Custom religion is required</p>
         </div>
 
         <!-- Date of Birth -->
         <div class="form-row">
           <label>Date Of Birth</label>
-          <input v-model="dateOfBirth" type="date" />
+          <input v-model="dateOfBirth" type="date" @input="clearTooltip('dateOfBirth')" />
           <p v-if="showTooltip.dateOfBirth" class="tooltip-error">Date of birth is required</p>
         </div>
 
-        <!-- Next Button -->
+        <!-- Submit -->
         <div class="form-row">
           <button type="submit">Next</button>
         </div>
-
       </form>
     </div>
 
@@ -130,6 +126,10 @@ const showTooltip = ref({
   customReligion: false,
   dateOfBirth: false,
 });
+
+function clearTooltip(field) {
+  showTooltip.value[field] = false;
+}
 
 const handleNext = async (e) => {
   const t = showTooltip.value;

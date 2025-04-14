@@ -6,6 +6,7 @@
       <textarea
         v-model="description"
         placeholder="Short description..."
+        @input="clearTooltip('description')"
       ></textarea>
       <div v-if="showTooltip.description" class="tooltip-error">
         Description is required
@@ -15,6 +16,7 @@
       <textarea
         v-model="bio"
         placeholder="Bio..."
+        @input="clearTooltip('bio')"
       ></textarea>
       <div v-if="showTooltip.bio" class="tooltip-error">
         Bio is required
@@ -27,7 +29,6 @@
     <Branding />
   </div>
 </template>
-
 
 <script setup>
 import { ref } from 'vue';
@@ -44,8 +45,11 @@ const showTooltip = ref({
   bio: false
 });
 
+const clearTooltip = (field) => {
+  showTooltip.value[field] = false;
+};
+
 const saveProfile = async () => {
-  // Show tooltips if empty
   showTooltip.value.description = description.value.trim() === '';
   showTooltip.value.bio = bio.value.trim() === '';
 

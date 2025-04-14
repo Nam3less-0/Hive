@@ -253,7 +253,7 @@
   .finish-button {
     align-self: center;
     padding: 12px 20px;
-    background: #f9f9f9;
+    background: grey;
     color: black;
     border: 1px solid #ccc; 
     border-radius: 8px;
@@ -271,6 +271,7 @@
   
   .finish-button:hover:enabled {
     background: green;
+    color: white
   }
   </style>
   

@@ -11,13 +11,14 @@
     <transition name="fade">
       <div v-if="showForm" class="interests-form">
         <div class="form-content">
-          <label id = "interests-title">What are your Interests?</label>
+          <label id="interests-title">What are your Interests?</label>
           <!-- Search Bar -->
           <input
             v-model="searchTerm"
             type="text"
             placeholder="Search"
             class="search-bar"
+            @input="clearInterestTooltip"
           />
           <!-- Interests List -->
           <div class="interests-list">
@@ -25,7 +26,7 @@
               v-for="interest in filteredInterests"
               :key="interest"
               :class="['interest-item', { selected: selectedInterests.includes(interest) }]"
-              @click="toggleInterest(interest)"
+              @click="toggleInterest(interest); clearInterestTooltip()"
             >
               {{ interest }}
             </span>
@@ -36,30 +37,24 @@
           Please select at least one interest.
         </div>
 
-        <!-- Tooltip if no interest is selected -->
-
         <!-- Studying & Working Checkboxes -->
         <div class="checkboxes">
           <label>
-            <input type="checkbox" v-model="isStudying" /> Studying
+            <input type="checkbox" v-model="isStudying" @change="clearOccupationError" /> Studying
           </label>
           <label>
-            <input type="checkbox" v-model="isWorking" /> Working
+            <input type="checkbox" v-model="isWorking" @change="clearOccupationError" /> Working
           </label>
         </div>
 
         <!-- Custom School Picker -->
         <div v-if="isStudying" class="text-field custom-picker">
           <label>What school are you from?</label>
-          <div class="custom-dropdown" @click="toggleDropdown('school')">
-           <span>{{ selectedSchoolLabel }}</span>
-           <i class="dropdown-icon"></i>
+          <div class="custom-dropdown" @click="toggleDropdown('school'); clearDropdownTooltip('school')">
+            <span>{{ selectedSchoolLabel }}</span>
+            <i class="dropdown-icon"></i>
           </div>
-          <!-- Tooltip -->
-          <div
-            v-if="showDropdownTooltip.school"
-            class="dropdown-tooltip"
-          >
+          <div v-if="showDropdownTooltip.school" class="dropdown-tooltip">
             Please select your school
           </div>
           <div v-if="dropdownOpen.school" class="dropdown-options">
@@ -77,15 +72,11 @@
         <!-- Custom Industry Picker -->
         <div v-if="isWorking" class="text-field custom-picker">
           <label>What industry are you from?</label>
-          <div class="custom-dropdown" @click="toggleDropdown('industry')">
+          <div class="custom-dropdown" @click="toggleDropdown('industry'); clearDropdownTooltip('industry')">
             <span>{{ selectedIndustryLabel }}</span>
             <i class="dropdown-icon"></i>
           </div>
-          <!-- Tooltip -->
-          <div
-            v-if="showDropdownTooltip.industry"
-            class="dropdown-tooltip"
-          >
+          <div v-if="showDropdownTooltip.industry" class="dropdown-tooltip">
             Please select your industry
           </div>
           <div v-if="dropdownOpen.industry" class="dropdown-options">
@@ -104,7 +95,6 @@
           Please select at least one: Studying or Working.
         </p>
 
-
         <!-- Next Button -->
         <button @click="handleNext">Next</button>
       </div>
@@ -122,7 +112,6 @@ import { doc, setDoc, getDocs, collection } from 'firebase/firestore';
 import { db, auth } from '@/firebase';
 import Branding from '@/components/Branding.vue';
 
-// ========== STATE ========== //
 const allInterests = ref([]);
 const selectedInterests = ref([]);
 const searchTerm = ref('');
@@ -132,8 +121,6 @@ const school = ref('');
 const industry = ref('');
 const router = useRouter();
 const showInterestTooltip = ref(false);
-
-// Splash and form display state
 const showSplash = ref(true);
 const showForm = ref(false);
 
@@ -146,53 +133,32 @@ onMounted(async () => {
         fetchedInterests.push(docSnap.data().name);
       }
     });
-    console.log("Fetched interests:", fetchedInterests);
     allInterests.value = fetchedInterests;
   } catch (error) {
     console.error("Error fetching interests:", error);
   }
-  
-  // Hide splash after 2 seconds. The after-leave callback will then show the form.
   setTimeout(() => {
     showSplash.value = false;
   }, 1000);
 });
 
-// Called after splash leave transition completes
 function handleAfterSplash() {
   showForm.value = true;
 }
 
 const filteredInterests = computed(() => {
-  if (!searchTerm.value) {
-    return allInterests.value;
-  }
-  const term = searchTerm.value.toLowerCase();
-  return allInterests.value.filter(interest =>
-    interest.toLowerCase().includes(term)
-  );
+  if (!searchTerm.value) return allInterests.value;
+  return allInterests.value.filter(i => i.toLowerCase().includes(searchTerm.value.toLowerCase()));
 });
 
 const toggleInterest = (interest) => {
   const index = selectedInterests.value.indexOf(interest);
-  if (index === -1) {
-    selectedInterests.value.push(interest);
-  } else {
-    selectedInterests.value.splice(index, 1);
-  }
+  if (index === -1) selectedInterests.value.push(interest);
+  else selectedInterests.value.splice(index, 1);
 };
 
-// ========== CUSTOM DROPDOWN STATE ========== //
-const dropdownOpen = reactive({
-  school: false,
-  industry: false
-});
-
-const showDropdownTooltip = ref({
-  school: false,
-  industry: false
-});
-
+const dropdownOpen = reactive({ school: false, industry: false });
+const showDropdownTooltip = ref({ school: false, industry: false });
 const schoolOptions = ref([
   { value: "NUS", label: "National University of Singapore (NUS)" },
   { value: "NTU", label: "Nanyang Technological University (NTU)" },
@@ -200,7 +166,6 @@ const schoolOptions = ref([
   { value: "SUTD", label: "Singapore University of Technology and Design (SUTD)" },
   { value: "SUSS", label: "Singapore University of Social Sciences (SUSS)" }
 ]);
-
 const industryOptions = ref([
   { value: "Technology", label: "Technology" },
   { value: "Finance", label: "Finance" },
@@ -217,39 +182,44 @@ const toggleDropdown = (key) => {
 };
 
 const selectOption = (key, option) => {
-  if (key === 'school') {
-    school.value = option.value;
-  } else if (key === 'industry') {
-    industry.value = option.value;
-  }
+  if (key === 'school') school.value = option.value;
+  else if (key === 'industry') industry.value = option.value;
   dropdownOpen[key] = false;
+  clearDropdownTooltip(key);
 };
 
 const selectedSchoolLabel = computed(() => {
   const selected = schoolOptions.value.find(opt => opt.value === school.value);
   return selected ? selected.label : 'Select Your University';
 });
-
 const selectedIndustryLabel = computed(() => {
   const selected = industryOptions.value.find(opt => opt.value === industry.value);
   return selected ? selected.label : 'Select Your Industry';
 });
 
-// ========== HANDLE NEXT ========== //
-const errorOccupation = ref(false); // Define this at the top of <script setup>
+const errorOccupation = ref(false);
+
+function clearDropdownTooltip(field) {
+  showDropdownTooltip.value[field] = false;
+}
+function clearOccupationError() {
+  errorOccupation.value = false;
+}
+function clearInterestTooltip() {
+  showInterestTooltip.value = false;
+}
 
 const handleNext = async () => {
   errorOccupation.value = !(isStudying.value || isWorking.value);
   showDropdownTooltip.value.school = isStudying.value && !school.value;
   showDropdownTooltip.value.industry = isWorking.value && !industry.value;
-
   showInterestTooltip.value = selectedInterests.value.length === 0;
-  const isValid =
-  !errorOccupation.value &&
-  selectedInterests.value.length > 0 &&
-  (!isStudying.value || !!school.value) &&
-  (!isWorking.value || !!industry.value);
 
+  const isValid =
+    !errorOccupation.value &&
+    selectedInterests.value.length > 0 &&
+    (!isStudying.value || !!school.value) &&
+    (!isWorking.value || !!industry.value);
 
   if (!isValid) return;
 
@@ -270,14 +240,11 @@ const handleNext = async () => {
 
   try {
     await setDoc(doc(db, 'users', user.uid), dataToSave, { merge: true });
-    console.log('Interests data saved successfully!');
     router.push({ name: 'NewUserPage22' });
   } catch (error) {
     console.error('Error saving interests data:', error);
   }
 };
-
-
 </script>
 
 <style scoped>
