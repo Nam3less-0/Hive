@@ -6,7 +6,7 @@
       <!-- Smoking Picker -->
       <div class="text-field custom-picker">
         <label>Do you smoke?</label>
-        <div class="custom-dropdown" @click="toggleDropdown('smoking')">
+        <div class="custom-dropdown" @click="toggleDropdown('smoking'); clearTooltip('smoking')">
           <span>{{ selectedSmokingLabel }}</span>
           <i class="dropdown-icon"></i>
         </div>
@@ -28,7 +28,7 @@
       <!-- Alcohol Picker -->
       <div class="text-field custom-picker">
         <label>Do you drink alcohol?</label>
-        <div class="custom-dropdown" @click="toggleDropdown('alcohol')">
+        <div class="custom-dropdown" @click="toggleDropdown('alcohol'); clearTooltip('alcohol')">
           <span>{{ selectedAlcoholLabel }}</span>
           <i class="dropdown-icon"></i>
         </div>
@@ -50,7 +50,7 @@
       <!-- Sexual Orientation Picker -->
       <div class="text-field custom-picker">
         <label>Sexual Orientation</label>
-        <div class="custom-dropdown" @click="toggleDropdown('sexualOrientation')">
+        <div class="custom-dropdown" @click="toggleDropdown('sexualOrientation'); clearTooltip('sexualOrientation')">
           <span>{{ selectedSexualOrientationLabel }}</span>
           <i class="dropdown-icon"></i>
         </div>
@@ -72,7 +72,7 @@
       <!-- Purpose Picker -->
       <div class="text-field custom-picker">
         <label>Purpose of using the app</label>
-        <div class="custom-dropdown" @click="toggleDropdown('purpose')">
+        <div class="custom-dropdown" @click="toggleDropdown('purpose'); clearTooltip('purpose')">
           <span>{{ selectedPurposeLabel }}</span>
           <i class="dropdown-icon"></i>
         </div>
@@ -112,13 +112,16 @@ const sexualOrientation = ref('');
 const purpose = ref('');
 const router = useRouter();
 
-// Tooltip control state
 const showDropdownTooltip = ref({
   smoking: false,
   alcohol: false,
   sexualOrientation: false,
   purpose: false
 });
+
+function clearTooltip(field) {
+  showDropdownTooltip.value[field] = false;
+}
 
 const smokingOptions = ref([
   { value: 'non-smoker', label: 'Non-smoker' },
@@ -167,6 +170,7 @@ const selectOption = (key, option) => {
   else if (key === 'purpose') purpose.value = option.value;
 
   dropdownOpen[key] = false;
+  clearTooltip(key);
 };
 
 const selectedSmokingLabel = computed(() =>
@@ -183,7 +187,6 @@ const selectedPurposeLabel = computed(() =>
 );
 
 const handleNext = async () => {
-  // Show tooltips if empty
   showDropdownTooltip.value.smoking = !smoking.value;
   showDropdownTooltip.value.alcohol = !alcohol.value;
   showDropdownTooltip.value.sexualOrientation = !sexualOrientation.value;
@@ -209,7 +212,6 @@ const handleNext = async () => {
 
   try {
     await setDoc(doc(db, 'users', user.uid), dataToSave, { merge: true });
-    console.log('Profile details saved successfully!');
     router.push({ name: 'NewUserPage3' });
   } catch (error) {
     console.error('Error saving profile details:', error);
