@@ -462,7 +462,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import { db, auth } from '@/firebase';
-import { collection, getDocs, increment, doc, getDoc, updateDoc, arrayUnion, Timestamp, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, increment, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import placeholderProfile from '@/assets/placeholder-profile.jpg';
 import NoMoreUsers from "@/components/NoMoreUsers.vue";
 
@@ -828,7 +828,7 @@ const likeUser = async () => {
     
     // Update the liked user's "likes" array
     await updateDoc(doc(db, "users", likedUserId), {
-      likes: arrayUnion({ userId: myUserId, message: null, timestamp: serverTimestamp() }),
+      likes: arrayUnion({ userId: myUserId, message: null, timestamp }),
       likeCount: increment(1)
     });
     
