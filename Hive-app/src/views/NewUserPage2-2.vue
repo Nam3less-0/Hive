@@ -10,6 +10,9 @@
           <span>{{ selectedSmokingLabel }}</span>
           <i class="dropdown-icon"></i>
         </div>
+        <div v-if="showDropdownTooltip.smoking" class="dropdown-tooltip">
+          Please select your smoking status
+        </div>
         <div v-if="dropdownOpen.smoking" class="dropdown-options">
           <div
             v-for="option in smokingOptions"
@@ -28,6 +31,9 @@
         <div class="custom-dropdown" @click="toggleDropdown('alcohol')">
           <span>{{ selectedAlcoholLabel }}</span>
           <i class="dropdown-icon"></i>
+        </div>
+        <div v-if="showDropdownTooltip.alcohol" class="dropdown-tooltip">
+          Please select your alcohol preference
         </div>
         <div v-if="dropdownOpen.alcohol" class="dropdown-options">
           <div
@@ -48,6 +54,9 @@
           <span>{{ selectedSexualOrientationLabel }}</span>
           <i class="dropdown-icon"></i>
         </div>
+        <div v-if="showDropdownTooltip.sexualOrientation" class="dropdown-tooltip">
+          Please select your sexual orientation
+        </div>
         <div v-if="dropdownOpen.sexualOrientation" class="dropdown-options">
           <div
             v-for="option in sexualOrientationOptions"
@@ -67,6 +76,9 @@
           <span>{{ selectedPurposeLabel }}</span>
           <i class="dropdown-icon"></i>
         </div>
+        <div v-if="showDropdownTooltip.purpose" class="dropdown-tooltip">
+          Please select your purpose
+        </div>
         <div v-if="dropdownOpen.purpose" class="dropdown-options">
           <div
             v-for="option in purposeOptions"
@@ -83,7 +95,6 @@
       <button @click="handleNext">Next</button>
     </div>
 
-    <!-- Optional Branding Component -->
     <Branding />
   </div>
 </template>
@@ -99,8 +110,15 @@ const smoking = ref('');
 const alcohol = ref('');
 const sexualOrientation = ref('');
 const purpose = ref('');
-
 const router = useRouter();
+
+// Tooltip control state
+const showDropdownTooltip = ref({
+  smoking: false,
+  alcohol: false,
+  sexualOrientation: false,
+  purpose: false
+});
 
 const smokingOptions = ref([
   { value: 'non-smoker', label: 'Non-smoker' },
@@ -143,39 +161,38 @@ const toggleDropdown = (key) => {
 };
 
 const selectOption = (key, option) => {
-  if (key === 'smoking') {
-    smoking.value = option.value;
-  } else if (key === 'alcohol') {
-    alcohol.value = option.value;
-  } else if (key === 'sexualOrientation') {
-    sexualOrientation.value = option.value;
-  } else if (key === 'purpose') {
-    purpose.value = option.value;
-  }
+  if (key === 'smoking') smoking.value = option.value;
+  else if (key === 'alcohol') alcohol.value = option.value;
+  else if (key === 'sexualOrientation') sexualOrientation.value = option.value;
+  else if (key === 'purpose') purpose.value = option.value;
+
   dropdownOpen[key] = false;
 };
 
-const selectedSmokingLabel = computed(() => {
-  const selected = smokingOptions.value.find(opt => opt.value === smoking.value);
-  return selected ? selected.label : 'Select Smoking Status';
-});
-
-const selectedAlcoholLabel = computed(() => {
-  const selected = alcoholOptions.value.find(opt => opt.value === alcohol.value);
-  return selected ? selected.label : 'Select Alcohol Consumption';
-});
-
-const selectedSexualOrientationLabel = computed(() => {
-  const selected = sexualOrientationOptions.value.find(opt => opt.value === sexualOrientation.value);
-  return selected ? selected.label : 'Select Sexual Orientation';
-});
-
-const selectedPurposeLabel = computed(() => {
-  const selected = purposeOptions.value.find(opt => opt.value === purpose.value);
-  return selected ? selected.label : 'Select App Purpose';
-});
+const selectedSmokingLabel = computed(() =>
+  smokingOptions.value.find(opt => opt.value === smoking.value)?.label || 'Select Smoking Status'
+);
+const selectedAlcoholLabel = computed(() =>
+  alcoholOptions.value.find(opt => opt.value === alcohol.value)?.label || 'Select Alcohol Consumption'
+);
+const selectedSexualOrientationLabel = computed(() =>
+  sexualOrientationOptions.value.find(opt => opt.value === sexualOrientation.value)?.label || 'Select Sexual Orientation'
+);
+const selectedPurposeLabel = computed(() =>
+  purposeOptions.value.find(opt => opt.value === purpose.value)?.label || 'Select App Purpose'
+);
 
 const handleNext = async () => {
+  // Show tooltips if empty
+  showDropdownTooltip.value.smoking = !smoking.value;
+  showDropdownTooltip.value.alcohol = !alcohol.value;
+  showDropdownTooltip.value.sexualOrientation = !sexualOrientation.value;
+  showDropdownTooltip.value.purpose = !purpose.value;
+
+  const isValid = smoking.value && alcohol.value && sexualOrientation.value && purpose.value;
+
+  if (!isValid) return;
+
   const user = auth.currentUser;
   if (!user) {
     console.error('No user is logged in');
@@ -208,7 +225,6 @@ const handleNext = async () => {
   overflow: hidden;
 }
 
-/* Center the form in the left section */
 .info-form {
   width: 50vw;
   max-width: 50vw;
@@ -231,7 +247,6 @@ const handleNext = async () => {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Custom Picker Styles */
 .text-field {
   margin-bottom: 15px;
   position: relative;
@@ -244,11 +259,10 @@ const handleNext = async () => {
 .custom-picker label {
   display: block;
   margin-bottom: 5px;
-  font-weight: 500;
+  font-weight: bold;
   text-align: left;
   color: black;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: bold;
   font-size: 15px;
 }
 
@@ -270,7 +284,6 @@ const handleNext = async () => {
   display: inline-block;
   padding: 3px;
   transform: rotate(45deg);
-  -webkit-transform: rotate(45deg);
 }
 
 .dropdown-options {
@@ -314,4 +327,17 @@ button {
 button:hover {
   color: white;
 }
+
+.dropdown-tooltip {
+  color: red;
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #fff0f0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ffc0c0;
+}
 </style>
+
