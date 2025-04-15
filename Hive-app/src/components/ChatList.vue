@@ -150,6 +150,7 @@ export default {
             handle: `@${userData.firstName.toLowerCase()}`,
             avatar: userData.images?.[0] || "https://via.placeholder.com/150", 
             messages: matchData.messages || [],
+            userIds: matchData.userIds || [], // Make sure userIds is included here
             streakCount: newStreak,
             animateStreak: newStreak > previousStreak,
             blocked: matchData.blocked || false,
@@ -225,7 +226,20 @@ export default {
       }
     },
     handleChatSelected(chat) {
-      this.$emit("chat-selected", chat);
+      // Include all properties when emitting the selected chat
+      this.$emit("chat-selected", {
+        id: chat.id,
+        name: chat.name,
+        handle: chat.handle,
+        avatar: chat.avatar,
+        messages: chat.messages,
+        userIds: chat.userIds, // Make sure to include the userIds array
+        streakCount: chat.streakCount,
+        blocked: chat.blocked
+      });
+      
+      // Log for debugging
+      console.log("DEBUG: Emitting chat with userIds:", chat.userIds);
     }
   },
   created() {
