@@ -25,7 +25,7 @@
       <div class="navbar-right">
         <router-link to="/myaccount" class="nav-profile">
           <img src="@/assets/profile-logo.png" alt="Profile" />
-          <span>{{ currentUser && currentUser.firstName ? currentUser.firstName : "Guest" }}</span>
+          <span>{{ DisplayName() }}</span>
         </router-link>
       </div>
     </nav>
@@ -43,11 +43,18 @@ import { doc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '@/firebase';
 
-
 const currentUser = ref(null);
 const error = ref(null);
 const route = useRoute();
 const isActive = (path) => route.path.startsWith(path);
+
+//Get display name
+const DisplayName = () => {
+  if (!currentUser.value) return "User";
+  if (currentUser.value.firstName) return currentUser.value.firstName;
+  if (currentUser.value.lastName) return currentUser.value.lastName;
+  return "User";
+};
 
 // Listen for authentication state changes and fetch the user document using the UID
 onMounted(() => {

@@ -18,13 +18,15 @@ onMounted(async () => {
     const uid = user.uid
     const userDocRef = doc(db, 'users', uid)
     const userSnap = await getDoc(userDocRef)
-    if (userSnap.exists()) {
+    if (userSnap.data().firstName && userSnap.data().lastName) {
       userName.value = userSnap.data().firstName + " " + userSnap.data().lastName;
+    } else if (userSnap.data().firstName && !userSnap.data().lastName){
+      userName.value = userSnap.data().firstName;
+    } else if (!userSnap.data().firstName && userSnap.data().lastName){
+      userName.value = userSnap.data().lastName;
     } else {
-      userName.value = 'User'
-    }
-  } else {
     userName.value = 'User'
+    }
   }
 })
 
