@@ -10,13 +10,41 @@
       <ChatList :currentUserId="currentUserId" @chat-selected="handleChatSelection" />
     </div>
 
-    <!-- Right column: Chat header + Chat Room -->
+    <!-- Right column: Chat header + Chat Room or Profile View -->
     <div class="chat-content-wrapper" v-if="selectedChat">
       <div class="chat-header">
-        <img :src="selectedChat.avatar" alt="Profile" class="chat-profile-pic" />
-        <span class="chat-name">{{ selectedChat.name }}</span>
+        <div class="header-left">
+          <!-- Back button - only visible in profile view -->
+          <button v-if="showProfileView" @click="toggleProfileView" class="back-button">
+            <span class="back-icon">←</span> Back to Chat
+          </button>
+          <!-- Profile image - clickable to show profile -->
+          <img 
+            :src="selectedChat.avatar" 
+            alt="Profile" 
+            class="chat-profile-pic" 
+            @click="toggleProfileView"
+            :class="{ 'clickable': !showProfileView }"
+          />
+          <span class="chat-name">{{ selectedChat.name }}</span>
+        </div>
       </div>
-      <ChatRoom :chat="selectedChat" :currentUserId="currentUserId" />
+      
+      <!-- Conditional rendering based on view state -->
+      <ChatRoom v-if="!showProfileView" :chat="selectedChat" :currentUserId="currentUserId" />
+      <ProfileView 
+        v-else-if="showProfileView && otherUserId" 
+        :profileData="{
+        name: selectedChat.name,
+        avatar: selectedChat.avatar
+        }" 
+        :userId="otherUserId"
+        :currentUserId="currentUserId"
+      />
+      <div v-else-if="showProfileView && !otherUserId" class="profile-error">
+        <p>Cannot display profile: User ID not found</p>
+        <button @click="toggleProfileView" class="back-button">Back to Chat</button>
+      </div>
     </div>
     
     <!-- Placeholder when no chat is selected -->
@@ -39,25 +67,51 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import ChatList from "@/components/ChatList.vue";
 import ChatRoom from "@/components/ChatRoom.vue";
+import ProfileView from "@/components/ProfileView.vue";
 import BlockConfirmationModal from "@/components/BlockConfirmationModal.vue";
 import { doc, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
 import { auth, db } from "@/firebase";
 
 export default {
   name: "MessagesPage",
-  components: { ChatList, ChatRoom, BlockConfirmationModal },
+  components: { ChatList, ChatRoom, BlockConfirmationModal, ProfileView },
   setup() {
-    const currentUserId = ref(auth.currentUser?.uid); // Replace with actual user ID retrieval
+    const currentUserId = ref(auth.currentUser?.uid);
     const selectedChat = ref(null);
     const isBlockModalVisible = ref(false);
     const showNotification = ref(false);
     const notificationMessage = ref("");
+    const showProfileView = ref(false);
+    const isDebugMode = ref(false);
+    
+    // Compute the other user's ID as a derived state
+    const otherUserId = computed(() => {
+      if (!selectedChat.value || !selectedChat.value.userIds) {
+        console.log("DEBUG: Cannot compute otherUserId - selectedChat or userIds is null/undefined");
+        console.log("DEBUG: selectedChat =", selectedChat.value);
+        console.log("DEBUG: userIds =", selectedChat.value?.userIds);
+        return null;
+      }
+      
+      const foundId = selectedChat.value.userIds.find(id => id !== currentUserId.value);
+      console.log(`DEBUG: Found otherUserId: ${foundId || 'null'}`);
+      return foundId || null;
+    });
 
     const handleChatSelection = (chat) => {
+      console.log("DEBUG: Chat selected:", chat);
+      console.log("DEBUG: Chat userIds:", chat?.userIds);
       selectedChat.value = chat;
+      showProfileView.value = false; // Reset to chat view on new selection
+    };
+
+    const toggleProfileView = () => {
+      console.log("DEBUG: Toggling profile view. Current value:", showProfileView.value);
+      console.log("DEBUG: otherUserId when toggling:", otherUserId.value);
+      showProfileView.value = !showProfileView.value;
     };
 
     const closeBlockModal = () => {
@@ -85,20 +139,21 @@ export default {
         }
 
         const matchData = matchSnap.data();
-        const otherUserId = matchData.userIds.find(id => id !== currentUserId.value);
+        const otherId = matchData.userIds.find(id => id !== currentUserId.value);
+        console.log("DEBUG: Other user ID from match document:", otherId);
 
         // Block User Profile
         await updateDoc(matchRef, {blocked: true});
 
         // Add Blocked Profile to current user blocked array
-        await updateDoc(currentUserRef, {blocked: arrayUnion(otherUserId)});
+        await updateDoc(currentUserRef, {blocked: arrayUnion(otherId)});
 
-        // ✅ Show notification and log if it's triggered
+        // Show notification and log if it's triggered
         notificationMessage.value = `${selectedChat.value.name} has been successfully blocked.`;
         showNotification.value = true;
         console.log("✅ Notification should be visible now!");
 
-        // ✅ Auto-hide the notification after 3 seconds
+        // Auto-hide the notification after 3 seconds
         setTimeout(() => {
           console.log("⏳ Hiding notification...");
           showNotification.value = false;
@@ -112,7 +167,52 @@ export default {
       }
     };
 
-    return { currentUserId, selectedChat, isBlockModalVisible, handleChatSelection, openBlockModal, closeBlockModal, handleBlockConfirm, showNotification, notificationMessage };
+    // Debug watchers
+    watch(() => selectedChat.value, (newChat, oldChat) => {
+      console.log("DEBUG: selectedChat changed:", newChat);
+      console.log("DEBUG: userIds in new chat:", newChat?.userIds);
+    });
+    
+    watch(() => otherUserId.value, (newId, oldId) => {
+      console.log(`DEBUG: otherUserId changed from ${oldId || 'null'} to ${newId || 'null'}`);
+    });
+    
+    watch(() => showProfileView.value, (newVal, oldVal) => {
+      console.log(`DEBUG: showProfileView changed from ${oldVal} to ${newVal}`);
+      
+      if (newVal === true) {
+        // When switching to profile view, check if otherUserId exists
+        console.log("DEBUG: Profile view activated. otherUserId =", otherUserId.value);
+        
+        if (!otherUserId.value) {
+          console.log("DEBUG: WARNING - Profile view activated but otherUserId is null!");
+          console.log("DEBUG: selectedChat =", selectedChat.value);
+          console.log("DEBUG: userIds =", selectedChat.value?.userIds);
+          console.log("DEBUG: currentUserId =", currentUserId.value);
+        }
+      }
+    });
+    
+    onMounted(() => {
+      console.log("DEBUG: MessagesPage mounted");
+      console.log("DEBUG: currentUserId =", currentUserId.value);
+    });
+
+    return { 
+      currentUserId, 
+      selectedChat, 
+      isBlockModalVisible, 
+      handleChatSelection, 
+      openBlockModal, 
+      closeBlockModal, 
+      handleBlockConfirm, 
+      showNotification, 
+      notificationMessage,
+      showProfileView, 
+      toggleProfileView,
+      otherUserId,
+      isDebugMode
+    };
   },
 };
 </script>
@@ -192,6 +292,38 @@ export default {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(5px); /* Soft blur effect */
   transition: all 0.3s ease-in-out;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+/* Back button styling */
+.back-button {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-right: 1rem;
+  font-weight: 600;
+  transition: transform 0.2s ease;
+  padding: 0.5rem 0.75rem;
+  border-radius: 5px;
+}
+
+.back-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: translateX(-2px);
+}
+
+.back-icon {
+  margin-right: 0.5rem;
+  font-size: 1.2rem;
 }
 
 /* Profile picture */
@@ -205,7 +337,11 @@ export default {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.chat-profile-pic:hover {
+.chat-profile-pic.clickable {
+  cursor: pointer;
+}
+
+.chat-profile-pic.clickable:hover {
   transform: scale(1.1);
   border-color: #ffb300;
 }
@@ -229,6 +365,36 @@ export default {
   align-items: center;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: rgb(232, 224, 199)
+}
+
+/* Profile error state */
+.profile-error {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
+
+.profile-error p {
+  margin-bottom: 1.5rem;
+  color: #d32f2f;
+  font-size: 1.1rem;
+}
+
+.profile-error .back-button {
+  background-color: #ffcc00;
+  color: #333;
+  padding: 0.5rem 1.25rem;
+  border-radius: 5px;
+  font-weight: 600;
+}
+
+.profile-error .back-button:hover {
+  background-color: #ffb300;
 }
 
 /* Notification Toast */
@@ -306,6 +472,11 @@ export default {
     padding: 0.3rem 0.6rem;
     font-size: 0.875rem;
   }
+  
+  .back-button {
+    font-size: 0.875rem;
+    padding: 0.3rem 0.5rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -325,6 +496,15 @@ export default {
     padding: 0.5rem 0.75rem;
     top: 0.75rem;
     right: 0.75rem;
+  }
+  
+  .back-button {
+    margin-right: 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .back-icon {
+    font-size: 1rem;
   }
 }
 </style>

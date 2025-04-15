@@ -278,16 +278,14 @@ export default {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  max-width: 60vw;
+  height: 100%;
+  width: 100%; /* Make it take full width of parent */
   border: none;
   border-radius: 12px;
-  margin: 10px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   background-color: var(--honeycomb-light);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  padding-bottom: 5vh;
 }
 
 /* Honeycomb background pattern */
@@ -307,9 +305,10 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
-  padding-bottom: 120px; /* Space for input section */
+  padding-bottom: 160px; /* Extra space for input section */
   position: relative;
   z-index: 1;
+  height: 100%;
 }
 
 .date-divider {
@@ -611,12 +610,6 @@ export default {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .chat-container {
-    max-width: 100vw;
-    margin: 0;
-    border-radius: 0;
-  }
-  
   .message {
     max-width: 80%;
   }
