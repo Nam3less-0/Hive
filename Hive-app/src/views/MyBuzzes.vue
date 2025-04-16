@@ -54,7 +54,7 @@
 
 <script>
 import { ref, onMounted } from "vue";
-import { getFirestore, collection, getDocs, deleteDoc, doc, getDoc, updateDoc, arrayRemove , setDoc} from "firebase/firestore";
+import { getFirestore, collection, getDocs, deleteDoc, doc, getDoc, updateDoc, arrayRemove, arrayUnion, setDoc} from "firebase/firestore";
 import { auth, db } from "@/firebase";
 
 export default {
@@ -149,7 +149,7 @@ async function processLikeQueue() {
 async function likeBack(likedUserID) {
   likeQueue.value.push(likedUserID);
   if (likeQueue.value.length === 1) {
-    processLikeQueue();
+    await processLikeQueue();
   }
 }
 
@@ -170,7 +170,18 @@ async function likeBackHandler(likedUserID) {
 
     const userLikesRef = doc(db, 'users', userID);
     await updateDoc(userLikesRef, {
-      likes: arrayRemove(likedUserID)
+      likes: arrayRemove(likedUserID),
+      seen: arrayUnion(likedUserID.userId)
+    });
+
+    const likedUserRef = doc(db, 'users', likedUserID.userId);
+    const timestamp = new Date();
+    await updateDoc(likedUserRef, {
+      likes: arrayUnion({
+        userId: userID,
+        message: "",
+        timestamp
+      })
     });
 
     await fetchBuzzes();
@@ -179,6 +190,7 @@ async function likeBackHandler(likedUserID) {
     console.error("Error liking back:", error);
   }
 }
+
 async function passUser(likedUserID) {
   try {
     if (!userID || !likedUserID) {

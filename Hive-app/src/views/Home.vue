@@ -42,6 +42,7 @@
           <!-- Right Section: Chart -->
           <div class="right-section">
             <MatchChart />
+            <LikesChart />
           </div>
 
         </div>
@@ -122,6 +123,7 @@ import { useRouter } from 'vue-router';
 import { auth, db } from "@/firebase";
 import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import MatchChart from '@/components/MatchChart.vue';
+import LikesChart from '@/components/LikesChart.vue';
 
 const router = useRouter();
 const likeCount = ref(0);
