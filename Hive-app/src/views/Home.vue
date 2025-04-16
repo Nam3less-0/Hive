@@ -41,8 +41,8 @@
 
           <!-- Right Section: Chart -->
           <div class="right-section">
-            <MatchChart />
             <LikesChart />
+            <MatchChart />
           </div>
 
         </div>
