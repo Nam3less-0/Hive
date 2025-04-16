@@ -11,9 +11,11 @@
       </div>
       
       <div v-else class="profile-container">
-        <!-- Enhanced header with background gradient and better spacing -->
+        <!-- Enhanced header with honeycomb-inspired background -->
         <div class="profile-header">
-          <div class="header-decoration"></div>
+          <div class="header-decoration">
+            <div class="honeycomb-pattern"></div>
+          </div>
           <div class="avatar-container">
             <img :src="userData.avatar || profileData.avatar" alt="Profile" class="profile-image" />
           </div>
@@ -39,6 +41,20 @@
           <div class="about-section">
             <h3>About Me</h3>
             <p class="profile-description">{{ userData.description || 'No description provided.' }}</p>
+          </div>
+          
+          <!-- NEW SECTION: Interests -->
+          <div class="interests-section" v-if="userData.interests && userData.interests.length > 0">
+            <h3>Interests</h3>
+            <div class="interests-container">
+              <div v-for="(interest, index) in userData.interests" :key="index" class="interest-tag">
+                <span class="interest-icon">🐝</span>
+                <span>{{ interest }}</span>
+              </div>
+              <div v-if="!userData.interests || userData.interests.length === 0" class="no-interests">
+                No interests specified
+              </div>
+            </div>
           </div>
           
           <div class="details-grid">
@@ -278,7 +294,7 @@
     height: 100%;
     width: 100%;
     overflow-y: auto; /* Enable vertical scrolling */
-    background-color: #f7f7f7;
+    background-color: #fffdf7; /* Light cream background color */
     font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
     position: relative; /* Ensure position context for children */
     display: flex;
@@ -291,6 +307,7 @@
     background-color: #fff;
     overflow-y: visible; /* Allow content to expand for scrolling */
     flex: 1;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
   }
     
   /* Loading and error states */
@@ -339,7 +356,7 @@
     background-color: #ffb300;
   }
     
-  /* Enhanced header styling */
+  /* Enhanced header styling with honeycomb elements */
   .profile-header {
     position: relative;
     display: flex;
@@ -357,9 +374,24 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 100px;
-    background: linear-gradient(135deg, #ffda6b, #ffb347);
+    height: 120px;
+    background: linear-gradient(135deg, #ffd866, #ffb347);
     z-index: 0;
+    overflow: hidden;
+  }
+  
+  /* Honeycomb pattern overlay */
+  .honeycomb-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(circle at 0% 50%, transparent 9px, #f9c64f 9px, #f9c64f 10px, transparent 10px), 
+                      radial-gradient(circle at 100% 50%, transparent 9px, #f9c64f 9px, #f9c64f 10px, transparent 10px);
+    background-size: 40px 20px;
+    background-position: 0 0;
+    opacity: 0.5;
   }
     
   .avatar-container {
@@ -369,7 +401,7 @@
     background-color: #fff;
     border-radius: 50%;
     margin-bottom: 1.25rem;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(255, 180, 0, 0.2);
   }
     
   .profile-image {
@@ -378,7 +410,7 @@
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid #fff;
-    box-shadow: 0 0 0 2px #ffcc00;
+    box-shadow: 0 0 0 3px #ffc400;
     transition: transform 0.3s ease;
   }
     
@@ -410,16 +442,18 @@
     display: inline-flex;
     align-items: center;
     padding: 0.35rem 0.75rem;
-    background-color: #f5f5f5;
+    background-color: #fff9e6;
     border-radius: 20px;
     font-size: 0.875rem;
     color: #555;
     font-weight: 500;
+    border: 1px solid #ffe28a;
   }
     
   .badge.purpose {
-    background-color: #fffaf0;
+    background-color: #fff5d6;
     color: #d4a12c;
+    border-color: #ffcc00;
   }
     
   .icon {
@@ -433,6 +467,68 @@
     opacity: 0.7;
   }
     
+  /* Interests section */
+  .interests-section {
+    padding: 1.75rem 2rem;
+    background-color: #fff;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .interests-section h3 {
+    font-size: 1.25rem;
+    color: #333;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .interests-section h3::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 100%;
+    height: 2px;
+    background-color: #ffcc00;
+    border-radius: 2px;
+  }
+  
+  .interests-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  
+  .interest-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: #fff9e6;
+    border: 1px solid #ffdb4d;
+    border-radius: 20px;
+    padding: 0.4rem 1rem;
+    font-size: 0.9rem;
+    color: #333;
+    transition: all 0.2s ease;
+  }
+  
+  .interest-tag:hover {
+    background-color: #ffdb4d;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 5px rgba(0,0,0,0.05);
+  }
+  
+  .interest-icon {
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+  }
+  
+  .no-interests {
+    color: #999;
+    font-style: italic;
+  }
+  
   /* Profile details layout */
   .profile-details {
     padding: 0;
@@ -480,6 +576,7 @@
     padding: 1.75rem 2rem 2.5rem;
     width: 100%;
     box-sizing: border-box;
+    background-color: #fffdf7;
   }
     
   .details-column {
@@ -490,6 +587,10 @@
     
   .detail-section {
     background-color: #fff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    border: 1px solid #f0f0f0;
   }
     
   .detail-section h3 {
@@ -528,10 +629,11 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background-color: #f7f7f7;
+    background-color: #fff9e6;
     margin-right: 0.875rem;
     position: relative;
     flex-shrink: 0;
+    border: 1px solid #ffe28a;
   }
     
   .detail-icon::before {
@@ -545,7 +647,7 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: contain;
-    opacity: 0.5;
+    opacity: 0.7;
   }
     
   .detail-content {
@@ -556,7 +658,7 @@
     
   .detail-label {
     font-size: 0.875rem;
-    color: #777;
+    color: #888;
     margin-bottom: 0.25rem;
   }
     
@@ -566,17 +668,18 @@
     font-weight: 500;
   }
     
-  /* Icons styling (using pseudo-elements to simulate icons) */
-  .personal-icon::before { content: 'P'; }
-  .gender-icon::before { content: 'G'; }
-  .calendar-icon::before { content: 'D'; }
-  .height-icon::before { content: 'H'; }
-  .race-icon::before { content: 'R'; }
-  .religion-icon::before { content: 'R'; }
-  .alcohol-icon::before { content: 'A'; }
-  .smoking-icon::before { content: 'S'; }
-  .purpose-icon::before { content: 'P'; }
-  .orientation-icon::before { content: 'O'; }
+  /* Icons styling using emojis for bee theme */
+  .personal-icon::before { content: '👤'; }
+  .gender-icon::before { content: '⚧'; }
+  .calendar-icon::before { content: '📅'; }
+  .height-icon::before { content: '📏'; }
+  .race-icon::before { content: '🌍'; }
+  .religion-icon::before { content: '🕊️'; }
+  .alcohol-icon::before { content: '🍷'; }
+  .smoking-icon::before { content: '🚬'; }
+  .purpose-icon::before { content: '❤️'; }
+  .orientation-icon::before { content: '🌈'; }
+  .age-icon::before { content: '🎂'; }
     
   /* Responsive design */
   @media (max-width: 768px) {
@@ -586,7 +689,8 @@
       padding: 1.5rem;
     }
     
-    .about-section {
+    .about-section,
+    .interests-section {
       padding: 1.5rem;
     }
     
@@ -624,6 +728,7 @@
     }
     
     .about-section,
+    .interests-section,
     .details-grid {
       padding: 1.25rem;
     }
@@ -640,6 +745,11 @@
     
     .detail-value {
       font-size: 0.95rem;
+    }
+    
+    .interest-tag {
+      padding: 0.3rem 0.8rem;
+      font-size: 0.8rem;
     }
   }
   </style>

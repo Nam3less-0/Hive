@@ -870,6 +870,8 @@ const likeAndSendMessage = async () => {
       }),
       likeCount: increment(1)
     });
+    console.log("Successfully sent like")
+    animationDirection.value = 'slide-right';
   } catch (error) {
     console.error("Error liking user with message:", error);
   }
