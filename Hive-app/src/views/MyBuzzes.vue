@@ -50,9 +50,8 @@
       </div>
     </div>
 
-    <div v-if="showProfilePopup" class="profile_popup_overlay">
-      <div class="profile-popup">
-        <button class="close-popup-btn" @click="closeProfilePopup">✖</button>
+    <div v-if="showProfilePopup" class="profile_popup_overlay" @click="handleOutsideClick">
+      <div class="profile-popup" ref="popupRef" @click.stop>
         <img :src="selectedBuzz.profilePic || defaultProfilePic" class="popup-profile-pic" />
         <h2>{{ selectedBuzz.name }}, {{ calculateAge(selectedBuzz.dateOfBirth) }}</h2>
         <p v-if="selectedBuzz.bio" class="info-line">
@@ -73,7 +72,7 @@
         </p>
         <p v-if="selectedBuzz.height" class="info-line">
           <strong class="label">Height:</strong>
-          <span class="value">{{ selectedBuzz.height }}</span>
+          <span class="value">{{ selectedBuzz.height }}cm</span>
         </p>
         <p v-if="selectedBuzz.interests && selectedBuzz.interests.length" class="info-line">
           <strong class="label">Interests:</strong>
@@ -99,6 +98,13 @@ export default {
     const messageContent = ref("");
     const showProfilePopup = ref(false);
     const selectedBuzz = ref(null);
+
+
+    const popupRef = ref(null);
+
+    const handleOutsideClick = () => {
+        closeProfilePopup();
+      };
 
     const getRandomAnimationStyle = () => {
     const delay = (Math.random() * 5).toFixed(2);      // 0 to 5s
@@ -289,7 +295,7 @@ async function passUser(likedUserID) {
     
     onMounted(fetchBuzzes);
 
-    return { buzzes, likeBack, getRandomAnimationStyle, passUser, handleImageError, defaultProfilePic, calculateAge,showMessagePopup, messageContent, openMessagePopup, closeMessagePopup, showProfilePopup, selectedBuzz, openProfilePopup, closeProfilePopup};
+    return { buzzes, likeBack, getRandomAnimationStyle, passUser, handleImageError, defaultProfilePic, calculateAge,showMessagePopup, messageContent, openMessagePopup, closeMessagePopup, showProfilePopup, selectedBuzz, openProfilePopup, closeProfilePopup, popupRef, handleOutsideClick};
   }
 };
 
@@ -543,6 +549,8 @@ background: #e6b800;
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow-y: auto; /* Enable scroll if popup is too tall */
+  padding: 20px; /* Add padding to prevent flush against screen edges */
 }
 
 .profile-popup {
@@ -551,11 +559,13 @@ background: #e6b800;
   border-radius: 15px;
   width: 90%;
   max-width: 450px;
-  text-align: left; 
+  max-height: 70vh; /* Limit height so it doesn't overflow screen */
+  overflow-y: auto; /* Enable internal scroll */
+  text-align: left;
   position: relative;
-  border: 5px solid #ffcc00; 
-  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); 
-} 
+  border: 5px solid #ffcc00;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
+}
 
 
 .popup-profile-pic {
@@ -563,21 +573,6 @@ background: #e6b800;
   height: 400px;
   border-radius: 15px;
   object-fit: cover;
-}
-
-.close-popup-btn {
-  position: absolute;
-  top: 5px;
-  right: 0px; 
-  background: transparent;
-  border: none; 
-  font-size: 20px; 
-  color: #333; 
-  cursor: pointer;
-}
-
-.close-popup-btn:hover {
-  color: #ffcc00; 
 }
 
 h2 {
