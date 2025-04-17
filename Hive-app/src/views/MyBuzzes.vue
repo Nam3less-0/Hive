@@ -14,13 +14,13 @@
     <h2>WHERE THE BUZZ AT? 🐝</h2>
 
     <div v-if="buzzes.length > 0" class="buzzes-grid">
-      <div v-for="buzz in buzzes" :key="buzz.id" class="buzz-card">
+      <div v-for="buzz in buzzes" :key="buzz.id" class="buzz-card" @click="openProfilePopup(buzz)">
         <div class="profile-header">
           <span class="match-badge">{{ buzz.matchPercentage }}% Match</span>
           <span v-if="buzz.online" class="online-dot"></span>
           
           <!-- Message Button in the Top Right Corner -->
-          <button v-if="buzz.message && buzz.message !== 'None'" class="viewmessage-btn" @click="openMessagePopup(buzz.message)">💬</button>
+          <button v-if="buzz.message && buzz.message !== 'None'" class="viewmessage-btn" @click.stop="openMessagePopup(buzz.message)">💬</button>
         </div>
 
         <img 
@@ -33,8 +33,8 @@
         <h3 class="user-name">{{ buzz.name }}, {{ calculateAge(buzz.dateOfBirth) }}</h3>
         
         <div class="actions">
-          <button class="pass-btn" @click="passUser(buzz.element)">✖️ Pass</button>
-          <button class="like-btn" @click="likeBack(buzz.element)">💛 Like</button>
+          <button class="pass-btn" @click.stop="passUser(buzz.element)">✖️ Pass</button>
+          <button class="like-btn" @click.stop="likeBack(buzz.element)">💛 Like</button>
         </div>
       </div>
     </div>
@@ -47,6 +47,39 @@
         <h2>Message</h2>
         <p>{{ messageContent }}</p>
         <button class="close-btn" @click="closeMessagePopup">Close</button>
+      </div>
+    </div>
+
+    <div v-if="showProfilePopup" class="profile_popup_overlay">
+      <div class="profile-popup">
+        <button class="close-popup-btn" @click="closeProfilePopup">✖</button>
+        <img :src="selectedBuzz.profilePic || defaultProfilePic" class="popup-profile-pic" />
+        <h2>{{ selectedBuzz.name }}, {{ calculateAge(selectedBuzz.dateOfBirth) }}</h2>
+        <p v-if="selectedBuzz.bio" class="info-line">
+          <strong class="label">Bio:</strong>
+          <span class="value">{{ selectedBuzz.bio }}</span>
+        </p>
+        <p v-if="selectedBuzz.purpose" class="info-line">
+          <strong class="label">Purpose:</strong>
+          <span class="value">{{ selectedBuzz.purpose }}</span>
+        </p>
+        <p v-if="selectedBuzz.gender" class="info-line">
+          <strong class="label">Gender:</strong>
+          <span class="value">{{ selectedBuzz.gender }}</span>
+        </p>
+        <p v-if="selectedBuzz.sexualOrientation" class="info-line">
+          <strong class="label">Sexual Orientation:</strong>
+          <span class="value">{{ selectedBuzz.sexualOrientation }}</span>
+        </p>
+        <p v-if="selectedBuzz.height" class="info-line">
+          <strong class="label">Height:</strong>
+          <span class="value">{{ selectedBuzz.height }}</span>
+        </p>
+        <p v-if="selectedBuzz.interests && selectedBuzz.interests.length" class="info-line">
+          <strong class="label">Interests:</strong>
+          <span class="value">{{ selectedBuzz.interests.join(', ') }}</span>
+        </p>
+
       </div>
     </div>
   </div>
@@ -64,6 +97,8 @@ export default {
     const defaultProfilePic = "https://placehold.co/150x150/png";
     const showMessagePopup = ref(false);
     const messageContent = ref("");
+    const showProfilePopup = ref(false);
+    const selectedBuzz = ref(null);
 
     const getRandomAnimationStyle = () => {
     const delay = (Math.random() * 5).toFixed(2);      // 0 to 5s
@@ -89,6 +124,17 @@ export default {
       messageContent.value = "";
     };
 
+    const openProfilePopup = (buzz) => {
+      selectedBuzz.value = buzz;
+      showProfilePopup.value = true;
+    };
+
+    const closeProfilePopup = () => {
+      selectedBuzz.value = null;
+      showProfilePopup.value = false;
+    };
+
+
     async function fetchBuzzes() {
       try {
         const userRef = doc(db, "users", userID);
@@ -106,6 +152,7 @@ export default {
           return;
         }
         const userData = userDocSnap.data();
+        const currentUserMatchMap = userData.matchPercentage || {};
         if (!userData.likes || userData.likes.length === 0) {
           console.log("No likes received");
           buzzes.value = [];
@@ -120,15 +167,50 @@ export default {
           if (!likedUserSnap.exists()) return null;
           
           const likedUserData = likedUserSnap.data();
+
+          const likedUserMatchMap = likedUserData.matchPercentage || {};
+          
+          let matchPercentage = currentUserMatchMap[likedUserID];
+          
+          if (!matchPercentage) {
+            matchPercentage = Math.floor(Math.random() * 51) + 50;
+
+            currentUserMatchMap[likedUserID] = matchPercentage;
+            likedUserMatchMap[userID] = matchPercentage;
+
+            await Promise.all([
+              updateDoc(userDocRef, { matchPercentage: currentUserMatchMap }),
+              updateDoc(likedUserRef, { matchPercentage: likedUserMatchMap })
+            ]);
+            
+          }
           return {
             element: likedEntry,
             id: likedUserID,
             name: likedUserData.firstName || "Unknown",
             dateOfBirth: likedUserData.dateOfBirth || null,
             profilePic: likedUserData.images?.[0] || defaultProfilePic,
-            matchPercentage: likedUserData.matchPercentage || "N/A",
+            matchPercentage: likedUserData.matchPercentage[userID] || "N/A",
             online: likedUserData.online || false,
-            message: likedUserMessage || "None"
+            message: likedUserMessage || "None",
+            alcohol: likedUserData.alcohol,
+            bio: likedUserData.bio,
+            customRace: likedUserData.customRace,
+            customReligion: likedUserData.customReligion,
+            description: likedUserData.description,
+            gender: likedUserData.gender,
+            height: likedUserData.height,
+            industry: likedUserData.industry,
+            interests: likedUserData.interests,
+            isStudying:  likedUserData.isStudying,
+            isWorking: likedUserData.isWorking,
+            purpose: likedUserData.purpose,
+            race: likedUserData.race,
+            religion: likedUserData.religion,
+            school: likedUserData.school,
+            sexualOrientation: likedUserData.sexualOrientation,
+            smoking: likedUserData.smoking
+
           };
         }));
 
@@ -219,7 +301,7 @@ async function passUser(likedUserID) {
     
     onMounted(fetchBuzzes);
 
-    return { buzzes, likeBack, getRandomAnimationStyle, passUser, handleImageError, defaultProfilePic, calculateAge,showMessagePopup, messageContent, openMessagePopup, closeMessagePopup };
+    return { buzzes, likeBack, getRandomAnimationStyle, passUser, handleImageError, defaultProfilePic, calculateAge,showMessagePopup, messageContent, openMessagePopup, closeMessagePopup, showProfilePopup, selectedBuzz, openProfilePopup, closeProfilePopup};
   }
 };
 
@@ -460,4 +542,116 @@ background: #e6b800;
 .close-btn:hover {
   background: pink;
 }
+
+/* Profile Pop Up */
+.profile_popup_overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-popup {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 450px;
+  text-align: left; 
+  position: relative;
+  border: 5px solid #ffcc00; 
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); 
+} 
+
+
+.popup-profile-pic {
+  width: 100%;
+  height: 400px;
+  border-radius: 15px;
+  object-fit: cover;
+}
+
+.close-popup-btn {
+  position: absolute;
+  top: 5px;
+  right: 0px; 
+  background: transparent;
+  border: none; 
+  font-size: 20px; 
+  color: #333; 
+  cursor: pointer;
+}
+
+.close-popup-btn:hover {
+  color: #ffcc00; 
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.info-line {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: #555;
+}
+
+.label {
+  width: 140px; 
+  font-weight: bold;
+  color: #333;
+}
+
+.value {
+  flex: 1;
+  font-size: 16px;
+  color: #444; 
+}
+
+.value, .label {
+  line-height: 1.5;
+}
+
+.info-line:last-child {
+  margin-bottom: 0; 
+}
+
+.profile-popup .info-line {
+  padding: 8px;
+  background-color: #f9f9f9; 
+  border-radius: 8px;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.profile-popup .info-line:hover {
+  background-color: #e6f7ff; 
+}
+
+.info-line strong {
+  font-size: 17px;
+}
+
+.value {
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .profile-popup {
+    width: 95%; 
+  }
+}
+
+
 </style>
