@@ -550,35 +550,34 @@ background: #e6b800;
   padding: 20px;
   border-radius: 15px;
   width: 90%;
-  max-width: 400px;
-  text-align: left; /* Align text to the left for better readability */
+  max-width: 450px;
+  text-align: left; 
   position: relative;
-  border: 5px solid #ffcc00; /* Yellow border */
-  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); /* Optional light shadow */
-}
+  border: 5px solid #ffcc00; 
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); 
+} 
+
 
 .popup-profile-pic {
   width: 100%;
-  height: 250px;
-  object-fit: cover;
+  height: 400px;
   border-radius: 15px;
-  margin-top: 12px;
-  border: 2px solid #f0f0f0; /* Light border for the image */
+  object-fit: cover;
 }
 
 .close-popup-btn {
   position: absolute;
-  top: 10px;
-  right: 5px; /* Adjusted to prevent overlap with the image */
-  background: transparent; /* No background */
-  border: none; /* No border */
-  font-size: 20px; /* Larger "X" */
-  color: #333; /* Dark color for contrast */
+  top: 5px;
+  right: 0px; 
+  background: transparent;
+  border: none; 
+  font-size: 20px; 
+  color: #333; 
   cursor: pointer;
 }
 
 .close-popup-btn:hover {
-  color: #ffcc00; /* Yellow on hover for the "X" */
+  color: #ffcc00; 
 }
 
 h2 {
@@ -594,11 +593,11 @@ h2 {
   align-items: center;
   margin-bottom: 12px;
   font-size: 16px;
-  color: #555; /* Slightly softer color for text */
+  color: #555;
 }
 
 .label {
-  width: 140px; /* Consistent label width */
+  width: 140px; 
   font-weight: bold;
   color: #333;
 }
@@ -606,7 +605,7 @@ h2 {
 .value {
   flex: 1;
   font-size: 16px;
-  color: #444; /* Slightly lighter color for value text */
+  color: #444; 
 }
 
 .value, .label {
@@ -614,18 +613,18 @@ h2 {
 }
 
 .info-line:last-child {
-  margin-bottom: 0; /* No bottom margin for the last info line */
+  margin-bottom: 0; 
 }
 
 .profile-popup .info-line {
   padding: 8px;
-  background-color: #f9f9f9; /* Soft background for info lines */
+  background-color: #f9f9f9; 
   border-radius: 8px;
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .profile-popup .info-line:hover {
-  background-color: #e6f7ff; /* Light blue on hover */
+  background-color: #e6f7ff; 
 }
 
 .info-line strong {
@@ -638,10 +637,9 @@ h2 {
 
 @media (max-width: 600px) {
   .profile-popup {
-    width: 95%; /* Make popup take up more space on small screens */
+    width: 95%; 
   }
 }
-
 
 
 </style>
