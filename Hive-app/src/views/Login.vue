@@ -77,25 +77,26 @@ const handleLogin = async () => {
     router.push({ name: "LoadingPage" });
   } catch (error) {
   switch (error.code) {
+    // Email definitely not in the system (only returned if enumeration protection OFF)
     case "auth/user-not-found":
+      userMessage.value = "No account found for this email. Please register first.";
+      break;
+
+    // Any bad email–password combo when enumeration protection is ON
     case "auth/invalid-credential":
-      userMessage.value = "No account found for this Email. Please register first.";
+    case "auth/invalid-login-credentials":
+    case "auth/wrong-password":          // still appears if protection OFF
+      userMessage.value = "Incorrect email or password. Please try again.";
       break;
-    case "auth/wrong-password":
-      userMessage.value = "Invalid password. Please try again.";
-      break;
+
     case "auth/invalid-email":
       userMessage.value = "Invalid email address format.";
       break;
-    case "auth/user-disabled":
-      userMessage.value = "This account has been disabled.";
-      break;
-    case "auth/too-many-requests":
-      userMessage.value = "Too many login attempts. Please try again later.";
-      break;
+
     default:
-      userMessage.value = "An unexpected error occurred. Please try again.";
+      userMessage.value = "Login failed. Please try again later.";
   }
+
 }
 
 };
