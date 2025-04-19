@@ -57,10 +57,10 @@
         <a href="#" @click="openFAQModal">FAQ</a>
       </div>
       <div class="social-icons">
-        <a href="https://www.facebook.com/santtosh.mohan" target="_blank">
+        <a href="https://www.facebook.com/profile.php?id=61575340165947" target="_blank">
           <img src="@/assets/facebook.png" alt="Facebook" />
         </a>
-        <a href="https://www.instagram.com/sant.tosh/" target="_blank">
+        <a href="https://www.instagram.com/_hive_.02/" target="_blank">
           <img src="@/assets/instagram.png" alt="Instagram" />
         </a>
         <img src="@/assets/X.png" alt="X" />
@@ -269,7 +269,10 @@ onMounted(async () => {
 .content-wrapper {
   display: flex;
   justify-content: center;
-  padding: 20px;
+  padding: 10px;
+  margin-bottom: 6vh;
+  height: calc(100vh - 18vh); 
+  overflow-y: auto;
 }
 
 .main-content {
@@ -281,10 +284,15 @@ onMounted(async () => {
   align-items: flex-start;
 }
 
-.left-section,
-.right-section {
+.left-section {
   flex: 1;
   min-width: 300px;
+}
+
+.right-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* === BACKGROUND GRID === */

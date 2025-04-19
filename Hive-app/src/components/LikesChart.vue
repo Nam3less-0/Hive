@@ -162,23 +162,25 @@ export default {
     border: 2px solid #fbc02d;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     border-radius: 20px;
-    padding: 20px;
-    font-size: 1.6rem;
-    margin: 20px auto;
-    max-width: 600px;
+    padding: 15px;
+    font-size: 1.2rem;
+    margin: 10px auto;
+    max-width: 100%;
+    height: 250px;
     pointer-events: none;
 }
 
 canvas {
   width: 100% !important;
   height: 100% !important;
+  max-height: 220px;
 }
 
 .chart-title {
   font-weight: bold;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin-bottom: 12px;
-  font-size: 1.6rem;
+  margin-bottom: 8px;
+  font-size: 1.2rem;
   color: #333;
 }
 </style>

@@ -921,9 +921,9 @@ onMounted(() => {
 .add-interests-btn:hover {
   background-color: #facc15;
 }
-/* Description Section */
+/* Description Section */ 
 .desc-input {
-  width: 100%;
+  width: 90%;
   min-height: 120px;
   padding: 16px 20px;
   font-size: 1rem;
