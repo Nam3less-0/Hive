@@ -1,5 +1,5 @@
 <template>
-  <div class="chat-list-container">
+  <div class="chat-list-container" :class="{'compact-mode': isCollapsedView}">
     <h2 class="chat-list-title">
       <span class="bee-icon">🐝</span> Matches <span class="bee-icon">🐝</span>
     </h2>
@@ -15,8 +15,8 @@
       <span class="search-icon">🔍</span>
     </div>
 
-    <!-- Chat List -->
-    <ul class="chat-list">
+    <!-- Chat List: Normal View -->
+    <ul v-if="!isCollapsedView" class="chat-list">
       <li
         v-for="chat in filteredChats"
         :key="chat.id"
@@ -50,6 +50,31 @@
         </div>
       </li>
     </ul>
+
+    <!-- Chat List: Compact View -->
+    <div v-else class="compact-chat-grid">
+      <div
+        v-for="chat in filteredChats"
+        :key="chat.id"
+        class="compact-chat-item"
+        @click="handleChatSelected(chat)"
+      >
+        <div class="compact-avatar-container">
+          <img
+            :src="chat.avatar"
+            :alt="`${chat.name}'s avatar`"
+            class="compact-avatar"
+          />
+          <div class="compact-hex-outline"></div>
+          <span v-if="chat.streakCount > 0" class="compact-streak-badge">
+            🔥
+          </span>
+        </div>
+        <div class="compact-name">
+          {{ chat.name.split(' ')[0] }}
+        </div>
+      </div>
+    </div>
   </div>
 </template>
   
@@ -74,10 +99,15 @@ export default {
       searchTerm: "",
       chats: [],
       unsubscribeMatchesListener: null, // Store listener to cleanup later
-      cachedUserData: {} // Cache user data to avoid redundant fetches
+      cachedUserData: {}, // Cache user data to avoid redundant fetches
+      windowWidth: 0, // Will be set properly in mounted hook
+      isMobileLayout: false
     };
   },
   computed: {
+    isCollapsedView() {
+      return this.windowWidth < 600 || this.isMobileLayout; // Threshold for collapsed view
+    },
     filteredChats() {
       // First filter out blocked matches
       const nonBlockedChats = this.chats.filter(chat => !chat.blocked);
@@ -103,6 +133,15 @@ export default {
     }
   },
   methods: {
+    updateWindowWidth() {
+      this.windowWidth = window.innerWidth;
+      console.log("Window resized. New width:", this.windowWidth);
+    },
+    checkMediaQuery() {
+      const mediaQuery = window.matchMedia('(max-width: 600px)');
+      this.isMobileLayout = mediaQuery.matches;
+      console.log("Media query check. Is mobile:", this.isMobileLayout);
+    },
     setupRealtimeMatchesListener() {
       if (!this.currentUserId) return;
       
@@ -246,11 +285,32 @@ export default {
     // Set up the real-time listener when component is created
     this.setupRealtimeMatchesListener();
   },
+  mounted() {
+    // Initialize window width
+    this.windowWidth = window.innerWidth;
+    
+    // Add window resize event listener
+    window.addEventListener('resize', this.updateWindowWidth);
+    
+    // Initial check for media query match
+    this.checkMediaQuery();
+    
+    // Set up media query listener for better compatibility
+    const mediaQuery = window.matchMedia('(max-width: 600px)');
+    mediaQuery.addEventListener('change', this.checkMediaQuery);
+  },
   unmounted() {
     // Clean up the listener when component is destroyed
     if (this.unsubscribeMatchesListener) {
       this.unsubscribeMatchesListener();
     }
+    
+    // Remove resize event listener
+    window.removeEventListener('resize', this.updateWindowWidth);
+    
+    // Remove media query listener
+    const mediaQuery = window.matchMedia('(max-width: 600px)');
+    mediaQuery.removeEventListener('change', this.checkMediaQuery);
   },
   watch: {
     // Re-establish the listener if the current user changes
@@ -305,6 +365,7 @@ export default {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   position: relative;
   overflow: hidden;
+  width: 100%;
 }
 
 /* Large honeycomb watermark */
@@ -386,6 +447,9 @@ export default {
   overflow-y: auto;
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .chat-list-item {
@@ -400,6 +464,7 @@ export default {
   position: relative;
   border-left: 5px solid var(--honeycomb-yellow);
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  width: 100%;
 }
 
 .chat-list-item:hover {
@@ -408,12 +473,27 @@ export default {
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
+/* Collapsed view styling */
+.chat-list-item.collapsed-view {
+  justify-content: center;
+  padding: 0.5rem;
+  border-left-width: 3px;
+  width: auto;
+  max-width: 70px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* Hexagon avatar container */
 .avatar-container {
   position: relative;
   width: 55px;
   height: 55px;
   margin-right: 1rem;
+}
+
+.collapsed-view .avatar-container {
+  margin-right: 0;
 }
 
 .chat-avatar {
@@ -450,6 +530,8 @@ export default {
 
 .chat-details {
   flex: 1;
+  min-width: 0; /* Allow proper text truncation */
+  overflow: hidden; /* Ensure content doesn't push out */
 }
 
 .chat-header {
@@ -457,17 +539,24 @@ export default {
   align-items: baseline;
   gap: 0.5rem;
   margin-bottom: 0.4rem;
+  flex-wrap: wrap; /* Allow wrapping on very small screens */
 }
 
 .chat-name {
   font-weight: bold;
   font-size: 1.1rem;
   color: var(--bee-black);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .chat-handle {
   font-size: 0.875rem;
   color: var(--honey-brown);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .chat-last-message {
@@ -476,7 +565,6 @@ export default {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 200px;
 }
 
 .chat-date {
@@ -486,6 +574,8 @@ export default {
   background-color: var(--honeycomb-light);
   padding: 0.3rem 0.6rem;
   border-radius: 10px;
+  white-space: nowrap;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 /* Streak styles */
@@ -499,6 +589,25 @@ export default {
   font-weight: bold;
   display: inline-block;
   position: relative;
+  animation: honeyglow 3s infinite alternate;
+}
+
+/* Mini streak badge for collapsed view */
+.mini-streak-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: var(--honeycomb-dark);
+  color: var(--bee-black);
+  font-size: 0.8rem;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid var(--bee-white);
+  z-index: 2;
   animation: honeyglow 3s infinite alternate;
 }
 
@@ -517,8 +626,97 @@ export default {
   100% { transform: scale(1); filter: brightness(1); }
 }
 
-/* Optional media query for smaller screens */
-@media (max-width: 480px) {
+/* Compact view specific styles */
+.compact-mode {
+  padding: 1rem;
+}
+
+.compact-chat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 1rem;
+  justify-items: center;
+  width: 100%;
+}
+
+.compact-chat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  width: 70px;
+}
+
+.compact-chat-item:hover {
+  transform: translateY(-3px);
+}
+
+.compact-avatar-container {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 0.5rem;
+}
+
+.compact-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid var(--honeycomb-yellow);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  z-index: 1;
+}
+
+.compact-hex-outline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath fill='none' stroke='%23FFC107' stroke-width='2' d='M30,5 L53.3,20 L53.3,50 L30,65 L6.7,50 L6.7,20 L30,5z'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  animation: rotateSlow 20s linear infinite;
+}
+
+.compact-streak-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: var(--honeycomb-dark);
+  color: var(--bee-black);
+  font-size: 0.8rem;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid var(--bee-white);
+  z-index: 2;
+  animation: honeyglow 3s infinite alternate;
+}
+
+.compact-name {
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-align: center;
+  color: var(--bee-black);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
   .chat-list-container {
     padding: 1rem;
   }
@@ -527,36 +725,22 @@ export default {
     font-size: 1.5rem;
   }
 
-  .chat-list-item {
-    padding: 0.6rem;
+  .chat-search-input {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-list-title {
+    font-size: 1.3rem;
   }
 
-  .avatar-container {
-    width: 45px;
-    height: 45px;
-    margin-right: 0.75rem;
+  .chat-search-container {
+    margin-bottom: 1rem;
   }
 
-  .chat-avatar {
-    width: 40px;
-    height: 40px;
-  }
-
-  .chat-name {
-    font-size: 1rem;
-  }
-
-  .chat-handle {
-    font-size: 0.75rem;
-  }
-
-  .chat-last-message {
-    font-size: 0.8rem;
-    max-width: 150px;
-  }
-
-  .chat-date {
-    font-size: 0.7rem;
+  .chat-search-input {
+    padding: 0.6rem 2.2rem 0.6rem 0.8rem;
   }
 }
 </style>
