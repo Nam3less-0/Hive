@@ -1052,22 +1052,22 @@ select.input-field {
   border: none;
   cursor: pointer;
   font-weight: 500;
+  font-size: 16px;
 }
 
 .delete-btn {
   background-color: #f87171;
-  color: white;
+  color: black;
   padding: 10px 18px;
   border-radius: 10px;
   border: none;
-  font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .delete-btn:hover {
-  background-color: #ef4444;
+  color: white
 }
 
 .reset-btn {
@@ -1076,19 +1076,15 @@ select.input-field {
   padding: 10px 18px;
   border-radius: 10px;
   border: none;
-  font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .reset-btn:hover {
-  background-color: #facc15;
+  color: white;
 }
 
-.save-btn:hover, .reset-btn:hover, .delete-btn:hover {
-  opacity: 0.9;
-}
 
 .reset-btn {
   background-color: #ffe96b;
@@ -1096,7 +1092,7 @@ select.input-field {
 
 .delete-btn {
   background-color: #f66;
-  color: white;
+  color: black;
 }
 
 .save-btn-container {
@@ -1208,7 +1204,7 @@ h2 {
 }
 
 .save-profile-btn:hover {
-  background-color: #f2d324;
+  color: white;
 }
 
 /* Wrapper */
