@@ -107,9 +107,16 @@
         <option value="Malay">Malay</option>
         <option value="Indian">Indian</option>
         <option value="Eurasian">Eurasian</option>
-        <option value="Other">Others</option>
+        <option value="others">Others</option>
       </select>
     </div>
+
+    <!-- Custom Race (shown only when race is "Other") -->
+    <div class="form-group" v-if="userData.race === 'others'">
+      <label>Specify Race</label>
+      <input v-model="userData.customRace" type="text" placeholder="Enter your race" class="input-field" />
+    </div>
+
 
     <!-- Religion -->
     <div class="form-group">
@@ -121,8 +128,13 @@
         <option value="Taoist">Taoist</option>
         <option value="Muslim">Muslim</option>
         <option value="Hindu">Hindu</option>
-        <option value="Other">Others</option>
+        <option value="others">Others</option>
       </select>
+    </div>
+
+    <div class="form-group" v-if="userData.religion === 'others'">
+      <label>Specify Religion</label>
+      <input v-model="userData.customReligion" type="text" placeholder="Enter your religion" class="input-field" />
     </div>
 
     <!-- School -->
