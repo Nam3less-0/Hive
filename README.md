@@ -1,7 +1,5 @@
 # Hive App 
 
-This repository houses the Hive project — a smart dating and social web application for university students and young professionals, built with Vue 3, Firebase, and OpenAI.
-
 ---
 
 ## Executive Summary
@@ -147,30 +145,72 @@ src/
 
 ---
 
-## Limitations
-
-- Cold start problem in early data collection
-- Dependent on Firebase uptime and third-party APIs
-- Matching improves with user base growth (network effect)
-
----
-
-## Future Roadmap
-
-- SwarmSpace: Location-based user discovery using Google Maps API
-- Availability Scheduling: Let users set when they're open to chat or meet
-- Mobile-first enhancements and push notifications
-
----
-
 ## Scrum & Agile Methodology
 
-- Sprint-based workflow using SCRUM
-- Product Backlog → Sprint Planning → Daily Standups → Sprint Review
-- Strict adherence to Definition of Done:
-  - Completed functionality
-  - Peer-reviewed and merged into main branch
-  - Functional demo and updated documentation
+The Hive team followed the **Scrum framework** to manage development efficiently across two sprints and a preparatory phase. Roles were clearly defined, and progress was tracked with daily standups, backlog grooming, and sprint reviews.
+
+Final product development differed from the midterm submission as the MVP was completed before the Scrum lecture and final report guidelines. To adhere to Scrum methodology, the team restructured features and planning accordingly to enable proper documentation.
+
+---
+
+### Pre-Sprint: MVP Development (22 Feb – 2 Mar 2025)
+
+**Sprint Goal**: Deliver a working MVP demonstrating routing, core flows, and basic Firebase integration.
+
+**Key Deliverables**:
+- User authentication (Login/Register)
+- Onboarding flow across 5 user input pages
+- Initial Home Page with likes and streaks count
+- Navigation bar and page routing (Connect, Messages, MyBuzzes, Profile)
+- Basic Connect Page profile display (photo, bio, age, interests)
+- Messages Page layout with ChatList and ChatRoom
+- MyBuzzes with like/pass logic
+- Profile Page with editable user sections
+- Notification and Privacy placeholders
+
+**Highlights**:
+- 96% task completion (24/25 points)
+- All acceptance criteria validated except 1 (notification settings – carried over to Sprint 1)
+- Built the foundation for Firebase integration and front-end architecture
+
+---
+
+### Sprint 1: Core Features & ML Matching (21 Mar – 3 Apr 2025)
+
+**Sprint Goal**: Extend MVP with core features — Google Authentication, Connect Page logic, collaborative filtering, and UI polish.
+
+**Key Deliverables**:
+- Google Login/Registration with error handling and Firebase user tracking
+- Likes/streaks summary on Home Page
+- Filter pop-up with age, interest, and demographic controls
+- Machine Learning-based matching (cosine similarity)
+- “No More Users” fallback screen with visuals
+- UI animations and pass/like logic refinement
+
+**Highlights**:
+- 98% task completion (46/47 points)
+- Collaborative filtering implemented and tested
+- Nearly all user stories met the Definition of Done
+- Improved internal communication through biweekly check-ins
+
+---
+
+### Sprint 2: UI/UX Refinement & Messaging System (4–17 Apr 2025)
+
+**Sprint Goal**: Finalize backlog features, improve UX consistency, and complete backend data flows.
+
+**Key Deliverables**:
+- Full messaging system (ChatList, ChatRoom, reply input, GPT suggestions)
+- Profile viewing pop-ups with full info across Connect and Buzzes
+- MatchChart and LikesChart using Chart.js
+- Secure password reset, logout, and notification toggle flows
+- Profile edit, block user, and account deletion logic
+
+**Highlights**:
+- 98% task completion (81/82 points)
+- Completed "Sweet Conversation Starter" feature (GPT-4)
+- Seamless navigation across devices and views
+- Greater alignment to DoD and improved UI cohesion
 
 ---
 
