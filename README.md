@@ -1,5 +1,4 @@
 # Hive App 
-
 ---
 
 ## Executive Summary
