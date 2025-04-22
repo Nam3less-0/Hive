@@ -269,9 +269,9 @@
           <button class="close-btn" @click="closePopup">×</button>
           <div v-if="!isForgotPassword">
             <h2>Reset Password</h2>
-            <input type="password" v-model="currentPassword" placeholder="Enter Current Password" class="input-field" />
-            <input type="password" v-model="newPassword" placeholder="Enter New Password" class="input-field" />
-            <input type="password" v-model="confirmNewPassword" placeholder="Confirm New Password" class="input-field" />
+            <input type="password" v-model="currentPassword" placeholder="Enter Current Password" class="input-field2" />
+            <input type="password" v-model="newPassword" placeholder="Enter New Password" class="input-field2" />
+            <input type="password" v-model="confirmNewPassword" placeholder="Confirm New Password" class="input-field2" />
             <p class="forgot-password" @click="isForgotPassword = true">Forgot Password?</p>
             <button class="confirm-btn" @click="changePassword">Confirm</button>
           </div>
@@ -895,6 +895,21 @@ onMounted(() => {
   background-repeat: no-repeat;
   background-position: right 10px center;
   background-size: 18px;
+}
+.input-field2 {
+  width: 100%;
+  max-width: 90%; /* Optional: keeps some padding from edges */
+  padding: 10px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+.input-field2:hover, .input-field:focus {
+  border-color: #f59e0b; /* Orange border */
+  background-color: #fff7ed; /* Light orange background */
+  box-shadow: 0px 4px 12px rgba(245, 158, 11, 0.2);
 }
 
 /* Hover and Focus Effect */
