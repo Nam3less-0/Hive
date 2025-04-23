@@ -213,19 +213,7 @@
     </div>
 
     <!-- School -->
-    <div class="form-group">
-      <label>School</label>
-      <select v-model="userData.school" class="input-field">
-        <option disabled value="">Select School</option>
-        <option value="NUS">National University of Singapore (NUS)</option>
-        <option value="NTU">Nanyang Technological University (NTU)</option>
-        <option value="SMU">Singapore Management University (SMU)</option>
-        <option value="SIT">Singapore Institute of Technology (SIT)</option>
-        <option value="SUSS">Singapore University of Social Sciences (SUSS)</option>
-        <option value="SUTD">Singapore University of Technology and Design (SUTD)</option>
-        <option value="Other">Other</option>
-      </select>
-    </div>
+
 
     <!-- Industry -->
     <div class="form-group">
