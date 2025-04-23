@@ -201,10 +201,7 @@
     </div>
 
     <!-- Height -->
-    <div class="form-group">
-      <label>Height</label>
-      <input v-model="userData.height" type="text" placeholder="Height" class="input-field" />
-    </div>
+   
 
     <!-- Date of Birth -->
     <div class="form-group">
