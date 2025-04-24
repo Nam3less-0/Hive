@@ -263,7 +263,7 @@
           <div v-if="isForgotPassword">
             <h2>Forgot Password?</h2>
             <p>Enter your email to receive a password reset link.</p>
-            <input type="email" v-model="userEmail" placeholder="Enter your email" class="input-field" />
+            <input type="email" v-model="userEmail" placeholder="Enter your email" class="input-field2" />
             <button class="confirm-btn" @click="forgotPassword">Send Reset Email</button>
             <p class="back-to-reset" @click="isForgotPassword = false">Back</p>
           </div>
