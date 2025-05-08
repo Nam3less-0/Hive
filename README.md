@@ -1,5 +1,6 @@
 # Hive App 
 ---
+![image](https://github.com/user-attachments/assets/4ac16cad-2c70-4b9d-8733-345b3906b71d)
 
 ## Executive Summary
 
@@ -116,6 +117,7 @@ Main App:
   /privacy       # Manage blocked users
   /logout        # Confirmed sign-out
 ```
+![image](https://github.com/user-attachments/assets/8eea42cc-4bd4-413f-9811-b1e0150f536e)
 
 ---
 
